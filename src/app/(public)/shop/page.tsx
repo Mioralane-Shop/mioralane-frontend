@@ -15,6 +15,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProducts } from "@/hooks/use-products";
 import { CATEGORIES, SORT_OPTIONS, DUMMY_PRODUCTS } from "@/constants/site";
+import type { Product } from "@/types/product";
 
 export default function ShopPage() {
   const [search, setSearch] = useState("");
@@ -23,7 +24,7 @@ export default function ShopPage() {
 
   const { data: allProducts, isLoading } = useProducts();
 
-  const products = allProducts || DUMMY_PRODUCTS;
+  const products = (allProducts || DUMMY_PRODUCTS) as Product[];
 
   const filtered = products
     .filter((p) => {
@@ -73,7 +74,7 @@ export default function ShopPage() {
                   key={cat.id}
                   onClick={() =>
                     setSelectedCategory(
-                      selectedCategory === cat.slug ? null : cat.slug
+                      selectedCategory === cat.slug ? null : cat.slug,
                     )
                   }
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${

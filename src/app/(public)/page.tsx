@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { HeroSection } from "@/components/common/hero-section";
-import { CategorySection } from "@/components/common/category-section";
+import { PromoCarousel } from "@/components/common/promo-carousel";
 import { FeaturedProducts } from "@/components/common/featured-products";
-import { NewsletterSection } from "@/components/common/newsletter-section";
+import { BundlesCarousel } from "@/components/common/bundles-carousel";
+import { TestimonialsSection } from "@/components/common/testimonials-section";
+import { BlogPreviewSection } from "@/components/common/blog-preview-section";
 
 export const metadata: Metadata = {
   title: "Mioralane - Premium Korean Skincare",
@@ -14,9 +16,11 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <CategorySection />
+      <PromoCarousel />
       <FeaturedProducts />
-      <NewsletterSection />
+      <BundlesCarousel />
+      <TestimonialsSection />
+      <BlogPreviewSection />
     </>
   );
 }

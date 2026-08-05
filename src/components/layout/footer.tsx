@@ -1,89 +1,65 @@
 import Link from "next/link";
 import { SITE_NAME } from "@/constants/site";
-import { Camera, MessageCircle, AtSign } from "lucide-react";
 
 const footerLinks = {
   shop: {
     title: "Shop",
     links: [
       { label: "All Products", href: "/shop" },
-      { label: "Best Sellers", href: "/shop?sort=best-seller" },
-      { label: "New Arrivals", href: "/shop?sort=newest" },
-      { label: "Gift Sets", href: "/shop?category=sets" },
-    ],
-  },
-  help: {
-    title: "Help",
-    links: [
-      { label: "Contact Us", href: "#" },
-      { label: "FAQs", href: "#" },
-      { label: "Shipping & Returns", href: "#" },
-      { label: "Track Order", href: "#" },
+      { label: "Cleansers", href: "/shop?category=cleansers" },
+      { label: "Toners & Essences", href: "/shop?category=serums" },
+      { label: "Serums & Ampoules", href: "/shop?category=serums" },
+      { label: "Sunscreen", href: "/shop?category=sun-care" },
+      { label: "Bundles", href: "/shop?category=combo" },
     ],
   },
   company: {
     title: "Company",
     links: [
-      { label: "About Us", href: "#" },
-      { label: "Our Story", href: "#" },
-      { label: "Sustainability", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "About Us", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Contact", href: "/contact" },
+      { label: "Authenticity Policy", href: "#" },
+    ],
+  },
+  help: {
+    title: "Help",
+    links: [
+      { label: "Delivery Policy", href: "/delivery" },
+      { label: "Return & Refund", href: "/returns" },
+      { label: "Track Order", href: "#" },
+      { label: "FAQ", href: "/faq" },
     ],
   },
 };
 
 export function Footer() {
   return (
-    <footer className="border-t border-rose-100 bg-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-4">
+    <footer className="bg-ink text-white/55 py-16 px-6">
+      <div className="mx-auto max-w-[1200px]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           <div>
-            <Link
-              href="/"
-              className="text-xl font-light tracking-wide text-rose-600"
-            >
-              {SITE_NAME}
-            </Link>
-            <p className="mt-3 text-sm text-neutral-500 leading-relaxed">
-              Premium Korean skincare crafted with nature&apos;s finest
-              ingredients for your most radiant, healthy skin.
-            </p>
-            <div className="mt-4 flex gap-3">
-              <a
-                href="#"
-                className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
-                aria-label="Instagram"
-              >
-                <Camera className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
-                aria-label="Facebook"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
-                aria-label="Twitter"
-              >
-                <AtSign className="h-4 w-4" />
-              </a>
+            <div className="font-serif italic text-2xl font-medium text-white mb-4">
+              {SITE_NAME.slice(0, 3)}
+              <span className="text-accent font-normal">{SITE_NAME.slice(3)}</span>
             </div>
+            <p className="text-sm leading-relaxed font-light max-w-[300px]">
+              Authentic Korean skincare, sourced with care, delivered with trust.
+              Building Bangladesh&apos;s most trusted destination for K-beauty.
+            </p>
           </div>
 
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-neutral-800">
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-5">
                 {section.title}
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-neutral-500 transition-colors hover:text-rose-500"
+                      className="text-sm text-white/55 transition-colors hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -94,8 +70,20 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 border-t border-rose-50 pt-6 text-center text-xs text-neutral-400">
-          &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
+        <div className="border-t border-white/7 pt-6 flex flex-wrap justify-between items-center gap-3">
+          <p className="text-xs text-white/25">
+            &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
+          </p>
+          <div className="flex gap-2.5">
+            {["bKash", "Nagad", "Rocket", "COD"].map((method) => (
+              <span
+                key={method}
+                className="px-3 py-1.5 rounded-md bg-white/6 text-[11px] font-semibold text-white/40"
+              >
+                {method}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
