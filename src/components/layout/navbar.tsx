@@ -5,13 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Search } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
-import { useAuthStore } from "@/store/auth.store";
 import { SITE_NAME, NAV_LINKS, BRANDS } from "@/constants/site";
 import { MobileMenu } from "./mobile-menu";
 
 export function Navbar() {
   const { toggleCart, totalItems } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [brandsOpen, setBrandsOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState("");
@@ -34,7 +32,10 @@ export function Navbar() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setBrandsOpen(false);
       }
     };
@@ -43,7 +44,7 @@ export function Navbar() {
   }, []);
 
   const filteredBrands = BRANDS.filter((b) =>
-    b.toLowerCase().includes(brandSearch.toLowerCase())
+    b.toLowerCase().includes(brandSearch.toLowerCase()),
   );
 
   return (
