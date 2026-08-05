@@ -1,0 +1,227 @@
+export const SITE_NAME = "Mioralane";
+export const SITE_DESCRIPTION =
+  "Premium Korean skincare for radiant, healthy skin. Discover our curated collection of luxury beauty products.";
+export const SITE_URL = "https://mioralane.com";
+
+export const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+  { label: "Best Sellers", href: "/shop?sort=best-seller" },
+  { label: "New Arrivals", href: "/shop?sort=newest" },
+];
+
+export const CATEGORIES = [
+  { id: "1", name: "Cleansers", slug: "cleansers", image: "/images/categories/cleansers.jpg", productCount: 12 },
+  { id: "2", name: "Serums", slug: "serums", image: "/images/categories/serums.jpg", productCount: 18 },
+  { id: "3", name: "Moisturizers", slug: "moisturizers", image: "/images/categories/moisturizers.jpg", productCount: 15 },
+  { id: "4", name: "Masks", slug: "masks", image: "/images/categories/masks.jpg", productCount: 8 },
+  { id: "5", name: "Sun Care", slug: "sun-care", image: "/images/categories/sun-care.jpg", productCount: 6 },
+  { id: "6", name: "Sets", slug: "sets", image: "/images/categories/sets.jpg", productCount: 4 },
+];
+
+export const DUMMY_PRODUCTS = [
+  {
+    id: "1",
+    slug: "radiance-glow-serum",
+    name: "Radiance Glow Serum",
+    description:
+      "A lightweight, fast-absorbing serum infused with niacinamide and pearl extract to brighten and even skin tone.",
+    longDescription:
+      "Our Radiance Glow Serum is formulated with 5% niacinamide, pearl extract, and hyaluronic acid to deliver deep hydration while visibly brightening dark spots and improving skin texture. The lightweight formula absorbs instantly without any sticky residue, making it perfect for layering under moisturizer. Suitable for all skin types, including sensitive skin.",
+    price: 48.0,
+    compareAtPrice: 58.0,
+    images: [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&h=600&fit=crop",
+    ],
+    category: "serums",
+    tags: ["brightening", "anti-dark-spots", "hydrating"],
+    rating: 4.8,
+    reviewCount: 234,
+    stock: 50,
+    ingredients: "Water, Niacinamide (5%), Butylene Glycol, Pearl Extract, Hyaluronic Acid, Panthenol, Allantoin",
+    howToUse: "Apply 3-4 drops to cleansed skin morning and evening. Follow with moisturizer and SPF in the AM.",
+    skinType: "All skin types",
+    volume: "30ml / 1.0 fl oz",
+    isNew: false,
+    isBestSeller: true,
+    createdAt: "2024-01-15",
+  },
+  {
+    id: "2",
+    slug: "ceramide-barrier-cream",
+    name: "Ceramide Barrier Cream",
+    description:
+      "A rich, nourishing cream with ceramides and squalane to repair and strengthen the skin's moisture barrier.",
+    price: 42.0,
+    images: [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=600&h=600&fit=crop",
+    ],
+    category: "moisturizers",
+    tags: ["barrier-repair", "dry-skin", "nourishing"],
+    rating: 4.7,
+    reviewCount: 189,
+    stock: 35,
+    ingredients: "Water, Ceramide NP, Squalane, Shea Butter, Glycerin, Panthenol, Centella Asiatica Extract",
+    howToUse: "Apply a generous amount as the last step of your skincare routine, morning and evening.",
+    skinType: "Dry to normal skin",
+    volume: "50ml / 1.69 fl oz",
+    isBestSeller: true,
+    createdAt: "2024-02-20",
+  },
+  {
+    id: "3",
+    slug: "green-tea-cleansing-balm",
+    name: "Green Tea Cleansing Balm",
+    description:
+      "A sherbet-like cleansing balm enriched with green tea extract that melts away makeup and impurities.",
+    price: 34.0,
+    images: [
+      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=600&h=600&fit=crop",
+    ],
+    category: "cleansers",
+    tags: ["cleansing", "makeup-remover", "gentle"],
+    rating: 4.6,
+    reviewCount: 156,
+    stock: 60,
+    ingredients: "Ethylhexyl Palmitate, Green Tea Extract, Moringa Oil, Tocopherol (Vitamin E), Bisabolol",
+    howToUse: "Scoop a small amount and massage onto dry skin. Rinse with lukewarm water or emulsify with water first.",
+    skinType: "All skin types",
+    volume: "100ml / 3.38 fl oz",
+    isNew: true,
+    createdAt: "2024-05-10",
+  },
+  {
+    id: "4",
+    slug: "snail-mucin-essence",
+    name: "Snail Mucin Essence",
+    description:
+      "A cult-favorite essence with 96% snail secretion filtrate for intense hydration and skin repair.",
+    price: 39.0,
+    compareAtPrice: 45.0,
+    images: [
+      "https://images.unsplash.com/photo-1570194065650-d99fb4ee8e39?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1567721913486-6585f069b689?w=600&h=600&fit=crop",
+    ],
+    category: "serums",
+    tags: ["hydrating", "repair", "glow"],
+    rating: 4.9,
+    reviewCount: 312,
+    stock: 40,
+    ingredients: "Snail Secretion Filtrate (96%), Betaine, Butylene Glycol, Panthenol, Allantoin, Adenosine",
+    howToUse: "After toner, apply 2-3 pumps and gently pat into skin until fully absorbed.",
+    skinType: "All skin types, especially dehydrated",
+    volume: "100ml / 3.38 fl oz",
+    isBestSeller: true,
+    isNew: false,
+    createdAt: "2024-03-05",
+  },
+  {
+    id: "5",
+    slug: "centella-calming-mask",
+    name: "Centella Calming Mask",
+    description:
+      "A soothing sheet mask infused with centella asiatica to calm redness and irritation instantly.",
+    price: 28.0,
+    images: [
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=600&h=600&fit=crop",
+    ],
+    category: "masks",
+    tags: ["calming", "soothing", "sheet-mask"],
+    rating: 4.5,
+    reviewCount: 98,
+    stock: 80,
+    ingredients: "Water, Centella Asiatica Extract, Propolis Extract, Hyaluronic Acid, Madecassoside",
+    howToUse: "Apply to cleansed face for 15-20 minutes. Remove and pat remaining essence into skin.",
+    skinType: "Sensitive, irritated skin",
+    volume: "5 sheets / box",
+    isNew: true,
+    createdAt: "2024-06-01",
+  },
+  {
+    id: "6",
+    slug: "peptide-eye-cream",
+    name: "Peptide Eye Cream",
+    description:
+      "A targeted eye cream with multi-peptides and caffeine to reduce fine lines, puffiness, and dark circles.",
+    price: 45.0,
+    images: [
+      "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&h=600&fit=crop",
+    ],
+    category: "moisturizers",
+    tags: ["anti-aging", "eye-care", "peptides"],
+    rating: 4.4,
+    reviewCount: 67,
+    stock: 25,
+    ingredients: "Water, Acetyl Hexapeptide-8, Caffeine, Niacinamide, Hyaluronic Acid, Vitamin K",
+    howToUse: "Gently tap a rice-grain-sized amount around the eye area morning and evening.",
+    skinType: "All skin types",
+    volume: "15ml / 0.5 fl oz",
+    isNew: false,
+    createdAt: "2024-04-12",
+  },
+  {
+    id: "7",
+    slug: "water-light-sunscreen",
+    name: "Water-Light Sunscreen SPF 50+",
+    description:
+      "A featherlight, non-greasy sunscreen with SPF 50+ PA++++ that leaves zero white cast and doubles as a makeup primer.",
+    price: 32.0,
+    images: [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&h=600&fit=crop",
+    ],
+    category: "sun-care",
+    tags: ["sunscreen", "uv-protection", "lightweight"],
+    rating: 4.6,
+    reviewCount: 143,
+    stock: 55,
+    ingredients: "Water, Homosalate, Octisalate, Hyaluronic Acid, Niacinamide, Centella Asiatica",
+    howToUse: "Apply generously as the last step of your AM skincare routine. Reapply every 2 hours when outdoors.",
+    skinType: "All skin types",
+    volume: "50ml / 1.69 fl oz",
+    isBestSeller: true,
+    createdAt: "2024-03-20",
+  },
+  {
+    id: "8",
+    slug: "rice-bright-cleansing-foam",
+    name: "Rice Bright Cleansing Foam",
+    description:
+      "A creamy cleansing foam with rice extract that gently exfoliates and brightens dull, tired skin.",
+    price: 26.0,
+    images: [
+      "https://images.unsplash.com/photo-1601612628452-9e99ced43524?w=600&h=600&fit=crop",
+    ],
+    category: "cleansers",
+    tags: ["brightening", "exfoliating", "foam"],
+    rating: 4.3,
+    reviewCount: 89,
+    stock: 45,
+    ingredients: "Water, Rice Extract, Glycerin, Niacinamide, Papaya Enzyme, Allantoin",
+    howToUse: "Lather a small amount with water and gently massage onto damp face. Rinse thoroughly.",
+    skinType: "Normal to oily skin",
+    volume: "150ml / 5.07 fl oz",
+    isNew: true,
+    createdAt: "2024-07-01",
+  },
+];
+
+export const SKIN_TYPES = [
+  { label: "All Skin Types", value: "all" },
+  { label: "Dry", value: "dry" },
+  { label: "Oily", value: "oily" },
+  { label: "Combination", value: "combination" },
+  { label: "Sensitive", value: "sensitive" },
+  { label: "Normal", value: "normal" },
+];
+
+export const SORT_OPTIONS = [
+  { label: "Newest", value: "newest" },
+  { label: "Price: Low to High", value: "price-asc" },
+  { label: "Price: High to Low", value: "price-desc" },
+  { label: "Top Rated", value: "rating" },
+];
