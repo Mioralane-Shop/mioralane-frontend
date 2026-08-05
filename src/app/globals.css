@@ -5,38 +5,48 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --foreground: 26 26 26;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 26 26 26;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 350 89% 60%;
+    --popover-foreground: 26 26 26;
+    --primary: 350 57% 61%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 350 100% 96%;
-    --secondary-foreground: 350 60% 30%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 350 100% 96%;
-    --accent-foreground: 350 60% 30%;
+    --secondary: 350 40% 96%;
+    --secondary-foreground: 350 30% 30%;
+    --muted: 30 20% 96%;
+    --muted-foreground: 30 10% 55%;
+    --accent: 350 57% 61%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 350 30% 90%;
-    --input: 350 30% 90%;
-    --ring: 350 89% 60%;
-    --radius: 0.75rem;
+    --border: 30 20% 90%;
+    --input: 30 20% 90%;
+    --ring: 350 57% 61%;
+    --radius: 12px;
   }
 }
 
 @layer base {
   * {
-    @apply border-rose-100;
+    @apply border-border;
   }
   body {
-    @apply bg-white text-neutral-800;
+    @apply bg-surface text-ink font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* Typography */
+h1, h2, h3, h4 {
+  font-family: var(--font-lora), Georgia, serif;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -51,10 +61,12 @@
   background: #fda4b3;
 }
 
+/* Tap highlight */
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Line clamp */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -66,4 +78,36 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus ring */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #D4637A;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

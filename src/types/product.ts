@@ -6,9 +6,13 @@ export interface Product {
   longDescription?: string;
   price: number;
   compareAtPrice?: number;
+  krw?: string;
   images: string[];
   category: string;
+  brand: string;
   tags: string[];
+  concerns?: string[];
+  tag?: "best" | "new" | null;
   rating: number;
   reviewCount: number;
   stock: number;
@@ -16,6 +20,8 @@ export interface Product {
   howToUse?: string;
   skinType?: string;
   volume?: string;
+  size?: string;
+  source?: string;
   isNew?: boolean;
   isBestSeller?: boolean;
   createdAt: string;
