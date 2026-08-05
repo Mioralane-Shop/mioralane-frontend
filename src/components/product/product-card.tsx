@@ -1,9 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Star } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
+import { useCartStore } from "@/store/cart.store";
+import { DUMMY_PRODUCTS } from "@/constants/site";
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {
@@ -11,65 +10,95 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const addItem = useCartStore((s) => s.addItem);
+  const origPrice = Math.round(product.price * 1.2);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Find the full product from DUMMY_PRODUCTS to satisfy cart store type
+    const fullProduct =
+      DUMMY_PRODUCTS.find((p) => p.id === product.id) ?? product;
+    addItem(fullProduct, 1);
+  };
+
   return (
-    <Card className="group overflow-hidden border-rose-100 transition-shadow hover:shadow-md">
-      <Link href={`/product/${product.slug}`}>
-        <div className="relative aspect-square overflow-hidden bg-rose-50">
+    <Link href={`/product/${product.slug}`} className="group block">
+      <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+        {/* Image */}
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-rose-50 to-amber-50">
           <Image
             src={product.images[0]}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
-          <div className="absolute left-3 top-3 flex flex-col gap-1">
-            {product.isNew && <Badge variant="secondary">New</Badge>}
-            {product.isBestSeller && <Badge>Best Seller</Badge>}
-          </div>
-          {product.compareAtPrice && (
-            <div className="absolute right-3 top-3">
-              <Badge variant="outline" className="bg-white">
-                Sale
-              </Badge>
-            </div>
+          {product.tag === "best" && (
+            <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-md">
+              HUMID PICK
+            </span>
+          )}
+          {product.tag === "new" && (
+            <span className="absolute left-3 top-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-md">
+              NEW
+            </span>
+          )}
+          {(product.category === "combo" || product.category === "sets") && (
+            <span className="absolute left-3 top-3 rounded-full bg-violet-500 px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-md">
+              BUNDLE
+            </span>
           )}
         </div>
-      </Link>
 
-      <CardContent className="p-4">
-        <Link href={`/product/${product.slug}`}>
-          <h3 className="text-sm font-medium text-neutral-800 line-clamp-1 hover:text-rose-500 transition-colors">
+        {/* Info */}
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-medium tracking-wider text-ink/40 uppercase">
+              {product.brand}
+            </span>
+            <span className="flex items-center gap-1 text-xs text-amber-500">
+              ★ {product.rating}
+            </span>
+          </div>
+
+          <h3 className="mt-1.5 text-sm font-medium text-ink line-clamp-1">
             {product.name}
           </h3>
-        </Link>
 
-        <p className="mt-1 text-xs text-neutral-400 line-clamp-2">
-          {product.description}
-        </p>
+          {/* Concern tags */}
+          {product.concerns && product.concerns.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {product.concerns.slice(0, 2).map((c) => (
+                <span
+                  key={c}
+                  className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-ink/50"
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+          )}
 
-        <div className="mt-2 flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-xs font-medium text-neutral-600">
-            {product.rating}
-          </span>
-          <span className="text-xs text-neutral-400">
-            ({product.reviewCount})
-          </span>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base font-semibold text-rose-600">
+          {/* Pricing */}
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-base font-bold text-brand">
               {formatPrice(product.price)}
             </span>
-            {product.compareAtPrice && (
-              <span className="text-xs text-neutral-400 line-through">
-                {formatPrice(product.compareAtPrice)}
-              </span>
-            )}
+            <span className="text-xs text-ink/30 line-through">
+              {formatPrice(origPrice)}
+            </span>
           </div>
+
+          {/* Add to Cart */}
+          <button
+            onClick={handleAddToCart}
+            className="mt-3 w-full rounded-full border border-brand py-2 text-xs font-medium text-brand transition-colors hover:bg-brand hover:text-white"
+          >
+            Add to Cart
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Link>
   );
 }
