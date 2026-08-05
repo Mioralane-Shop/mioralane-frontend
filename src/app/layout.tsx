@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lora } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-summary";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/constants/site";
 import "./globals.css";
 
-const inter = Inter({
+const lora = Lora({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-lora",
   display: "swap",
 });
 
@@ -21,10 +22,15 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: [
     "korean skincare",
-    "luxury beauty",
-    "skincare products",
-    "mioralane",
     "k-beauty",
+    "COSRX",
+    "Beauty of Joseon",
+    "ANUA",
+    "Purito",
+    "SKIN1004",
+    "mioralane",
+    "bangladesh",
+    "dhaka",
   ],
   authors: [{ name: "Mioralane" }],
   openGraph: {
@@ -42,9 +48,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="flex min-h-screen flex-col bg-white font-sans text-neutral-800 antialiased">
+    <html lang="en" className={lora.variable}>
+      <head>
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
         <QueryProvider>
+          <AnnouncementBar />
           <Navbar />
           <CartDrawer />
           <main className="flex-1">{children}</main>
