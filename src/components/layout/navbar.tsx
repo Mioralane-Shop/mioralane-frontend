@@ -7,6 +7,7 @@ import { ShoppingBag, Search } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { SITE_NAME, NAV_LINKS, BRANDS } from "@/constants/site";
 import { MobileMenu } from "./mobile-menu";
+import { ProfileMenu } from "./profile-menu";
 
 export function Navbar() {
   const { toggleCart, totalItems } = useCartStore();
@@ -170,7 +171,9 @@ export function Navbar() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ProfileMenu />
+
           <Link
             href="/shop"
             className="p-1.5 text-ink transition-colors hover:text-accent"
