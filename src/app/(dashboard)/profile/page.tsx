@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -14,7 +15,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
     }
   }, [isAuthenticated, router]);
 
@@ -33,34 +36,37 @@ export default function ProfilePage() {
           </div>
           <div>
             <h2 className="text-lg font-medium text-neutral-800">
-              {user.name}
+              {user.username}
             </h2>
-            <p className="text-sm text-neutral-400">{user.email}</p>
+            <p className="text-sm text-neutral-400">Mioralane member</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" defaultValue={user.name} className="mt-1" />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="email"
-              type="email"
-              defaultValue={user.email}
+              id="username"
+              defaultValue={user.username}
               className="mt-1"
+              readOnly
             />
           </div>
-          <Button className="mt-4">Save Changes</Button>
+          <Button className="mt-4" disabled>
+            Save Changes
+          </Button>
         </div>
 
         <div className="mt-8 border-t border-rose-100 pt-6">
           <Button
             variant="outline"
             className="text-red-500 border-red-200 hover:bg-red-50"
-            onClick={() => {
+            onClick={async () => {
+              try {
+                await authService.logout();
+              } catch {
+                // Ignore — local session is cleared regardless.
+              }
               logout();
               router.push("/");
             }}
