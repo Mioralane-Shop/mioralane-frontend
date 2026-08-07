@@ -6,9 +6,7 @@ import Link from "next/link";
 import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
-import { SITE_NAME, NAV_LINKS, BRANDS, DUMMY_PRODUCTS } from "@/constants/site";
-import { MobileMenu } from "./mobile-menu";
-import { ProfileMenu } from "./profile-menu";
+import { DUMMY_PRODUCTS } from "@/constants/site";
 
 const BOTTOM_NAV = [
   { label: "Home", href: "/" },
@@ -196,7 +194,6 @@ export function Navbar() {
         </div>
       </div>
 
-<<<<<<< HEAD
       {/* Bottom Row - always sticky */}
       <div
         className={`fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
@@ -208,16 +205,6 @@ export function Navbar() {
             className={`flex items-center h-12 transition-all duration-300 ${
               scrolled ? "justify-between" : "justify-center gap-8"
             }`}
-=======
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          <ProfileMenu />
-
-          <Link
-            href="/shop"
-            className="p-1.5 text-ink transition-colors hover:text-accent"
-            aria-label="Search"
->>>>>>> 302f02d91e889cfe99a91c01b41cb5d8a413a143
           >
             <div className="flex items-center gap-8">
               {scrolled && (
