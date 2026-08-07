@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SITE_NAME, NAV_LINKS, CATEGORIES } from "@/constants/site";
 import { useAuthStore } from "@/store/auth.store";
+import { authService } from "@/services/auth.service";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 
@@ -84,7 +85,12 @@ export function MobileMenu() {
                 <Button
                   variant="ghost"
                   className="justify-start px-0 text-sm text-neutral-500"
-                  onClick={() => {
+                  onClick={async () => {
+                    try {
+                      await authService.logout();
+                    } catch {
+                      // Ignore — local session is cleared regardless.
+                    }
                     logout();
                     setOpen(false);
                   }}

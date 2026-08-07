@@ -91,7 +91,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
     }
   }, [isAuthenticated, router]);
 
