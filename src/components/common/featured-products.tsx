@@ -23,7 +23,7 @@ export function FeaturedProducts() {
   const filtered = DUMMY_PRODUCTS.filter(TABS[activeTab].filter).slice(0, 8);
 
   return (
-    <section className="bg-surface py-16 md:py-20">
+    <section className="bg-surface py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="mb-10 flex flex-col items-center gap-4 text-center">
           <h2 className="text-3xl font-light tracking-tight text-ink">
@@ -55,7 +55,7 @@ export function FeaturedProducts() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-8 text-center">
           <Link href="/shop">
             <Button
               variant="outline"

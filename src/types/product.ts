@@ -21,10 +21,20 @@ export interface Product {
   skinType?: string;
   volume?: string;
   size?: string;
+  sizeOptions?: SizeOption[];
   source?: string;
+  sku?: string;
   isNew?: boolean;
   isBestSeller?: boolean;
   createdAt: string;
+}
+
+export interface SizeOption {
+  label: string;
+  volume: string;
+  price: number;
+  compareAtPrice?: number;
+  stock: number;
 }
 
 export interface Category {
