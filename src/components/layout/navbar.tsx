@@ -6,18 +6,358 @@ import Link from "next/link";
 import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
-import { DUMMY_PRODUCTS } from "@/constants/site";
+import { MobileMenu } from "@/components/layout/mobile-menu";
+import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
 
 const BOTTOM_NAV = [
-  { label: "Home", href: "/" },
-  { label: "Products", href: "/shop" },
-  { label: "Brands", href: "/shop" },
+  { label: "Skin Care", href: "/shop" },
+  { label: "Collections", href: "/shop" },
   { label: "Combo", href: "/shop?category=combo" },
-  { label: "Offers", href: "/shop?sort=offers" },
-  { label: "New Arrival", href: "/shop?sort=newest" },
-  { label: "Best Seller", href: "/shop?sort=best-seller" },
+  { label: "New", href: "/shop?sort=newest" },
+  { label: "Brands", href: "/shop" },
+  { label: "Support", href: "#" },
   { label: "Blog", href: "/blog" },
+  { label: "Sales", href: "/shop?sort=offers" },
 ];
+
+function BrandsNavItem() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+      >
+        Brands
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+          <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+            <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
+              {BRANDS.map((brand) => (
+                <Link
+                  key={brand}
+                  href={`/shop?brand=${encodeURIComponent(brand)}`}
+                  onClick={() => setOpen(false)}
+                  className="truncate rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
+                >
+                  {brand}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const MEGA_MENU_COLUMNS = [
+  {
+    id: "cleansers",
+    label: "Cleansers",
+    href: "/shop?category=cleansers",
+    links: [
+      { label: "Oil Cleansers", href: "/shop?category=oil-cleansers" },
+      {
+        label: "Water Based Cleansers",
+        href: "/shop?category=water-cleansers",
+      },
+      { label: "Cleansing Balms", href: "/shop?category=cleansing-balms" },
+      { label: "Make-Up Removers", href: "/shop?category=makeup-removers" },
+      { label: "Micellar Waters", href: "/shop?category=micellar-waters" },
+    ],
+  },
+  {
+    id: "toners",
+    label: "Toners",
+    href: "/shop?category=toners",
+    links: [
+      { label: "Hydrating Toners", href: "/shop?category=hydrating-toners" },
+      { label: "Calming Toners", href: "/shop?category=calming-toners" },
+      { label: "Mist Toners", href: "/shop?category=mist-toners" },
+      {
+        label: "Exfoliating Toners",
+        href: "/shop?category=exfoliating-toners",
+      },
+      { label: "Toner Pads", href: "/shop?category=toner-pads" },
+    ],
+  },
+  {
+    id: "treatments",
+    label: "Treatments",
+    href: "/shop?category=treatments",
+    links: [
+      { label: "Serums", href: "/shop?category=serums" },
+      { label: "Ampoules", href: "/shop?category=ampoules" },
+      { label: "Essences", href: "/shop?category=essences" },
+      { label: "Spot Treatments", href: "/shop?category=spot-treatments" },
+    ],
+  },
+  {
+    id: "exfoliators",
+    label: "Exfoliators",
+    href: "/shop?category=exfoliators",
+    links: [
+      {
+        label: "Physical Exfoliators",
+        href: "/shop?category=physical-exfoliators",
+      },
+      {
+        label: "Chemical Exfoliators",
+        href: "/shop?category=chemical-exfoliators",
+      },
+    ],
+  },
+  {
+    id: "concerns",
+    label: "Skin Concerns",
+    href: "/shop",
+    links: [
+      { label: "Acne", href: "/shop?concern=acne" },
+      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
+      { label: "Dry Skin", href: "/shop?concern=dry-skin" },
+      { label: "Fungal Acne Safe", href: "/shop?concern=fungal-acne-safe" },
+      { label: "Hyperpigmentation", href: "/shop?concern=hyperpigmentation" },
+      { label: "Skin Redness", href: "/shop?concern=redness" },
+      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
+      { label: "Oily Skin", href: "/shop?concern=oily" },
+    ],
+  },
+  {
+    id: "moisturizers",
+    label: "Moisturizers",
+    href: "/shop?category=moisturizers",
+    links: [
+      { label: "Face Creams", href: "/shop?category=face-creams" },
+      { label: "Gel Moisturizers", href: "/shop?category=gel-moisturizers" },
+      { label: "Facial Oils", href: "/shop?category=facial-oils" },
+      { label: "Emulsions", href: "/shop?category=emulsions" },
+    ],
+  },
+  {
+    id: "masks",
+    label: "Masks",
+    href: "/shop?category=masks",
+    links: [
+      { label: "Peeling Masks", href: "/shop?category=peeling-masks" },
+      { label: "Sheet Masks", href: "/shop?category=sheet-masks" },
+      { label: "Sleeping Masks", href: "/shop?category=sleeping-masks" },
+      { label: "Wash-Off Masks", href: "/shop?category=wash-off-masks" },
+    ],
+  },
+  {
+    id: "lip-eye",
+    label: "Lip & Eye Care",
+    href: "/shop?category=lip-eye-care",
+    links: [
+      { label: "Eye Creams", href: "/shop?category=eye-creams" },
+      { label: "Eye Patches", href: "/shop?category=eye-patches" },
+      { label: "Lip Care", href: "/shop?category=lip-care" },
+    ],
+  },
+  {
+    id: "sunscreens",
+    label: "Sunscreens",
+    href: "/shop?category=sun-care",
+    links: [
+      { label: "SPF 50+", href: "/shop?category=spf50" },
+      { label: "SPF 30", href: "/shop?category=spf30" },
+      { label: "Sun Sticks", href: "/shop?category=sun-sticks" },
+      { label: "After Sun Care", href: "/shop?category=after-sun" },
+    ],
+  },
+  {
+    id: "ingredients",
+    label: "Shop By Ingredients",
+    href: "/shop",
+    links: [
+      { label: "AHA BHA PHA", href: "/shop?ingredient=aha-bha-pha" },
+      { label: "Centella", href: "/shop?ingredient=centella" },
+      { label: "Hyaluronic Acid", href: "/shop?ingredient=hyaluronic-acid" },
+      { label: "Peptides", href: "/shop?ingredient=peptides" },
+      { label: "Propolis", href: "/shop?ingredient=propolis" },
+      { label: "Snail Mucin", href: "/shop?ingredient=snail-mucin" },
+      { label: "Vitamin C", href: "/shop?ingredient=vitamin-c" },
+    ],
+  },
+];
+
+function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [activeCol, setActiveCol] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const underlineRef = useRef<HTMLDivElement>(null);
+  const headerRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+  const prevColRef = useRef<string | null>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const scheduleClose = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 180);
+  };
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  const positionUnderline = (id: string) => {
+    const header = headerRefs.current[id];
+    const panel = panelRef.current;
+    const underline = underlineRef.current;
+    if (!header || !panel || !underline) return;
+    const hRect = header.getBoundingClientRect();
+    const pRect = panel.getBoundingClientRect();
+    const left = hRect.left - pRect.left;
+    const top = hRect.bottom - pRect.top + 4;
+    const width = hRect.width;
+    if (prevColRef.current === null) {
+      underline.style.transition = "none";
+      underline.style.left = `${left}px`;
+      underline.style.top = `${top}px`;
+      underline.style.width = `${width}px`;
+      void underline.offsetWidth;
+      underline.style.transition = "";
+    }
+    prevColRef.current = id;
+    underline.style.left = `${left}px`;
+    underline.style.top = `${top}px`;
+    underline.style.width = `${width}px`;
+    setActiveCol(id);
+  };
+
+  const handleColumnEnter = (id: string) => {
+    cancelClose();
+    positionUnderline(id);
+  };
+
+  const handlePanelLeave = () => {
+    setActiveCol(null);
+    prevColRef.current = null;
+    scheduleClose();
+  };
+
+  const panelTop = scrolled ? 56 : 136;
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={() => {
+        setOpen(true);
+        cancelClose();
+      }}
+      onMouseLeave={scheduleClose}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+      >
+        Skin Care
+      </Link>
+
+      {open && (
+        <div
+          ref={panelRef}
+          onMouseEnter={cancelClose}
+          onMouseLeave={handlePanelLeave}
+          className="fixed left-1/2 z-[60] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          style={{ top: panelTop }}
+        >
+          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
+            {MEGA_MENU_COLUMNS.map((col) => (
+              <div
+                key={col.id}
+                onMouseEnter={() => handleColumnEnter(col.id)}
+                className="min-w-0"
+              >
+                <div className="border-t border-[#C98A7D]/30 pt-4">
+                  <Link
+                    href={col.href}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                  >
+                    <span
+                      ref={(el) => {
+                        headerRefs.current[col.id] = el;
+                      }}
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
+                    >
+                      {col.label}
+                    </span>
+                  </Link>
+                </div>
+                <ul className="mt-5 space-y-3.5">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        onClick={() => setOpen(false)}
+                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Cursor-aware animated underline */}
+          <div
+            ref={underlineRef}
+            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+            style={{ opacity: activeCol ? 1 : 0 }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Navbar() {
   const router = useRouter();
@@ -26,6 +366,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const searchResults =
@@ -46,6 +387,15 @@ export function Navbar() {
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setSearchFocused(false);
+    }
+  };
+
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setMobileSearchOpen(false);
     }
   };
 
@@ -76,19 +426,34 @@ export function Navbar() {
 
   return (
     <>
-      {/* Spacer to prevent content jump */}
-      <div className="h-[132px] md:h-[132px]" />
+      {/* Spacer to prevent content jump (80px mobile top row only, 132px desktop incl. bottom nav) */}
+      <div className="h-[80px] md:h-[132px]" />
 
       {/* Top Row - slides up on scroll */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${
-          scrolled ? "-translate-y-full" : "translate-y-0"
+          scrolled ? "md:-translate-y-full" : ""
         }`}
       >
-        <div className="mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
-          {/* Logo */}
-          <Link href="/" className="flex flex-col items-start min-w-[120px]">
-            <span className="font-serif text-3xl font-bold leading-none tracking-tight text-ink">
+        <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+          {/* Left: hamburger + search (mobile only) — raised above centered logo */}
+          <div className="relative z-10 flex items-center gap-1 md:hidden">
+            <MobileMenu />
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Logo — centered on mobile, left-aligned on desktop */}
+          <Link
+            href="/"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 flex flex-col items-center md:items-start text-center md:text-left"
+          >
+            <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold leading-none tracking-tight text-ink">
               Mioralane
             </span>
             <span className="font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60 mt-0.5">
@@ -97,7 +462,10 @@ export function Navbar() {
           </Link>
 
           {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-[500px] mx-8" ref={searchRef}>
+          <div
+            className="hidden md:flex flex-1 max-w-[500px] mx-8"
+            ref={searchRef}
+          >
             <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-ink/40" />
               <input
@@ -141,7 +509,8 @@ export function Navbar() {
                               {product.name}
                             </p>
                             <p className="text-xs text-ink/50">
-                              {product.brand} · ৳{product.price.toLocaleString()}
+                              {product.brand} · ৳
+                              {product.price.toLocaleString()}
                             </p>
                           </div>
                         </Link>
@@ -163,8 +532,8 @@ export function Navbar() {
             </form>
           </div>
 
-          {/* Icons */}
-          <div className="flex items-center gap-1">
+          {/* Icons — raised above centered logo */}
+          <div className="relative z-10 flex items-center gap-1">
             <Link
               href={isAuthenticated ? "/profile" : "/login"}
               className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
@@ -172,8 +541,9 @@ export function Navbar() {
             >
               <User className="h-5 w-5" />
             </Link>
+            {/* Wishlist — desktop only (matches mobile reference) */}
             <button
-              className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              className="hidden md:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -194,9 +564,40 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Bottom Row - always sticky */}
+      {/* Mobile search overlay (fixed, independent of scroll-slide) */}
+      {mobileSearchOpen && (
+        <div className="md:hidden fixed top-0 left-0 right-0 z-[60] bg-surface border-b border-border-light shadow-lg">
+          <form
+            onSubmit={handleMobileSearch}
+            className="relative flex items-center gap-2 px-4 py-3"
+          >
+            <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-5 w-5 text-ink/40" />
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search entire store here..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-border-light rounded-full text-sm text-ink placeholder:text-ink/40 outline-none focus:border-accent transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setMobileSearchOpen(false);
+              }}
+              className="p-2.5 text-ink/70 hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              aria-label="Close search"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Bottom Row - desktop only (mobile uses the hamburger menu instead) */}
       <div
-        className={`fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
+        className={`hidden md:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
           scrolled ? "top-0" : "top-[80px]"
         }`}
       >
@@ -215,15 +616,28 @@ export function Navbar() {
                   Mioralane
                 </Link>
               )}
-              {BOTTOM_NAV.map((link) => (
-                <Link
-                  key={link.href + link.label}
-                  href={link.href}
-                  className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {BOTTOM_NAV.map((link) => {
+                if (link.label === "Skin Care") {
+                  return (
+                    <SkinCareNavItem
+                      key={link.href + link.label}
+                      scrolled={scrolled}
+                    />
+                  );
+                }
+                if (link.label === "Brands") {
+                  return <BrandsNavItem key={link.href + link.label} />;
+                }
+                return (
+                  <Link
+                    key={link.href + link.label}
+                    href={link.href}
+                    className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
 
             {scrolled && (
@@ -234,10 +648,17 @@ export function Navbar() {
                 >
                   Sign In
                 </Link>
-                <button className="text-ink/70 hover:text-ink transition-colors" aria-label="Search">
+                <button
+                  onClick={() => setMobileSearchOpen(true)}
+                  className="text-ink/70 hover:text-ink transition-colors"
+                  aria-label="Search"
+                >
                   <Search className="h-5 w-5" />
                 </button>
-                <button className="text-ink/70 hover:text-ink transition-colors" aria-label="Wishlist">
+                <button
+                  className="hidden md:inline-flex text-ink/70 hover:text-ink transition-colors"
+                  aria-label="Wishlist"
+                >
                   <Heart className="h-5 w-5" />
                 </button>
                 <button
