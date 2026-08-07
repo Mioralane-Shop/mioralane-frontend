@@ -93,15 +93,22 @@ h1, h2, h3, h4 {
   border: 0;
 }
 
-/* Focus ring */
+/* Focus ring - only for accessibility, not visual */
 a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
+button:focus-visible {
   outline: 2px solid #D4637A;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Remove focus ring from inputs */
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none;
 }
 
 /* Reduced motion */

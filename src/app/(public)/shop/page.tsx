@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,20 @@ import { CATEGORIES, SORT_OPTIONS, DUMMY_PRODUCTS } from "@/constants/site";
 import type { Product } from "@/types/product";
 
 export default function ShopPage() {
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const initialBrand = searchParams.get("brand") || "";
+
+  const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
+
+  useEffect(() => {
+    const s = searchParams.get("search") || "";
+    const b = searchParams.get("brand") || "";
+    if (s) setSearch(s);
+    if (b) setSearch(b);
+  }, [searchParams]);
 
   const { data: allProducts, isLoading } = useProducts();
 
@@ -29,8 +41,13 @@ export default function ShopPage() {
   const filtered = products
     .filter((p) => {
       if (selectedCategory && p.category !== selectedCategory) return false;
-      if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
-        return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const matchName = p.name.toLowerCase().includes(q);
+        const matchBrand = p.brand?.toLowerCase().includes(q);
+        const matchCategory = p.category?.toLowerCase().includes(q);
+        if (!matchName && !matchBrand && !matchCategory) return false;
+      }
       return true;
     })
     .sort((a, b) => {
