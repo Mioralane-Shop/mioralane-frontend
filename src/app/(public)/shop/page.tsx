@@ -1,27 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Link from "next/link";
+import { Search, X, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProducts } from "@/hooks/use-products";
 import { CATEGORIES, SORT_OPTIONS, DUMMY_PRODUCTS } from "@/constants/site";
 import type { Product } from "@/types/product";
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
-  const initialBrand = searchParams.get("brand") || "";
 
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -68,12 +59,19 @@ export default function ShopPage() {
     });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-[1400px] px-6 py-8">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-ink/50 mb-8">
+        <Link href="/" className="hover:text-ink transition-colors">Home</Link>
+        <ChevronRight className="h-3 w-3" />
+        <span className="text-ink">Shop</span>
+      </nav>
+
       <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="text-3xl font-serif font-medium text-ink">
           Shop All
         </h1>
-        <p className="mt-2 text-neutral-400">
+        <p className="mt-2 text-ink/50">
           Discover your perfect skincare routine
         </p>
       </div>
@@ -81,8 +79,8 @@ export default function ShopPage() {
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Sidebar Filters */}
         <aside className="w-full shrink-0 lg:w-56">
-          <div className="rounded-2xl border border-rose-100 bg-white p-5">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-neutral-500">
+          <div className="rounded-2xl border border-ink/10 bg-white p-5">
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-ink/40">
               Categories
             </h3>
             <div className="flex flex-wrap gap-2 lg:flex-col">
@@ -96,8 +94,8 @@ export default function ShopPage() {
                   }
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                     selectedCategory === cat.slug
-                      ? "bg-rose-100 text-rose-700"
-                      : "bg-neutral-50 text-neutral-600 hover:bg-rose-50"
+                      ? "bg-ink text-white"
+                      : "bg-ink/[0.04] text-ink/60 hover:bg-ink/[0.08]"
                   }`}
                 >
                   {cat.name}
@@ -105,15 +103,13 @@ export default function ShopPage() {
               ))}
             </div>
             {selectedCategory && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-3 h-auto py-1 text-xs"
+              <button
+                className="mt-3 flex items-center gap-1 text-xs font-medium text-accent hover:underline"
                 onClick={() => setSelectedCategory(null)}
               >
-                <X className="mr-1 h-3 w-3" />
+                <X className="h-3 w-3" />
                 Clear filter
-              </Button>
+              </button>
             )}
           </div>
         </aside>
@@ -122,35 +118,34 @@ export default function ShopPage() {
         <div className="flex-1">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-              <Input
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+              <input
                 placeholder="Search products..."
-                className="pl-10"
+                className="w-full pl-10 pr-4 py-2.5 bg-ink/[0.04] border-none rounded-full text-sm text-ink placeholder:text-ink/40 outline-none"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2.5 border border-ink/10 rounded-full text-sm text-ink bg-white outline-none"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="space-y-3">
-                    <Skeleton className="aspect-square w-full rounded-2xl" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />
+                    <Skeleton className="h-4 w-3/4 bg-ink/[0.04]" />
+                    <Skeleton className="h-4 w-1/2 bg-ink/[0.04]" />
                   </div>
                 ))
               : filtered.map((product) => (
@@ -160,23 +155,44 @@ export default function ShopPage() {
 
           {!isLoading && filtered.length === 0 && (
             <div className="py-20 text-center">
-              <p className="text-neutral-400">
+              <p className="text-ink/40">
                 No products found matching your criteria.
               </p>
-              <Button
-                variant="ghost"
-                className="mt-2"
+              <button
+                className="mt-3 text-sm font-medium text-accent hover:underline"
                 onClick={() => {
                   setSearch("");
                   setSelectedCategory(null);
                 }}
               >
                 Clear all filters
-              </Button>
+              </button>
             </div>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-[1400px] px-6 py-8">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />
+                <Skeleton className="h-4 w-3/4 bg-ink/[0.04]" />
+                <Skeleton className="h-4 w-1/2 bg-ink/[0.04]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <ShopContent />
+    </Suspense>
   );
 }

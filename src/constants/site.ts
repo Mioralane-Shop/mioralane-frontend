@@ -1,5 +1,6 @@
-export const SITE_NAME = "Mioralane";
 import type { Product } from "@/types/product";
+
+export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =
   "Authentic Korean skincare delivered to Bangladesh. COSRX, Beauty of Joseon, ANUA, Purito — batch-verified, beautifully packaged.";
 export const SITE_URL = "https://mioralane.com";

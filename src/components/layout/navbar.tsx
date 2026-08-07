@@ -6,9 +6,7 @@ import Link from "next/link";
 import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
-import { SITE_NAME, NAV_LINKS, BRANDS, DUMMY_PRODUCTS } from "@/constants/site";
-import { MobileMenu } from "./mobile-menu";
-import { ProfileMenu } from "./profile-menu";
+import { DUMMY_PRODUCTS } from "@/constants/site";
 
 const BOTTOM_NAV = [
   { label: "Home", href: "/" },
