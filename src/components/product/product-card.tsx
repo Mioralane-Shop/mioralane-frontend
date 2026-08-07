@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart.store";
+import { useToastStore } from "@/store/toast.store";
 import { DUMMY_PRODUCTS } from "@/constants/site";
 import type { Product } from "@/types/product";
 
@@ -11,6 +12,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
+  const addToast = useToastStore((s) => s.addToast);
   const origPrice = Math.round(product.price * 1.2);
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -20,6 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
     const fullProduct =
       DUMMY_PRODUCTS.find((p) => p.id === product.id) ?? product;
     addItem(fullProduct, 1);
+    addToast(`${fullProduct.name} added to cart`);
   };
 
   return (

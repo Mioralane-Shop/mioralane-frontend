@@ -89,7 +89,7 @@ export function BundlesCarousel() {
   };
 
   return (
-    <section className="py-16 md:py-20">
+    <section className="py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="mb-10 text-center">
           <span className="text-sm font-semibold tracking-wider text-brand">

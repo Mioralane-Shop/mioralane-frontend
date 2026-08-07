@@ -4,7 +4,11 @@ import { PromoCarousel } from "@/components/common/promo-carousel";
 import { FeaturedProducts } from "@/components/common/featured-products";
 import { BundlesCarousel } from "@/components/common/bundles-carousel";
 import { TestimonialsSection } from "@/components/common/testimonials-section";
-import { BlogPreviewSection } from "@/components/common/blog-preview-section";
+import { NewsletterSection } from "@/components/common/newsletter-section";
+import { NewToKBeautySection } from "@/components/common/new-to-kbeauty-section";
+import { LatestSkintalks } from "@/components/common/latest-skintalks";
+import { InstagramSection } from "@/components/common/instagram-section";
+import { Reveal } from "@/components/common/reveal";
 
 export const metadata: Metadata = {
   title: "Mioralane - Premium Korean Skincare",
@@ -16,11 +20,30 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <PromoCarousel />
-      <FeaturedProducts />
-      <BundlesCarousel />
-      <TestimonialsSection />
-      <BlogPreviewSection />
+      <Reveal>
+        <PromoCarousel />
+      </Reveal>
+      <Reveal>
+        <FeaturedProducts />
+      </Reveal>
+      <Reveal>
+        <BundlesCarousel />
+      </Reveal>
+      <Reveal>
+        <NewToKBeautySection />
+      </Reveal>
+      <Reveal>
+        <TestimonialsSection />
+      </Reveal>
+      <Reveal>
+        <LatestSkintalks />
+      </Reveal>
+      <Reveal>
+        <InstagramSection />
+      </Reveal>
+      <Reveal>
+        <NewsletterSection />
+      </Reveal>
     </>
   );
 }

@@ -7,6 +7,7 @@ import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { SearchModal } from "@/components/search/search-modal";
 import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
 
 const BOTTOM_NAV = [
@@ -350,8 +351,11 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
           {/* Cursor-aware animated underline */}
           <div
             ref={underlineRef}
-            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-            style={{ opacity: activeCol ? 1 : 0 }}
+            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            style={{
+              opacity: activeCol ? 1 : 0,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
           />
         </div>
       )}
@@ -366,7 +370,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const searchResults =
@@ -387,15 +391,6 @@ export function Navbar() {
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setSearchFocused(false);
-    }
-  };
-
-  const handleMobileSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setMobileSearchOpen(false);
     }
   };
 
@@ -440,7 +435,7 @@ export function Navbar() {
           <div className="relative z-10 flex items-center gap-1 md:hidden">
             <MobileMenu />
             <button
-              onClick={() => setMobileSearchOpen(true)}
+              onClick={() => setSearchModalOpen(true)}
               className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
               aria-label="Search"
             >
@@ -564,36 +559,11 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile search overlay (fixed, independent of scroll-slide) */}
-      {mobileSearchOpen && (
-        <div className="md:hidden fixed top-0 left-0 right-0 z-[60] bg-surface border-b border-border-light shadow-lg">
-          <form
-            onSubmit={handleMobileSearch}
-            className="relative flex items-center gap-2 px-4 py-3"
-          >
-            <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-5 w-5 text-ink/40" />
-            <input
-              autoFocus
-              type="text"
-              placeholder="Search entire store here..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-border-light rounded-full text-sm text-ink placeholder:text-ink/40 outline-none focus:border-accent transition-colors"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setMobileSearchOpen(false);
-              }}
-              className="p-2.5 text-ink/70 hover:text-ink rounded-full hover:bg-ink/[0.04]"
-              aria-label="Close search"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </form>
-        </div>
-      )}
+      {/* Full-screen search modal */}
+      <SearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
 
       {/* Bottom Row - desktop only (mobile uses the hamburger menu instead) */}
       <div
@@ -649,7 +619,7 @@ export function Navbar() {
                   Sign In
                 </Link>
                 <button
-                  onClick={() => setMobileSearchOpen(true)}
+                  onClick={() => setSearchModalOpen(true)}
                   className="text-ink/70 hover:text-ink transition-colors"
                   aria-label="Search"
                 >

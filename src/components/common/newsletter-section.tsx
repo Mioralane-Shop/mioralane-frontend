@@ -7,7 +7,7 @@ import { Mail } from "lucide-react";
 export function NewsletterSection() {
   return (
     <section className="bg-gradient-to-r from-rose-50 to-rose-100/50">
-      <div className="container mx-auto px-4 py-16 text-center md:py-20">
+      <div className="container mx-auto px-4 py-12 text-center md:py-16">
         <h2 className="text-3xl font-light tracking-tight text-neutral-800">
           Join the Glow Club
         </h2>
