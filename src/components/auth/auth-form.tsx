@@ -12,6 +12,7 @@ import {
   EyeOff,
   Loader2,
   Lock,
+  Mail,
   ShieldCheck,
   Sparkles,
   Truck,
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
+import { GoogleLogin } from "@react-oauth/google";
 
 export type AuthMode = "login" | "register";
 
@@ -72,6 +74,7 @@ export function AuthForm({
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -132,13 +135,13 @@ export function AuthForm({
 
     setIsLoading(true);
     try {
-      const payload = { username: username.trim(), password };
-      const { user, message } = isRegister
-        ? await authService.register(payload.username, payload.password)
+      const payload = { username: username.trim(), password, email: email.trim() };
+      const { user, message, token } = isRegister
+        ? await authService.register(payload.username, payload.email, payload.password)
         : await authService.login(payload.username, payload.password);
 
-      if (user) {
-        login(user);
+      if (user && token) {
+        login(user, token);
       }
 
       setSuccess(
@@ -162,6 +165,38 @@ export function AuthForm({
       } else {
         setServerError("Something went wrong. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /** Handles the Google One Tap / Sign-In credential response. */
+  const handleGoogleSuccess = async (response: { credential?: string }) => {
+    if (!response.credential) return;
+
+    setIsLoading(true);
+    setServerError(null);
+    setSuccess(null);
+
+    try {
+      const { user, token, message } = await authService.googleLogin(
+        response.credential
+      );
+
+      if (user && token) {
+        login(user, token);
+      }
+
+      setSuccess(message || "Signed in with Google successfully!");
+      window.setTimeout(() => router.push(redirectTo), 900);
+    } catch (error) {
+      const err = error as {
+        response?: { data?: { message?: string } };
+        code?: string;
+      };
+      setServerError(
+        err.response?.data?.message || "Google sign-in failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -363,6 +398,27 @@ export function AuthForm({
             )}
           </div>
 
+          {/* Email (register only) */}
+          {isRegister && (
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. you@example.com"
+                  autoComplete="email"
+                  disabled={isLoading}
+                  className="h-12 rounded-2xl pl-10"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Password */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -491,6 +547,25 @@ export function AuthForm({
               "Sign In"
             )}
           </Button>
+
+          {/* Google Sign-In */}
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-brand-100" />
+            <span className="text-xs text-ink-muted">or</span>
+            <div className="h-px flex-1 bg-brand-100" />
+          </div>
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() =>
+                setServerError("Google sign-in failed. Please try again.")
+              }
+              size="large"
+              text="signin_with"
+              shape="pill"
+              theme="outline"
+            />
+          </div>
 
           <p className="text-center text-xs leading-relaxed text-ink-muted">
             By continuing, you agree to Mioralane&apos;s Terms of Service &

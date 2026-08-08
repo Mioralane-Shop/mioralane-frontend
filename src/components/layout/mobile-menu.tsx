@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Menu, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { BRANDS } from "@/constants/site";
+import { useAuthStore } from "@/store/auth.store";
 
 type Tab = "menu" | "brands" | "support";
 
@@ -47,20 +48,6 @@ const MENU_GROUPS = [
   { id: "discover", label: "Discover", links: DISCOVER_LINKS },
 ];
 
-const SUPPORT_LINKS = [
-  { label: "Login", href: "/login" },
-  { label: "My Account", href: "/profile" },
-  { label: "Mioralane Club", href: "#" },
-  { label: "Wishlist", href: "#" },
-  { label: "Shopping Cart", href: "/cart" },
-  { label: "Order History", href: "/orders" },
-  { label: "Shipping & Returns", href: "/returns" },
-  { label: "Skincare Quiz", href: "#" },
-  { label: "About Us", href: "/about" },
-  { label: "Contact Us", href: "/contact" },
-  { label: "FAQ", href: "/faq" },
-];
-
 const SORTED_BRANDS = [...BRANDS].sort((a, b) => a.localeCompare(b));
 
 function MenuLink({
@@ -88,6 +75,21 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("menu");
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const { isAuthenticated } = useAuthStore();
+
+  const supportLinks = useMemo(() => [
+    { label: isAuthenticated ? "My Account" : "Login", href: isAuthenticated ? "/profile" : "/login" },
+    { label: "Shopping Cart", href: "/cart" },
+    { label: "Order History", href: "/orders" },
+    { label: "Wishlist", href: "#" },
+    { label: "Mioralane Club", href: "#" },
+    { label: "Shipping & Returns", href: "/returns" },
+    { label: "Skincare Quiz", href: "#" },
+    { label: "About Us", href: "/about" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "FAQ", href: "/faq" },
+  ], [isAuthenticated]);
 
   const close = () => setOpen(false);
 
@@ -208,7 +210,7 @@ export function MobileMenu() {
             {/* SUPPORT TAB */}
             {tab === "support" && (
               <div className="flex flex-col">
-                {SUPPORT_LINKS.map((item) => (
+                {supportLinks.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}

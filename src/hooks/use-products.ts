@@ -11,12 +11,18 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchProducts(): Promise<Product[]> {
+// ─── API fetch helpers ────────────────────────────────────────────────────
+
+async function fetchProducts(filters?: Record<string, string>): Promise<Product[]> {
   if (USE_DUMMY) {
     await delay(600);
-    return DUMMY_PRODUCTS;
+    let filtered = [...DUMMY_PRODUCTS];
+    if (filters?.tab === "bestseller") filtered = filtered.filter((p) => p.isBestSeller);
+    else if (filters?.tab === "new") filtered = filtered.filter((p) => p.isNew);
+    return filtered;
   }
-  return productService.getAll();
+  const res = await productService.getAll(filters);
+  return res.products;
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product | undefined> {
@@ -40,10 +46,28 @@ async function fetchRelatedProducts(
   return productService.getRelated(category, excludeId);
 }
 
+async function fetchProductsByTab(
+  tab: "bestseller" | "new" | "trending",
+  limit = 8
+): Promise<Product[]> {
+  if (USE_DUMMY) {
+    await delay(500);
+    let filtered = [...DUMMY_PRODUCTS];
+    if (tab === "bestseller") filtered = filtered.filter((p) => p.isBestSeller);
+    else if (tab === "new") filtered = filtered.filter((p) => p.isNew);
+    // trending: show all for now (no isTrending in dummy data)
+    return filtered.slice(0, limit);
+  }
+  const res = await productService.getByTab(tab, limit);
+  return res.products;
+}
+
+// ─── Hooks ────────────────────────────────────────────────────────────────
+
 export function useProducts(filters?: Record<string, string>) {
   return useQuery({
     queryKey: ["products", filters],
-    queryFn: fetchProducts,
+    queryFn: () => fetchProducts(filters),
   });
 }
 
@@ -63,6 +87,17 @@ export function useRelatedProducts(category: string, excludeId: string) {
   });
 }
 
+/** Hook: fetch products by tab — bestsellers, new arrivals, or trending */
+export function useProductsByTab(
+  tab: "bestseller" | "new" | "trending",
+  limit = 8
+) {
+  return useQuery({
+    queryKey: ["products", "tab", tab, limit],
+    queryFn: () => fetchProductsByTab(tab, limit),
+  });
+}
+
 export function useBestSellers() {
   return useQuery({
     queryKey: ["best-sellers"],
@@ -71,7 +106,8 @@ export function useBestSellers() {
         await delay(500);
         return DUMMY_PRODUCTS.filter((p) => p.isBestSeller);
       }
-      return productService.getAll({ sort: "best-seller" });
+      const res = await productService.getByTab("bestseller");
+      return res.products;
     },
   });
 }
@@ -84,7 +120,8 @@ export function useNewArrivals() {
         await delay(500);
         return DUMMY_PRODUCTS.filter((p) => p.isNew);
       }
-      return productService.getAll({ sort: "newest" });
+      const res = await productService.getByTab("new");
+      return res.products;
     },
   });
 }
