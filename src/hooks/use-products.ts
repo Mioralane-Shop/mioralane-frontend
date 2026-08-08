@@ -25,6 +25,7 @@ async function fetchProducts(filters?: Record<string, string>): Promise<Product[
   const res = await productService.getAll(filters);
 
   // ── Resilient extraction: handle any nesting shape ──
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw = res as any;
   const extracted: Product[] =
     Array.isArray(raw)
