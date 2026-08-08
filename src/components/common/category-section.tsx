@@ -3,7 +3,7 @@ import { CATEGORIES } from "@/constants/site";
 
 export function CategorySection() {
   return (
-    <section className="container mx-auto px-4 py-16 md:py-20">
+    <section className="container mx-auto px-4 py-12 md:py-16">
       <div className="mb-10 text-center">
         <h2 className="text-3xl font-light tracking-tight text-neutral-800">
           Shop by Category

@@ -19,7 +19,7 @@ const footerLinks = {
       { label: "About Us", href: "/about" },
       { label: "Blog", href: "/blog" },
       { label: "Contact", href: "/contact" },
-      { label: "Authenticity Policy", href: "#" },
+      { label: "Authenticity Policy", href: "/authenticity" },
     ],
   },
   help: {
@@ -27,7 +27,7 @@ const footerLinks = {
     links: [
       { label: "Delivery Policy", href: "/delivery" },
       { label: "Return & Refund", href: "/returns" },
-      { label: "Track Order", href: "#" },
+      { label: "Track Order", href: "/track-order" },
       { label: "FAQ", href: "/faq" },
     ],
   },
@@ -41,11 +41,14 @@ export function Footer() {
           <div>
             <div className="font-serif italic text-2xl font-medium text-white mb-4">
               {SITE_NAME.slice(0, 3)}
-              <span className="text-accent font-normal">{SITE_NAME.slice(3)}</span>
+              <span className="text-accent font-normal">
+                {SITE_NAME.slice(3)}
+              </span>
             </div>
             <p className="text-sm leading-relaxed font-light max-w-[300px]">
-              Authentic Korean skincare, sourced with care, delivered with trust.
-              Building Bangladesh&apos;s most trusted destination for K-beauty.
+              Authentic Korean skincare, sourced with care, delivered with
+              trust. Building Bangladesh&apos;s most trusted destination for
+              K-beauty.
             </p>
           </div>
 
