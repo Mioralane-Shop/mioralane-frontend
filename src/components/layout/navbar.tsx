@@ -7,6 +7,7 @@ import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
 import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
 
@@ -366,7 +367,7 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
 export function Navbar() {
   const router = useRouter();
   const { toggleCart, totalItems } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _ready } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -529,13 +530,17 @@ export function Navbar() {
 
           {/* Icons — raised above centered logo */}
           <div className="relative z-10 flex items-center gap-1">
-            <Link
-              href={isAuthenticated ? "/profile" : "/login"}
-              className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
-              aria-label="Account"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            {_ready && isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <Link
+                href="/login"
+                className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+                aria-label="Sign in"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
             {/* Wishlist — desktop only (matches mobile reference) */}
             <button
               className="hidden md:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
@@ -612,12 +617,16 @@ export function Navbar() {
 
             {scrolled && (
               <div className="flex items-center gap-4">
-                <Link
-                  href={isAuthenticated ? "/profile" : "/login"}
-                  className="text-sm font-medium text-ink/80 hover:text-ink transition-colors no-underline"
-                >
-                  Sign In
-                </Link>
+                {_ready && isAuthenticated ? (
+                  <UserMenu />
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-ink/80 hover:text-ink transition-colors no-underline"
+                  >
+                    Sign In
+                  </Link>
+                )}
                 <button
                   onClick={() => setSearchModalOpen(true)}
                   className="text-ink/70 hover:text-ink transition-colors"

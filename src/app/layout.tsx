@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lora } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
+import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import { StoreHydration } from "@/components/providers/store-hydration";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Navbar } from "@/components/layout/navbar";
@@ -59,7 +60,8 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
-        <QueryProvider>
+        <GoogleAuthProvider>
+          <QueryProvider>
           <StoreHydration />
           <ScrollProgress />
           <AnnouncementBar />
@@ -69,6 +71,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </QueryProvider>
+        </GoogleAuthProvider>
       </body>
     </html>
   );

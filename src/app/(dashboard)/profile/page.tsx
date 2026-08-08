@@ -4,22 +4,32 @@ import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, _ready, logout } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Only redirect when ready AND not authenticated
+    if (_ready && !isAuthenticated) {
       router.push(
         `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       );
     }
-  }, [isAuthenticated, router]);
+  }, [_ready, isAuthenticated, router]);
+
+  // Show a spinner while verifying session
+  if (!_ready) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) return null;
 
