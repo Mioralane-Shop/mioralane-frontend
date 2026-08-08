@@ -56,7 +56,11 @@ export function FeaturedProducts() {
     if (USE_DUMMY) {
       return filterDummy(activeTab as TabId).slice(0, 8);
     }
-    return (products ?? []).slice(0, 8);
+    const list = (products ?? []).slice(0, 8);
+    console.log("[FeaturedProducts] activeTab:", activeTab);
+    console.log("[FeaturedProducts] raw products:", products);
+    console.log("[FeaturedProducts] filtered (max 8):", list);
+    return list;
   }, [products, activeTab]);
 
   return (
