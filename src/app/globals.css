@@ -33,14 +33,32 @@
   }
   body {
     @apply bg-surface text-ink font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
 /* Typography */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-lora), Georgia, serif;
   font-weight: 500;
   line-height: 1.15;
@@ -93,20 +111,29 @@ h1, h2, h3, h4 {
   border: 0;
 }
 
-/* Focus ring */
+/* Focus ring - only for accessibility, not visual */
 a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid #D4637A;
+button:focus-visible {
+  outline: 2px solid #d4637a;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
+/* Remove focus ring from inputs */
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }

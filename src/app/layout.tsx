@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { Lora } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
+import { GoogleAuthProvider } from "@/providers/google-auth-provider";
+import { StoreHydration } from "@/components/providers/store-hydration";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-summary";
+import { Toaster } from "@/components/ui/toaster";
+import { ScrollProgress } from "@/components/common/scroll-progress";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/constants/site";
 import "./globals.css";
 
@@ -56,13 +60,18 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
-        <QueryProvider>
+        <GoogleAuthProvider>
+          <QueryProvider>
+          <StoreHydration />
+          <ScrollProgress />
           <AnnouncementBar />
           <Navbar />
           <CartDrawer />
+          <Toaster />
           <main className="flex-1">{children}</main>
           <Footer />
         </QueryProvider>
+        </GoogleAuthProvider>
       </body>
     </html>
   );

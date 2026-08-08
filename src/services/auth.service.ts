@@ -5,6 +5,9 @@ interface AuthUser {
   _id?: string;
   id?: string;
   username: string;
+  email?: string;
+  avatar?: string;
+  role?: 'user' | 'admin';
   createdAt?: string;
   [key: string]: unknown;
 }
@@ -12,6 +15,7 @@ interface AuthUser {
 interface AuthResponse {
   success: boolean;
   message: string;
+  token?: string;
   user?: AuthUser;
 }
 
@@ -19,10 +23,21 @@ interface AuthResponse {
 const toAppUser = (user: AuthUser) => ({
   id: user._id ?? user.id,
   username: user.username,
+  email: user.email,
+  avatar: user.avatar,
+  role: user.role ?? 'user',
   createdAt: user.createdAt,
 });
 
 export const authService = {
+  getMe: async () => {
+    const { data } = await api.get<AuthResponse>("/auth/me");
+    return {
+      ...data,
+      user: data.user ? toAppUser(data.user) : undefined,
+    };
+  },
+
   login: async (username: string, password: string) => {
     const { data } = await api.post<AuthResponse>("/auth/login", {
       username,
@@ -34,10 +49,21 @@ export const authService = {
     };
   },
 
-  register: async (username: string, password: string) => {
+  register: async (username: string, email: string, password: string) => {
     const { data } = await api.post<AuthResponse>("/auth/register", {
       username,
+      email,
       password,
+    });
+    return {
+      ...data,
+      user: data.user ? toAppUser(data.user) : undefined,
+    };
+  },
+
+  googleLogin: async (credential: string) => {
+    const { data } = await api.post<AuthResponse>("/auth/google", {
+      credential,
     });
     return {
       ...data,

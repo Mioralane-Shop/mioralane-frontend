@@ -1,20 +1,399 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { ShoppingBag, Search } from "lucide-react";
+import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
-import { SITE_NAME, NAV_LINKS, BRANDS } from "@/constants/site";
-import { MobileMenu } from "./mobile-menu";
-import { ProfileMenu } from "./profile-menu";
+import { useAuthStore } from "@/store/auth.store";
+import { MobileMenu } from "@/components/layout/mobile-menu";
+import { UserMenu } from "@/components/layout/user-menu";
+import { SearchModal } from "@/components/search/search-modal";
+import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
+
+const BOTTOM_NAV = [
+  { label: "Skin Care", href: "/shop" },
+  { label: "Collections", href: "/shop" },
+  { label: "Combo", href: "/shop?category=combo" },
+  { label: "New", href: "/shop?sort=newest" },
+  { label: "Brands", href: "/shop" },
+  { label: "Support", href: "#" },
+  { label: "Blog", href: "/blog" },
+  { label: "Sales", href: "/shop?sort=offers" },
+];
+
+function BrandsNavItem() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+      >
+        Brands
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+          <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+            <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
+              {BRANDS.map((brand) => (
+                <Link
+                  key={brand}
+                  href={`/shop?brand=${encodeURIComponent(brand)}`}
+                  onClick={() => setOpen(false)}
+                  className="truncate rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
+                >
+                  {brand}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const MEGA_MENU_COLUMNS = [
+  {
+    id: "cleansers",
+    label: "Cleansers",
+    href: "/shop?category=cleansers",
+    links: [
+      { label: "Oil Cleansers", href: "/shop?category=oil-cleansers" },
+      {
+        label: "Water Based Cleansers",
+        href: "/shop?category=water-cleansers",
+      },
+      { label: "Cleansing Balms", href: "/shop?category=cleansing-balms" },
+      { label: "Make-Up Removers", href: "/shop?category=makeup-removers" },
+      { label: "Micellar Waters", href: "/shop?category=micellar-waters" },
+    ],
+  },
+  {
+    id: "toners",
+    label: "Toners",
+    href: "/shop?category=toners",
+    links: [
+      { label: "Hydrating Toners", href: "/shop?category=hydrating-toners" },
+      { label: "Calming Toners", href: "/shop?category=calming-toners" },
+      { label: "Mist Toners", href: "/shop?category=mist-toners" },
+      {
+        label: "Exfoliating Toners",
+        href: "/shop?category=exfoliating-toners",
+      },
+      { label: "Toner Pads", href: "/shop?category=toner-pads" },
+    ],
+  },
+  {
+    id: "treatments",
+    label: "Treatments",
+    href: "/shop?category=treatments",
+    links: [
+      { label: "Serums", href: "/shop?category=serums" },
+      { label: "Ampoules", href: "/shop?category=ampoules" },
+      { label: "Essences", href: "/shop?category=essences" },
+      { label: "Spot Treatments", href: "/shop?category=spot-treatments" },
+    ],
+  },
+  {
+    id: "exfoliators",
+    label: "Exfoliators",
+    href: "/shop?category=exfoliators",
+    links: [
+      {
+        label: "Physical Exfoliators",
+        href: "/shop?category=physical-exfoliators",
+      },
+      {
+        label: "Chemical Exfoliators",
+        href: "/shop?category=chemical-exfoliators",
+      },
+    ],
+  },
+  {
+    id: "concerns",
+    label: "Skin Concerns",
+    href: "/shop",
+    links: [
+      { label: "Acne", href: "/shop?concern=acne" },
+      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
+      { label: "Dry Skin", href: "/shop?concern=dry-skin" },
+      { label: "Fungal Acne Safe", href: "/shop?concern=fungal-acne-safe" },
+      { label: "Hyperpigmentation", href: "/shop?concern=hyperpigmentation" },
+      { label: "Skin Redness", href: "/shop?concern=redness" },
+      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
+      { label: "Oily Skin", href: "/shop?concern=oily" },
+    ],
+  },
+  {
+    id: "moisturizers",
+    label: "Moisturizers",
+    href: "/shop?category=moisturizers",
+    links: [
+      { label: "Face Creams", href: "/shop?category=face-creams" },
+      { label: "Gel Moisturizers", href: "/shop?category=gel-moisturizers" },
+      { label: "Facial Oils", href: "/shop?category=facial-oils" },
+      { label: "Emulsions", href: "/shop?category=emulsions" },
+    ],
+  },
+  {
+    id: "masks",
+    label: "Masks",
+    href: "/shop?category=masks",
+    links: [
+      { label: "Peeling Masks", href: "/shop?category=peeling-masks" },
+      { label: "Sheet Masks", href: "/shop?category=sheet-masks" },
+      { label: "Sleeping Masks", href: "/shop?category=sleeping-masks" },
+      { label: "Wash-Off Masks", href: "/shop?category=wash-off-masks" },
+    ],
+  },
+  {
+    id: "lip-eye",
+    label: "Lip & Eye Care",
+    href: "/shop?category=lip-eye-care",
+    links: [
+      { label: "Eye Creams", href: "/shop?category=eye-creams" },
+      { label: "Eye Patches", href: "/shop?category=eye-patches" },
+      { label: "Lip Care", href: "/shop?category=lip-care" },
+    ],
+  },
+  {
+    id: "sunscreens",
+    label: "Sunscreens",
+    href: "/shop?category=sun-care",
+    links: [
+      { label: "SPF 50+", href: "/shop?category=spf50" },
+      { label: "SPF 30", href: "/shop?category=spf30" },
+      { label: "Sun Sticks", href: "/shop?category=sun-sticks" },
+      { label: "After Sun Care", href: "/shop?category=after-sun" },
+    ],
+  },
+  {
+    id: "ingredients",
+    label: "Shop By Ingredients",
+    href: "/shop",
+    links: [
+      { label: "AHA BHA PHA", href: "/shop?ingredient=aha-bha-pha" },
+      { label: "Centella", href: "/shop?ingredient=centella" },
+      { label: "Hyaluronic Acid", href: "/shop?ingredient=hyaluronic-acid" },
+      { label: "Peptides", href: "/shop?ingredient=peptides" },
+      { label: "Propolis", href: "/shop?ingredient=propolis" },
+      { label: "Snail Mucin", href: "/shop?ingredient=snail-mucin" },
+      { label: "Vitamin C", href: "/shop?ingredient=vitamin-c" },
+    ],
+  },
+];
+
+function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [activeCol, setActiveCol] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const underlineRef = useRef<HTMLDivElement>(null);
+  const headerRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+  const prevColRef = useRef<string | null>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const scheduleClose = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 180);
+  };
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  const positionUnderline = (id: string) => {
+    const header = headerRefs.current[id];
+    const panel = panelRef.current;
+    const underline = underlineRef.current;
+    if (!header || !panel || !underline) return;
+    const hRect = header.getBoundingClientRect();
+    const pRect = panel.getBoundingClientRect();
+    const left = hRect.left - pRect.left;
+    const top = hRect.bottom - pRect.top + 4;
+    const width = hRect.width;
+    if (prevColRef.current === null) {
+      underline.style.transition = "none";
+      underline.style.left = `${left}px`;
+      underline.style.top = `${top}px`;
+      underline.style.width = `${width}px`;
+      void underline.offsetWidth;
+      underline.style.transition = "";
+    }
+    prevColRef.current = id;
+    underline.style.left = `${left}px`;
+    underline.style.top = `${top}px`;
+    underline.style.width = `${width}px`;
+    setActiveCol(id);
+  };
+
+  const handleColumnEnter = (id: string) => {
+    cancelClose();
+    positionUnderline(id);
+  };
+
+  const handlePanelLeave = () => {
+    setActiveCol(null);
+    prevColRef.current = null;
+    scheduleClose();
+  };
+
+  const panelTop = scrolled ? 56 : 136;
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={() => {
+        setOpen(true);
+        cancelClose();
+      }}
+      onMouseLeave={scheduleClose}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+      >
+        Skin Care
+      </Link>
+
+      {open && (
+        <div
+          ref={panelRef}
+          onMouseEnter={cancelClose}
+          onMouseLeave={handlePanelLeave}
+          className="fixed left-1/2 z-[60] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          style={{ top: panelTop }}
+        >
+          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
+            {MEGA_MENU_COLUMNS.map((col) => (
+              <div
+                key={col.id}
+                onMouseEnter={() => handleColumnEnter(col.id)}
+                className="min-w-0"
+              >
+                <div className="border-t border-[#C98A7D]/30 pt-4">
+                  <Link
+                    href={col.href}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                  >
+                    <span
+                      ref={(el) => {
+                        headerRefs.current[col.id] = el;
+                      }}
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
+                    >
+                      {col.label}
+                    </span>
+                  </Link>
+                </div>
+                <ul className="mt-5 space-y-3.5">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        onClick={() => setOpen(false)}
+                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Cursor-aware animated underline */}
+          <div
+            ref={underlineRef}
+            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            style={{
+              opacity: activeCol ? 1 : 0,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Navbar() {
+  const router = useRouter();
   const { toggleCart, totalItems } = useCartStore();
+  const { isAuthenticated, _ready } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
-  const [brandsOpen, setBrandsOpen] = useState(false);
-  const [brandSearch, setBrandSearch] = useState("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  const searchResults =
+    searchQuery.length >= 2
+      ? DUMMY_PRODUCTS.filter((p) => {
+          const q = searchQuery.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.brand?.toLowerCase().includes(q) ||
+            p.category?.toLowerCase().includes(q)
+          );
+        }).slice(0, 5)
+      : [];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setSearchFocused(false);
+    }
+  };
 
   useEffect(() => {
     let ticking = false;
@@ -33,169 +412,251 @@ export function Navbar() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setBrandsOpen(false);
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
       }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const filteredBrands = BRANDS.filter((b) =>
-    b.toLowerCase().includes(brandSearch.toLowerCase()),
-  );
-
   return (
-    <nav
-      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-        scrolled
-          ? "bg-white/94 backdrop-blur-xl border-b border-border-light"
-          : "bg-white/95 backdrop-blur-lg border-b border-border-light"
-      }`}
-      style={{ height: "72px" }}
-    >
-      <div className="mx-auto flex h-full max-w-[1200px] items-center justify-between px-6">
-        {/* Left: Mobile menu + Logo */}
-        <div className="flex items-center gap-4">
-          <MobileMenu />
-          <Link href="/" className="relative h-[28px] w-[140px] block">
-            {/* Full logo */}
-            <span
-              className={`font-serif italic absolute top-0 left-0 whitespace-nowrap transition-all duration-300 ${
-                scrolled
-                  ? "opacity-0 translate-x-1 pointer-events-none"
-                  : "opacity-100 translate-x-0"
-              }`}
-              style={{ fontSize: "24px", fontWeight: 500 }}
+    <>
+      {/* Spacer to prevent content jump (80px mobile top row only, 132px desktop incl. bottom nav) */}
+      <div className="h-[80px] md:h-[132px]" />
+
+      {/* Top Row - slides up on scroll */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${
+          scrolled ? "md:-translate-y-full" : ""
+        }`}
+      >
+        <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+          {/* Left: hamburger + search (mobile only) — raised above centered logo */}
+          <div className="relative z-10 flex items-center gap-1 md:hidden">
+            <MobileMenu />
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              aria-label="Search"
             >
-              {SITE_NAME.slice(0, 3)}
-              <span className="text-accent font-normal">
-                {SITE_NAME.slice(3)}
-              </span>
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Logo — centered on mobile, left-aligned on desktop */}
+          <Link
+            href="/"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 flex flex-col items-center md:items-start text-center md:text-left"
+          >
+            <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold leading-none tracking-tight text-ink">
+              Mioralane
             </span>
-            {/* Compact mark */}
-            <span
-              className={`absolute top-0 left-0 transition-all duration-400 ${
-                scrolled
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-75 pointer-events-none"
-              }`}
-            >
-              <Image
-                src="/logo-m.svg"
-                alt="M"
-                width={34}
-                height={34}
-                className="object-contain"
-              />
+            <span className="font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60 mt-0.5">
+              skincare
             </span>
           </Link>
-        </div>
 
-        {/* Center: Nav links */}
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="relative text-sm font-medium text-ink-soft transition-colors hover:text-ink py-1 after:absolute after:bottom-[-2px] after:left-0 after:h-[1.5px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {/* Search Bar */}
+          <div
+            className="hidden md:flex flex-1 max-w-[500px] mx-8"
+            ref={searchRef}
+          >
+            <form onSubmit={handleSearch} className="relative w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-ink/40" />
+              <input
+                type="text"
+                placeholder="Search entire store here..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                className="w-full pl-12 pr-10 py-3 bg-ink/[0.04] border-none rounded-full text-sm text-ink placeholder:text-ink/40 outline-none focus:bg-ink/[0.06] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
 
-          {/* Brands dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setBrandsOpen(!brandsOpen)}
-              className="relative text-sm font-medium text-ink-soft transition-colors hover:text-ink py-1 flex items-center gap-1 after:absolute after:bottom-[-2px] after:left-0 after:h-[1.5px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
-            >
-              Brands
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={`w-3 h-3 transition-transform ${brandsOpen ? "rotate-180" : ""}`}
+              {/* Live Suggestions */}
+              {searchFocused && searchQuery.length >= 2 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl shadow-lg border border-border-light overflow-hidden z-50">
+                  {searchResults.length > 0 ? (
+                    <div className="p-2">
+                      {searchResults.map((product) => (
+                        <Link
+                          key={product.id}
+                          href={`/product/${product.slug}`}
+                          onClick={() => {
+                            setSearchQuery("");
+                            setSearchFocused(false);
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ink/[0.04] transition-colors no-underline"
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-ink/[0.06] flex items-center justify-center text-xs font-bold text-ink/40">
+                            {product.brand?.charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-ink truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-xs text-ink/50">
+                              {product.brand} · ৳
+                              {product.price.toLocaleString()}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                      <button
+                        type="submit"
+                        className="w-full mt-1 px-4 py-2.5 text-sm font-medium text-accent hover:bg-ink/[0.04] rounded-xl transition-colors text-left"
+                      >
+                        Search for &ldquo;{searchQuery}&rdquo; →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-ink/40">
+                      No products found
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
+          </div>
+
+          {/* Icons — raised above centered logo */}
+          <div className="relative z-10 flex items-center gap-1">
+            {_ready && isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <Link
+                href="/login"
+                className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+                aria-label="Sign in"
               >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            {brandsOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-[min(520px,90vw)] max-h-[70vh] overflow-y-auto bg-surface rounded-b-2xl shadow-lg border border-border-light border-t-0 p-6 z-50">
-                <h3 className="font-serif text-lg mb-1">Shop by Brand</h3>
-                <p className="text-sm text-ink-soft font-light mb-4">
-                  Explore your favorite Korean skincare brands
-                </p>
-                <input
-                  type="text"
-                  placeholder="Search brands..."
-                  value={brandSearch}
-                  onChange={(e) => setBrandSearch(e.target.value)}
-                  className="w-full px-4 py-3 border border-border rounded-xl text-sm outline-none mb-4 focus:border-accent transition-colors"
-                />
-                <div className="grid grid-cols-4 gap-2 max-h-[280px] overflow-y-auto">
-                  {filteredBrands.map((brand) => (
-                    <Link
-                      key={brand}
-                      href={`/shop?brand=${encodeURIComponent(brand)}`}
-                      onClick={() => {
-                        setBrandsOpen(false);
-                        setBrandSearch("");
-                      }}
-                      className="px-3 py-2.5 rounded-xl border border-border-light bg-surface text-xs font-medium text-ink-soft text-center cursor-pointer transition-all hover:border-accent hover:text-accent hover:bg-accent-pale no-underline"
-                    >
-                      {brand}
-                    </Link>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-border-light">
-                  <Link
-                    href="/shop"
-                    onClick={() => {
-                      setBrandsOpen(false);
-                      setBrandSearch("");
-                    }}
-                    className="text-sm font-semibold text-accent"
-                  >
-                    View All Brands →
-                  </Link>
-                </div>
-              </div>
+                <User className="h-5 w-5" />
+              </Link>
             )}
+            {/* Wishlist — desktop only (matches mobile reference) */}
+            <button
+              className="hidden md:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              aria-label="Wishlist"
+            >
+              <Heart className="h-5 w-5" />
+            </button>
+            <button
+              onClick={toggleCart}
+              className="relative p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              aria-label="Cart"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {totalItems() > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">
+                  {totalItems()}
+                </span>
+              )}
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          <ProfileMenu />
+      {/* Full-screen search modal */}
+      <SearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
 
-          <Link
-            href="/shop"
-            className="p-1.5 text-ink transition-colors hover:text-accent"
-            aria-label="Search"
+      {/* Bottom Row - desktop only (mobile uses the hamburger menu instead) */}
+      <div
+        className={`hidden md:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
+          scrolled ? "top-0" : "top-[80px]"
+        }`}
+      >
+        <div className="mx-auto max-w-[1400px] px-6">
+          <nav
+            className={`flex items-center h-12 transition-all duration-300 ${
+              scrolled ? "justify-between" : "justify-center gap-8"
+            }`}
           >
-            <Search className="h-5 w-5" />
-          </Link>
+            <div className="flex items-center gap-8">
+              {scrolled && (
+                <Link
+                  href="/"
+                  className="font-serif text-lg font-bold text-ink mr-4 no-underline"
+                >
+                  Mioralane
+                </Link>
+              )}
+              {BOTTOM_NAV.map((link) => {
+                if (link.label === "Skin Care") {
+                  return (
+                    <SkinCareNavItem
+                      key={link.href + link.label}
+                      scrolled={scrolled}
+                    />
+                  );
+                }
+                if (link.label === "Brands") {
+                  return <BrandsNavItem key={link.href + link.label} />;
+                }
+                return (
+                  <Link
+                    key={link.href + link.label}
+                    href={link.href}
+                    className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
 
-          <button
-            onClick={toggleCart}
-            className="relative p-1.5 text-ink transition-colors hover:text-accent"
-            aria-label="Cart"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            {totalItems() > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
-                {totalItems()}
-              </span>
+            {scrolled && (
+              <div className="flex items-center gap-4">
+                {_ready && isAuthenticated ? (
+                  <UserMenu />
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-ink/80 hover:text-ink transition-colors no-underline"
+                  >
+                    Sign In
+                  </Link>
+                )}
+                <button
+                  onClick={() => setSearchModalOpen(true)}
+                  className="text-ink/70 hover:text-ink transition-colors"
+                  aria-label="Search"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+                <button
+                  className="hidden md:inline-flex text-ink/70 hover:text-ink transition-colors"
+                  aria-label="Wishlist"
+                >
+                  <Heart className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={toggleCart}
+                  className="relative text-ink/70 hover:text-ink transition-colors"
+                  aria-label="Cart"
+                >
+                  <ShoppingBag className="h-5 w-5" />
+                  {totalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">
+                      {totalItems()}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
-          </button>
+          </nav>
         </div>
       </div>
-    </nav>
+    </>
   );
 }

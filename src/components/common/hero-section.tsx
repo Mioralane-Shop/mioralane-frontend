@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BrandsMarquee } from "@/components/common/brands-marquee";
 
 const slides = [
   {
@@ -273,25 +274,8 @@ export function HeroSection() {
           </button>
         </div>
 
-        {/* Trust Bar */}
-        <div className="flex flex-wrap justify-center gap-9 py-10 max-sm:gap-5">
-          {[
-            { icon: "🇰🇷", text: "Authentic K-Beauty" },
-            { icon: "🔬", text: "Batch Verified" },
-            { icon: "🚚", text: "Free Over ৳999" },
-            { icon: "🛡️", text: "Secure Checkout" },
-          ].map((item) => (
-            <div
-              key={item.text}
-              className="flex items-center gap-2.5 text-[13px] font-medium text-ink-soft"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-base">
-                {item.icon}
-              </span>
-              {item.text}
-            </div>
-          ))}
-        </div>
+        {/* Brands marquee — premium auto-rotating logo strip */}
+        <BrandsMarquee />
       </div>
     </section>
   );

@@ -1,8 +1,13 @@
-export const SITE_NAME = "Mioralane";
 import type { Product } from "@/types/product";
+import { CATALOG_2026_PRODUCTS } from "./catalog-2026";
+
+export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =
   "Authentic Korean skincare delivered to Bangladesh. COSRX, Beauty of Joseon, ANUA, Purito — batch-verified, beautifully packaged.";
 export const SITE_URL = "https://mioralane.com";
+
+// WhatsApp order number (international format, digits only — replace with the real number)
+export const SITE_WHATSAPP = "8801700000000";
 
 export const ANNOUNCEMENT_TEXT =
   "Free delivery on orders over ৳2,000 in Dhaka · Cash on Delivery available";
@@ -84,7 +89,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "100ml",
     size: "100ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 450, stock: 20 },
+      { label: "30ml", volume: "30ml", price: 950, stock: 30 },
+      { label: "100ml", volume: "100ml", price: 2250, stock: 50 },
+      {
+        label: "100ml+ (Value)",
+        volume: "100ml",
+        price: 2100,
+        compareAtPrice: 2250,
+        stock: 15,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "CSRX-SNAIL-100",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-01-15",
@@ -109,7 +127,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "200ml",
     size: "200ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 350, stock: 25 },
+      { label: "30ml", volume: "30ml", price: 550, stock: 30 },
+      { label: "200ml", volume: "200ml", price: 1850, stock: 35 },
+      {
+        label: "200ml+ (Value)",
+        volume: "200ml",
+        price: 1700,
+        compareAtPrice: 1850,
+        stock: 15,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "ANUA-OIL-200",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-02-20",
@@ -134,7 +165,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "50ml",
     size: "50ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 450, stock: 30 },
+      { label: "30ml", volume: "30ml", price: 1100, stock: 40 },
+      { label: "50ml", volume: "50ml", price: 1650, stock: 60 },
+      {
+        label: "50ml+ (Value)",
+        volume: "50ml",
+        price: 1500,
+        compareAtPrice: 1650,
+        stock: 20,
+      },
+    ],
     source: "Stylevana, Seoul",
+    sku: "BOJ-SUN-50",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-03-05",
@@ -159,7 +203,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Sensitive / Dry",
     volume: "50ml",
     size: "50ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 450, stock: 20 },
+      { label: "30ml", volume: "30ml", price: 1100, stock: 25 },
+      { label: "50ml", volume: "50ml", price: 1950, stock: 25 },
+      {
+        label: "50ml+ (Value)",
+        volume: "50ml",
+        price: 1800,
+        compareAtPrice: 1950,
+        stock: 10,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "PURITO-BAMBOO-50",
     isNew: false,
     isBestSeller: false,
     createdAt: "2024-04-12",
@@ -184,7 +241,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Mature / Dry",
     volume: "50ml",
     size: "50ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 500, stock: 15 },
+      { label: "30ml", volume: "30ml", price: 1300, stock: 25 },
+      { label: "50ml", volume: "50ml", price: 2100, stock: 30 },
+      {
+        label: "50ml+ (Value)",
+        volume: "50ml",
+        price: 1950,
+        compareAtPrice: 2100,
+        stock: 10,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "SKIN1004-PROBIO-50",
     isNew: true,
     isBestSeller: false,
     createdAt: "2024-05-10",
@@ -209,7 +279,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Oily / Combination",
     volume: "30ml",
     size: "30ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 550, stock: 20 },
+      { label: "30ml", volume: "30ml", price: 1500, stock: 45 },
+      { label: "50ml", volume: "50ml", price: 2200, stock: 20 },
+      {
+        label: "30ml+ (Value)",
+        volume: "30ml",
+        price: 1350,
+        compareAtPrice: 1500,
+        stock: 15,
+      },
+    ],
     source: "Stylevana, Seoul",
+    sku: "BOJ-GLOW-30",
     isNew: false,
     isBestSeller: false,
     createdAt: "2024-03-20",
@@ -234,7 +317,20 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Oily / Acne-prone",
     volume: "150ml",
     size: "150ml",
+    sizeOptions: [
+      { label: "10ml Mini", volume: "10ml", price: 250, stock: 30 },
+      { label: "30ml", volume: "30ml", price: 400, stock: 35 },
+      { label: "150ml", volume: "150ml", price: 1100, stock: 55 },
+      {
+        label: "150ml+ (Value)",
+        volume: "150ml",
+        price: 1000,
+        compareAtPrice: 1100,
+        stock: 20,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "CSRX-LOWPH-150",
     isNew: false,
     isBestSeller: false,
     createdAt: "2024-02-10",
@@ -259,7 +355,11 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "4 × 20ml",
     size: "4 × 20ml",
+    sizeOptions: [
+      { label: "4 × 20ml Kit", volume: "4 × 20ml", price: 950, stock: 40 },
+    ],
     source: "Olive Young, Seoul",
+    sku: "SKIN1004-MINI-KIT",
     isNew: true,
     isBestSeller: false,
     createdAt: "2024-06-01",
@@ -285,7 +385,11 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "5-piece set",
     size: "5-piece set",
+    sizeOptions: [
+      { label: "5-Piece Set", volume: "5-piece set", price: 4250, stock: 20 },
+    ],
     source: "Curated by Mioralane",
+    sku: "MIOR-COMBO-GLASS",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-01-01",
@@ -310,7 +414,16 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "4-piece mini set",
     size: "4-piece mini set",
+    sizeOptions: [
+      {
+        label: "4-Piece Mini Set",
+        volume: "4-piece mini set",
+        price: 1850,
+        stock: 30,
+      },
+    ],
     source: "Curated by Mioralane",
+    sku: "MIOR-COMBO-TRAVEL",
     isNew: true,
     isBestSeller: false,
     createdAt: "2024-06-15",
@@ -335,7 +448,11 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Oily / Acne-prone",
     volume: "3-piece set",
     size: "3-piece set",
+    sizeOptions: [
+      { label: "3-Piece Set", volume: "3-piece set", price: 3200, stock: 25 },
+    ],
     source: "Curated by Mioralane",
+    sku: "MIOR-COMBO-ACNE",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-03-01",
@@ -362,7 +479,26 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "250ml",
     size: "250ml",
+    sizeOptions: [
+      { label: "30ml", volume: "30ml", price: 350, stock: 20 },
+      { label: "100ml", volume: "100ml", price: 750, stock: 30 },
+      {
+        label: "250ml",
+        volume: "250ml",
+        price: 1290,
+        compareAtPrice: 1650,
+        stock: 40,
+      },
+      {
+        label: "250ml+ (Value)",
+        volume: "250ml",
+        price: 1150,
+        compareAtPrice: 1650,
+        stock: 15,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "ANUA-TONER-250",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-04-20",
@@ -388,7 +524,26 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "Dry / Sensitive",
     volume: "200ml",
     size: "200ml",
+    sizeOptions: [
+      { label: "30ml", volume: "30ml", price: 550, stock: 20 },
+      { label: "100ml", volume: "100ml", price: 1050, stock: 30 },
+      {
+        label: "200ml",
+        volume: "200ml",
+        price: 1650,
+        compareAtPrice: 2100,
+        stock: 35,
+      },
+      {
+        label: "200ml+ (Value)",
+        volume: "200ml",
+        price: 1500,
+        compareAtPrice: 2100,
+        stock: 15,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "ILLIYOON-CERAMIDE-200",
     isNew: false,
     isBestSeller: true,
     createdAt: "2024-05-05",
@@ -414,11 +569,31 @@ export const DUMMY_PRODUCTS: Product[] = [
     skinType: "All skin types",
     volume: "10 sheets",
     size: "10 sheets",
+    sizeOptions: [
+      { label: "1 Sheet", volume: "1 sheet", price: 90, stock: 100 },
+      { label: "5 Sheets", volume: "5 sheets", price: 400, stock: 50 },
+      {
+        label: "10 Sheets",
+        volume: "10 sheets",
+        price: 750,
+        compareAtPrice: 1100,
+        stock: 60,
+      },
+      {
+        label: "10 Sheets (Value)",
+        volume: "10 sheets",
+        price: 680,
+        compareAtPrice: 1100,
+        stock: 30,
+      },
+    ],
     source: "Olive Young, Seoul",
+    sku: "MEDIHEAL-NMF-10",
     isNew: true,
     isBestSeller: false,
     createdAt: "2024-06-10",
   },
+  ...CATALOG_2026_PRODUCTS,
 ];
 
 export const SKIN_TYPES = [
