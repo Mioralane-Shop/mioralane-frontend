@@ -21,13 +21,32 @@ async function fetchProducts(filters?: Record<string, string>): Promise<Product[
     else if (filters?.tab === "new") filtered = filtered.filter((p) => p.isNew);
     return filtered;
   }
+
   const res = await productService.getAll(filters);
-  console.log("[fetchProducts] API response:", res);
-  console.log("[fetchProducts] Extracted products:", res.products);
-  if (!res.products || res.products.length === 0) {
-    console.warn("[fetchProducts] No products returned from API");
+
+  // ── Resilient extraction: handle any nesting shape ──
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw = res as any;
+  const extracted: Product[] =
+    Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.products)
+        ? raw.products
+        : Array.isArray(raw?.data?.products)
+          ? raw.data.products
+          : Array.isArray(raw?.data)
+            ? raw.data
+            : [];
+
+  console.log("[fetchProducts] Raw API response:", res);
+  console.log("[fetchProducts] Extracted products:", extracted);
+  console.log("[fetchProducts] Count:", extracted.length);
+
+  if (extracted.length === 0) {
+    console.warn("[fetchProducts] No products — check API response shape above");
   }
-  return res.products;
+
+  return extracted;
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product | undefined> {
