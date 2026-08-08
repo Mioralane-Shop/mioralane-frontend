@@ -95,6 +95,11 @@ export function FeaturedProducts() {
               />
             ))}
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-neutral-400 text-lg">No products found</p>
+            <p className="text-neutral-300 text-sm mt-1">Check back soon for new arrivals.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {filtered.map((product) => (
