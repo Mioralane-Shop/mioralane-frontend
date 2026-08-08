@@ -22,6 +22,11 @@ async function fetchProducts(filters?: Record<string, string>): Promise<Product[
     return filtered;
   }
   const res = await productService.getAll(filters);
+  console.log("[fetchProducts] API response:", res);
+  console.log("[fetchProducts] Extracted products:", res.products);
+  if (!res.products || res.products.length === 0) {
+    console.warn("[fetchProducts] No products returned from API");
+  }
   return res.products;
 }
 
@@ -59,6 +64,8 @@ async function fetchProductsByTab(
     return filtered.slice(0, limit);
   }
   const res = await productService.getByTab(tab, limit);
+  console.log(`[fetchProductsByTab] tab=${tab} response:`, res);
+  console.log(`[fetchProductsByTab] tab=${tab} products:`, res.products);
   return res.products;
 }
 
