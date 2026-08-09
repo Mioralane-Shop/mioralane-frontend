@@ -98,7 +98,7 @@ export function MobileMenu() {
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden"
+        className="lg:hidden"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
       >

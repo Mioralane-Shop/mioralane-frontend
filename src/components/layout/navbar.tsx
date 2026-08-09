@@ -423,17 +423,17 @@ export function Navbar() {
   return (
     <>
       {/* Spacer to prevent content jump (80px mobile top row only, 132px desktop incl. bottom nav) */}
-      <div className="h-[80px] md:h-[132px]" />
+      <div className="h-[80px] lg:h-[132px]" />
 
       {/* Top Row - slides up on scroll */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${
-          scrolled ? "md:-translate-y-full" : ""
+          scrolled ? "lg:-translate-y-full" : ""
         }`}
       >
         <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
-          {/* Left: hamburger + search (mobile only) — raised above centered logo */}
-          <div className="relative z-10 flex items-center gap-1 md:hidden">
+          {/* Left: hamburger + search (below lg) — raised above centered logo */}
+          <div className="relative z-10 flex items-center gap-1 lg:hidden">
             <MobileMenu />
             <button
               onClick={() => setSearchModalOpen(true)}
@@ -444,10 +444,10 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Logo — centered on mobile, left-aligned on desktop */}
+          {/* Logo — centered on mobile/tablet, left-aligned on desktop */}
           <Link
             href="/"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 flex flex-col items-center md:items-start text-center md:text-left"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 flex flex-col items-center lg:items-start text-center lg:text-left"
           >
             <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold leading-none tracking-tight text-ink">
               Mioralane
@@ -459,7 +459,7 @@ export function Navbar() {
 
           {/* Search Bar */}
           <div
-            className="hidden md:flex flex-1 max-w-[500px] mx-8"
+            className="hidden lg:flex flex-1 max-w-[500px] mx-8"
             ref={searchRef}
           >
             <form onSubmit={handleSearch} className="relative w-full">
@@ -543,7 +543,7 @@ export function Navbar() {
             )}
             {/* Wishlist — desktop only (matches mobile reference) */}
             <button
-              className="hidden md:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+              className="hidden lg:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -570,9 +570,9 @@ export function Navbar() {
         onClose={() => setSearchModalOpen(false)}
       />
 
-      {/* Bottom Row - desktop only (mobile uses the hamburger menu instead) */}
+      {/* Bottom Row - desktop only (tablet & mobile use the hamburger menu instead) */}
       <div
-        className={`hidden md:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
+        className={`hidden lg:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
           scrolled ? "top-0" : "top-[80px]"
         }`}
       >
@@ -635,7 +635,7 @@ export function Navbar() {
                   <Search className="h-5 w-5" />
                 </button>
                 <button
-                  className="hidden md:inline-flex text-ink/70 hover:text-ink transition-colors"
+                  className="hidden lg:inline-flex text-ink/70 hover:text-ink transition-colors"
                   aria-label="Wishlist"
                 >
                   <Heart className="h-5 w-5" />
