@@ -8,6 +8,7 @@ export interface Product {
   compareAtPrice?: number;
   krw?: string;
   images: string[];
+  hoverImage?: string;
   category: string;
   brand: string;
   tags: string[];
@@ -20,6 +21,7 @@ export interface Product {
   howToUse?: string;
   skinType?: string;
   volume?: string;
+  volumeOz?: string;
   size?: string;
   sizeOptions?: SizeOption[];
   source?: string;

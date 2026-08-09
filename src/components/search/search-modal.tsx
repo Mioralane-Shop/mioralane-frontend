@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Search, X, TrendingUp } from "lucide-react";
+import { ProductImage } from "@/components/common/product-image";
 import { DUMMY_PRODUCTS } from "@/constants/site";
 
 const TRENDING = [
@@ -125,9 +125,10 @@ export function SearchModal({
                   className="flex items-center gap-4 rounded-xl px-3 py-3 transition-colors hover:bg-ink/[0.04]"
                 >
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-ink/[0.04]">
-                    <Image
+                    <ProductImage
                       src={p.images[0]}
                       alt={p.name}
+                      fallbackId={p.id}
                       fill
                       className="object-cover"
                       sizes="56px"

@@ -609,7 +609,7 @@ export default function ProductPage() {
           <p className="mb-8 text-sm text-ink/50">
             Step up your routine with these complementary essentials
           </p>
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {ritualProducts.map((p) => (
               <div
                 key={p.id}
@@ -661,7 +661,7 @@ export default function ProductPage() {
         <h2 className="text-2xl font-serif font-medium text-ink mb-8">
           You May Also Like
         </h2>
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {relatedProducts.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

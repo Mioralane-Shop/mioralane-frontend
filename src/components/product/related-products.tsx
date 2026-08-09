@@ -17,7 +17,7 @@ export function RelatedProducts({ category, excludeId }: RelatedProductsProps) {
       <h2 className="mb-6 text-2xl font-light tracking-tight text-neutral-800">
         You May Also Like
       </h2>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="space-y-3">
