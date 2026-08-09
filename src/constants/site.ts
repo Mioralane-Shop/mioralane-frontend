@@ -609,5 +609,5 @@ export const SORT_OPTIONS = [
   { label: "Newest", value: "newest" },
   { label: "Price: Low to High", value: "price-asc" },
   { label: "Price: High to Low", value: "price-desc" },
-  { label: "Top Rated", value: "rating" },
+  { label: "Top Rated", value: "popularity" },
 ];
