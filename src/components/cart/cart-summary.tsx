@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/common/product-image";
 import { CartItemRow } from "./cart-item";
 import {
   Sheet,
@@ -80,9 +80,10 @@ export function CartDrawer() {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-white">
-                      <Image
+                      <ProductImage
                         src={crossSell.images[0]}
                         alt={crossSell.name}
+                        fallbackId={crossSell.id}
                         fill
                         className="object-cover"
                         sizes="64px"
