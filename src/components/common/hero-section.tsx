@@ -50,7 +50,7 @@ const slides = [
     discountSuffix: "Ritual",
     subtitle: "The complete Korean glass skin routine",
     cta: "Shop Routine →",
-    href: "/shop?category=combo",
+    href: "/combo",
     bgClass: "from-[#1a1a3e] to-[#0d1b3e]",
     badgeClass: "bg-white/12 text-[#F5D76E] border border-white/15",
     titleClass: "text-[#F5D76E]",
@@ -179,9 +179,8 @@ export function HeroSection() {
           {slides.map((slide, i) => (
             <div
               key={slide.id}
-              className={`absolute inset-0 flex items-center bg-gradient-to-br ${slide.bgClass} transition-opacity duration-600 ${
-                i === current ? "opacity-100" : "opacity-0 pointer-events-none"
-              }`}
+              className={`absolute inset-0 flex items-center bg-gradient-to-br ${slide.bgClass} transition-opacity duration-600 ${i === current ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
             >
               {/* Content */}
               <div className="flex-[0_0_45%] z-10 pr-5 max-md:flex-[0_0_55%] max-md:pr-2.5">
@@ -252,9 +251,8 @@ export function HeroSection() {
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  i === current ? "w-7 bg-white" : "w-2.5 bg-white/40"
-                }`}
+                className={`h-2.5 rounded-full transition-all duration-300 ${i === current ? "w-7 bg-white" : "w-2.5 bg-white/40"
+                  }`}
               />
             ))}
           </div>

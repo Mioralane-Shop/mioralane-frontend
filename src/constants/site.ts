@@ -15,7 +15,7 @@ export const ANNOUNCEMENT_TEXT =
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/shop" },
-  { label: "Combo", href: "/shop?category=combo" },
+  { label: "Combo", href: "/combo" },
   { label: "Offers", href: "/shop?sort=offers" },
   { label: "New Arrival", href: "/shop?sort=newest" },
   { label: "Best Seller", href: "/shop?sort=best-seller" },
