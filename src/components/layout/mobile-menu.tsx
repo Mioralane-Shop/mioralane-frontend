@@ -115,11 +115,10 @@ export function MobileMenu() {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
-                  tab === t
+                className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${tab === t
                     ? "bg-white text-ink shadow-sm"
                     : "text-white/60 hover:text-white"
-                }`}
+                  }`}
               >
                 {t[0].toUpperCase() + t.slice(1)}
               </button>
@@ -147,9 +146,8 @@ export function MobileMenu() {
                     >
                       {group.label}
                       <ChevronDown
-                        className={`h-4 w-4 text-neutral-400 transition-transform ${
-                          expanded === group.id ? "rotate-180" : ""
-                        }`}
+                        className={`h-4 w-4 text-neutral-400 transition-transform ${expanded === group.id ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
                     {expanded === group.id && (
@@ -176,7 +174,7 @@ export function MobileMenu() {
                   Brands
                   <ChevronRight className="h-4 w-4 text-neutral-400" />
                 </button>
-                <MenuLink href="/shop?category=combo" onClick={close}>
+                <MenuLink href="/combo" onClick={close}>
                   Combo
                 </MenuLink>
                 <MenuLink href="/gift-cards" onClick={close}>
