@@ -9,12 +9,14 @@ import { useAuthStore } from "@/store/auth.store";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
+import { getComboMeta, getComboProducts } from "@/constants/combo";
 import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
+import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
   { label: "Skin Care", href: "/shop" },
   { label: "Collections", href: "/shop" },
-  { label: "Combo", href: "/shop?category=combo" },
+  { label: "Combo", href: "/combo" },
   { label: "New", href: "/shop?sort=newest" },
   { label: "Brands", href: "/shop" },
   { label: "Support", href: "#" },
@@ -63,6 +65,99 @@ function BrandsNavItem() {
                   {brand}
                 </Link>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComboNavItem() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const combos = getComboProducts();
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/combo"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+      >
+        Combo
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+          <div className="w-[680px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+            <div className="flex items-center justify-between px-2 pb-3">
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent-dark">
+                Curated Bundles
+              </span>
+              <Link
+                href="/combo"
+                onClick={() => setOpen(false)}
+                className="text-xs font-semibold text-accent transition-colors hover:text-accent-dark"
+              >
+                View all →
+              </Link>
+            </div>
+            <div className="space-y-1.5">
+              {combos.map((product) => {
+                const meta = getComboMeta(product);
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.slug}`}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-ink/[0.04] no-underline"
+                  >
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={product.images?.[0]}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ink">
+                        {product.name}
+                      </p>
+                      {meta?.includedItems && (
+                        <p className="truncate text-xs text-ink-muted">
+                          {meta.includedItems.join(" • ")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-bold text-ink">
+                        {formatPrice(product.price)}
+                      </p>
+                      {meta?.savings ? (
+                        <p className="text-[11px] font-medium text-success">
+                          Save {formatPrice(meta.savings)}
+                        </p>
+                      ) : null}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -282,7 +377,7 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
     scheduleClose();
   };
 
-  const panelTop = scrolled ? 56 : 136;
+  const panelTop = scrolled ? 56 : 172;
 
   return (
     <div
@@ -377,13 +472,13 @@ export function Navbar() {
   const searchResults =
     searchQuery.length >= 2
       ? DUMMY_PRODUCTS.filter((p) => {
-          const q = searchQuery.toLowerCase();
-          return (
-            p.name.toLowerCase().includes(q) ||
-            p.brand?.toLowerCase().includes(q) ||
-            p.category?.toLowerCase().includes(q)
-          );
-        }).slice(0, 5)
+        const q = searchQuery.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.brand?.toLowerCase().includes(q) ||
+          p.category?.toLowerCase().includes(q)
+        );
+      }).slice(0, 5)
       : [];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -422,14 +517,13 @@ export function Navbar() {
 
   return (
     <>
-      {/* Spacer to prevent content jump (80px mobile top row only, 132px desktop incl. bottom nav) */}
-      <div className="h-[80px] lg:h-[132px]" />
+      {/* Spacer to prevent content jump — header is fixed below the 36px announcement bar (116px mobile = 36+80, 165px desktop = 36+80+49) */}
+      <div className="h-[100px] lg:h-[130px]" />
 
       {/* Top Row - slides up on scroll */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${
-          scrolled ? "lg:-translate-y-full" : ""
-        }`}
+        className={`fixed top-[36px] left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${scrolled ? "lg:-translate-y-full" : ""
+          }`}
       >
         <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
           {/* Left: hamburger + search (below lg) — raised above centered logo */}
@@ -572,15 +666,13 @@ export function Navbar() {
 
       {/* Bottom Row - desktop only (tablet & mobile use the hamburger menu instead) */}
       <div
-        className={`hidden lg:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${
-          scrolled ? "top-0" : "top-[80px]"
-        }`}
+        className={`hidden lg:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${scrolled ? "top-0" : "top-[116px]"
+          }`}
       >
         <div className="mx-auto max-w-[1400px] px-6">
           <nav
-            className={`flex items-center h-12 transition-all duration-300 ${
-              scrolled ? "justify-between" : "justify-center gap-8"
-            }`}
+            className={`flex items-center h-12 transition-all duration-300 ${scrolled ? "justify-between" : "justify-center gap-8"
+              }`}
           >
             <div className="flex items-center gap-8">
               {scrolled && (
@@ -602,6 +694,9 @@ export function Navbar() {
                 }
                 if (link.label === "Brands") {
                   return <BrandsNavItem key={link.href + link.label} />;
+                }
+                if (link.label === "Combo") {
+                  return <ComboNavItem key={link.href + link.label} />;
                 }
                 return (
                   <Link

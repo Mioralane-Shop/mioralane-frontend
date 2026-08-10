@@ -10,7 +10,7 @@ const footerLinks = {
       { label: "Toners & Essences", href: "/shop?category=serums" },
       { label: "Serums & Ampoules", href: "/shop?category=serums" },
       { label: "Sunscreen", href: "/shop?category=sun-care" },
-      { label: "Bundles", href: "/shop?category=combo" },
+      { label: "Bundles", href: "/combo" },
     ],
   },
   company: {

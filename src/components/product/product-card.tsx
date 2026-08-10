@@ -8,9 +8,23 @@ import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import type { Product } from "@/types/product";
 
+/** Extra metadata for bundle / combo cards (rendered only for combos). */
+export interface ComboCardMeta {
+  /** Image badge label, e.g. "TRAVEL KIT", "MORNING PACK", "ACNE COMBO" */
+  badge?: string;
+  /** Total amount saved (BDT), e.g. 350 → "Save ৳350 when bought together" */
+  savings?: number;
+  /** Short included-product names, e.g. ["Cleanser", "Toner", "Serum"] */
+  includedItems?: string[];
+  /** Routine tag, e.g. "For Dry Skin", "For Acne Care" */
+  routineTag?: string;
+}
+
 interface ProductCardProps {
   product: Product;
   onNavigate?: (product: Product) => void;
+  /** Optional combo metadata — renders the extra bundle features on the card */
+  combo?: ComboCardMeta;
 }
 
 /** Compute discount percentage from original vs. current price */
@@ -29,14 +43,23 @@ function parseVolume(vol?: string): { label: string } | null {
   return { label: `${vol} / ${flOz.toFixed(2)} fl. oz.` };
 }
 
-export function ProductCard({ product, onNavigate }: ProductCardProps) {
+/** "3-piece set" → "3-PIECE SET" — bundle descriptor for the combo top row */
+function comboSetLabel(product: Product): string {
+  const size = (product.size ?? product.volume ?? "").trim();
+  return size ? size.toUpperCase() : "BUNDLE";
+}
+
+export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const [mainImgSrc, setMainImgSrc] = useState<string>(
     product.images?.[0] ?? ""
   );
+  const [mainFailed, setMainFailed] = useState<boolean>(false);
+  // Default hover to the second image if available, otherwise reuse the first image
   const [hoverImgSrc, setHoverImgSrc] = useState<string>(
     product.hoverImage ??
-      product.images?.[1] ??
-      `https://picsum.photos/seed/${product.id}-hover/800/800`
+    product.images?.[1] ??
+    product.images?.[0] ??
+    ""
   );
   const [hoverFailed, setHoverFailed] = useState<boolean>(false);
 
@@ -83,9 +106,34 @@ export function ProductCard({ product, onNavigate }: ProductCardProps) {
     toggleCart();
   };
 
-  /* Tag / badge label */
-  const badgeLabel =
-    product.tag === "best"
+  /* Combo-specific metadata (only for combo cards) */
+  const isCombo = product.category === "combo" || !!combo;
+  const comboSavings = isCombo
+    ? combo?.savings ??
+    (product.compareAtPrice && product.compareAtPrice > product.price
+      ? product.compareAtPrice - product.price
+      : 0)
+    : 0;
+  const comboIncludedItems =
+    isCombo && combo?.includedItems && combo.includedItems.length > 0
+      ? combo.includedItems
+      : null;
+  const comboRoutineTag = isCombo ? combo?.routineTag : undefined;
+
+  /* Original (struck-through) price — real compareAt for regular products,
+     or current price + savings for combo bundles */
+  const displayCompareAt =
+    product.compareAtPrice && product.compareAtPrice > product.price
+      ? product.compareAtPrice
+      : isCombo && comboSavings > 0
+        ? product.price + comboSavings
+        : undefined;
+
+  /* Image badge label — bundle-specific for combos (e.g. "TRAVEL KIT"),
+     else tag-based for regular products */
+  const badgeLabel = isCombo
+    ? (combo?.badge ?? null)
+    : product.tag === "best"
       ? "HUMID PICK"
       : product.tag === "new"
         ? "NEW"
@@ -99,15 +147,15 @@ export function ProductCard({ product, onNavigate }: ProductCardProps) {
     >
       {/* ── Image Container ── */}
       <div className="relative w-full aspect-[3/3] p-1.5 sm:p-2 lg:p-1 flex items-center justify-center overflow-hidden rounded-2xl m-2 sm:m-2.5 lg:m-2 max-w-[calc(100%-16px)] sm:max-w-[calc(100%-20px)] lg:max-w-[calc(100%-16px)]">
-        {/* Discount Badge */}
-        {discount > 0 && (
+        {/* Discount Badge — only for non-combo products */}
+        {!isCombo && discount > 0 && (
           <div className="absolute top-3 right-3 z-20 bg-accent-dark text-accent-pale font-bold text-[10px] sm:text-xs lg:text-[11px] tracking-wide px-2 sm:px-3 lg:px-2.5 py-0.5 sm:py-1 lg:py-0.5 rounded-full shadow-sm uppercase flex items-center gap-1">
             <span>{discount}% OFF</span>
           </div>
         )}
 
-        {/* Badge tag (Best / New) — only if no discount badge */}
-        {discount === 0 && badgeLabel && (
+        {/* Badge tag — combo label always shows, Best/New for regular products only when no discount */}
+        {badgeLabel && (isCombo || discount === 0) && (
           <div className="absolute top-3 right-3 z-20 bg-accent text-white font-bold text-[10px] sm:text-xs lg:text-[11px] tracking-wide px-2 sm:px-3 lg:px-2.5 py-0.5 sm:py-1 lg:py-0.5 rounded-full shadow-sm uppercase">
             {badgeLabel}
           </div>
@@ -134,24 +182,35 @@ export function ProductCard({ product, onNavigate }: ProductCardProps) {
         </button>
 
         {/* Primary Image */}
-        <img
-          src={mainImgSrc}
-          alt={product.name}
-          referrerPolicy="no-referrer"
-          className={cn(
-            "w-full h-full object-cover rounded-lg transition-all duration-500 ease-in-out group-hover:scale-105",
-            hasHoverImage && "group-hover:opacity-0"
-          )}
-          loading="lazy"
-          onError={() => {
-            setMainImgSrc(
-              `https://picsum.photos/seed/${product.id}-main/800/800`
-            );
-          }}
-        />
+        {!mainFailed && mainImgSrc ? (
+          <img
+            src={mainImgSrc}
+            alt={product.name}
+            referrerPolicy="no-referrer"
+            className={cn(
+              "w-full h-full object-cover rounded-lg transition-all duration-500 ease-in-out group-hover:scale-105",
+              hasHoverImage && "group-hover:opacity-0"
+            )}
+            loading="lazy"
+            onError={() => {
+              // Try next image in array before giving up
+              const idx = product.images?.indexOf(mainImgSrc) ?? -1;
+              const nextImg = idx >= 0 ? product.images?.[idx + 1] : undefined;
+              if (nextImg && nextImg !== mainImgSrc) {
+                setMainImgSrc(nextImg);
+              } else {
+                setMainFailed(true);
+              }
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center rounded-lg bg-ink/[0.04]">
+            <Sparkles className="w-8 h-8 text-ink-muted/40" />
+          </div>
+        )}
 
         {/* Hover Image (second view) */}
-        {hasHoverImage && (
+        {hasHoverImage && !hoverFailed && hoverImgSrc && (
           <img
             src={hoverImgSrc}
             alt={`${product.name} alternate view`}
@@ -159,74 +218,102 @@ export function ProductCard({ product, onNavigate }: ProductCardProps) {
             className="absolute inset-0 w-full h-full object-cover rounded-lg opacity-0 transition-all duration-500 ease-in-out group-hover:opacity-100 group-hover:scale-105 p-1"
             loading="lazy"
             onError={() => {
-              if (!hoverImgSrc.includes("picsum.photos")) {
-                setHoverImgSrc(
-                  `https://picsum.photos/seed/${product.id}-hover/800/800`
-                );
-              } else {
+              // If hover image is same as main, just hide on failure
+              if (hoverImgSrc === mainImgSrc) {
                 setHoverFailed(true);
+              } else {
+                // Try falling back to main image
+                setHoverImgSrc(mainImgSrc);
               }
             }}
           />
         )}
 
-        {/* Fallback */}
-        <div className="hidden group-has-[img[style*='display: none']]:flex flex-col items-center justify-center text-ink-muted">
-          <Sparkles className="w-10 h-10 mb-1" />
-          <span className="text-xs text-ink-muted font-medium">
-            {product.brand}
-          </span>
-        </div>
       </div>
 
       {/* ── Content ── */}
       <div className="p-3 sm:p-5 lg:p-3.5 xl:p-4 flex-1 flex flex-col justify-between">
         <div>
-          {/* Brand • Category */}
-          <div className="text-[11px] sm:text-xs lg:text-[10px] font-bold text-accent tracking-wider uppercase mb-1.5 sm:mb-2 lg:mb-1.5 text-left">
-            {product.brand}{" "}
-            <span className="text-accent-light">•</span>{" "}
-            {product.category === "sun-care"
-              ? "Sun Care"
-              : product.category.charAt(0).toUpperCase() +
+          {/* Combo top row — bundle descriptor (left) + savings (right), below the image */}
+          {isCombo && (
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="min-w-0 truncate text-[11px] sm:text-xs lg:text-[10px] font-bold text-accent tracking-wider uppercase">
+                BUNDLE · {comboSetLabel(product)}
+              </span>
+              {comboSavings > 0 && (
+                <span className="shrink-0 text-[14px] sm:text-xs lg:text-[14px] font-bold text-emerald-700 whitespace-nowrap">
+                  Save {formatPrice(comboSavings)}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Brand • Category — non-combo cards only */}
+          {!isCombo && (
+            <div className="mb-1.5 sm:mb-2 lg:mb-1.5 text-[11px] sm:text-xs lg:text-[10px] font-bold text-accent tracking-wider uppercase text-left">
+              {product.brand}{" "}
+              <span className="text-accent-light">•</span>{" "}
+              {product.category === "sun-care"
+                ? "Sun Care"
+                : product.category.charAt(0).toUpperCase() +
                 product.category.slice(1)}
-          </div>
+            </div>
+          )}
 
           {/* Product Name */}
-          <h3 className="font-semibold text-ink text-[15px] sm:text-[17px] lg:text-base xl:text-base leading-snug line-clamp-2 min-h-[2.25rem] sm:min-h-[2.5rem] lg:min-h-[2.25rem] group-hover:text-accent-dark transition-colors font-sans">
+          <h3
+            className={cn(
+              "font-semibold text-ink text-[15px] sm:text-[17px] lg:text-base xl:text-base leading-snug line-clamp-2 group-hover:text-accent-dark transition-colors font-sans",
+              !isCombo && "min-h-[2.25rem] sm:min-h-[2.5rem] lg:min-h-[2.25rem]"
+            )}
+          >
             {product.name}
           </h3>
 
-          {/* In Stock + Volume */}
-          <div className="mt-3 sm:mt-4 lg:mt-3 flex flex-wrap items-center gap-x-1 gap-y-0.5">
-            <span
-              className={cn(
-                "w-1 h-1 rounded-full",
-                product.stock > 0
-                  ? "bg-success animate-pulse"
-                  : "bg-ink-muted"
+          {/* Combo included items */}
+          {comboIncludedItems && (
+            <p className="mt-0.5 mb-2.5 text-sm  font-base text-ink-soft leading-tight truncate">
+              {comboIncludedItems.join(" + ")}
+            </p>
+          )}
+
+          {/* In Stock + Volume — non-combo cards only */}
+          {!isCombo && (
+            <div className="mt-3 sm:mt-4 lg:mt-3 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+              <span
+                className={cn(
+                  "w-1 h-1 rounded-full",
+                  product.stock > 0
+                    ? "bg-success animate-pulse"
+                    : "bg-ink-muted"
+                )}
+              />
+              <span
+                className={cn(
+                  "text-[11px] sm:text-xs lg:text-[10px] font-bold tracking-wider uppercase",
+                  product.stock > 0 ? "text-success" : "text-ink-muted"
+                )}
+              >
+                {product.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}
+              </span>
+              {volumeInfo && (
+                <>
+                  <span className="text-border text-[10px]">•</span>
+                  <span className="text-[11px] sm:text-xs lg:text-[10px] text-ink-soft font-medium">
+                    {volumeInfo.label}
+                  </span>
+                </>
               )}
-            />
-            <span
-              className={cn(
-                "text-[11px] sm:text-xs lg:text-[10px] font-bold tracking-wider uppercase",
-                product.stock > 0 ? "text-success" : "text-ink-muted"
-              )}
-            >
-              {product.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}
-            </span>
-            {volumeInfo && (
-              <>
-                <span className="text-border text-[10px]">•</span>
-                <span className="text-[11px] sm:text-xs lg:text-[10px] text-ink-soft font-medium">
-                  {volumeInfo.label}
-                </span>
-              </>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Star Rating */}
-          <div className="mt-1.5 sm:mt-2 lg:mt-1.5 flex items-center gap-1 text-xs sm:text-sm lg:text-xs">
+          <div
+            className={cn(
+              "flex items-center gap-1 text-xs sm:text-sm lg:text-xs",
+              isCombo ? "mb-0" : "mt-1.5 sm:mt-2 lg:mt-1.5"
+            )}
+          >
             <div className="flex items-center text-gold">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -247,18 +334,26 @@ export function ProductCard({ product, onNavigate }: ProductCardProps) {
               ({product.reviewCount})
             </span>
           </div>
+
+          {/* Combo routine tag — bottom of card, above price section */}
+          {comboRoutineTag && (
+            <div className="mt-2 sm:mt-2.5 lg:mt-2 flex items-center">
+              <span className="inline-flex items-center rounded-full border border-accent/25 bg-accent-pale/50 px-2 py-0.5 text-[9px] sm:text-[10px] lg:text-[9px] font-semibold text-accent-dark">
+                {comboRoutineTag}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Footer: Price + Add to Cart ── */}
         <div className="mt-3 sm:mt-5 lg:mt-4 pt-3 sm:pt-4 lg:pt-3.5 border-t border-border-light flex flex-row items-center justify-between gap-2 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
           {/* Price — always left-aligned, both prices side-by-side */}
           <div className="flex items-baseline gap-1.5 flex-wrap justify-start min-w-0">
-            {product.compareAtPrice &&
-              product.compareAtPrice > product.price && (
-                <span className="text-ink-muted text-xs sm:text-base lg:text-xs line-through font-normal whitespace-nowrap">
-                  {formatPrice(product.compareAtPrice)}
-                </span>
-              )}
+            {displayCompareAt && (
+              <span className="text-ink-soft text-xs sm:text-base lg:text-xs line-through font-normal whitespace-nowrap">
+                {formatPrice(displayCompareAt)}
+              </span>
+            )}
             <span className="text-ink font-bold text-sm sm:text-xl lg:text-base xl:text-[15px] tracking-tight whitespace-nowrap">
               {formatPrice(product.price)}
             </span>
