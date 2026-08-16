@@ -75,6 +75,7 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const discount = discountPercent(product.price, product.compareAtPrice);
   const hasHoverImage = !hoverFailed && !!hoverImgSrc;
   const volumeInfo = parseVolume(product.volume);
+  const isOutOfStock = product.stock <= 0;
 
   const handleClick = () => {
     if (onNavigate) {
@@ -371,10 +372,16 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
           ) : (
             <button
               onClick={handleAddToCart}
-              className="justify-center whitespace-nowrap shrink-0 px-2.5 py-1.5 sm:px-6 sm:py-3 lg:px-4 lg:py-2 rounded-full text-xs sm:text-base lg:text-xs font-medium transition-all duration-150 flex items-center gap-1.5 shadow-sm bg-accent text-white hover:bg-accent-dark hover:shadow active:scale-95 max-[360px]:w-full"
+              disabled={isOutOfStock}
+              className={cn(
+                "justify-center whitespace-nowrap shrink-0 px-2.5 py-1.5 sm:px-6 sm:py-3 lg:px-4 lg:py-2 rounded-full text-xs sm:text-base lg:text-xs font-medium transition-all duration-150 flex items-center gap-1.5 shadow-sm max-[360px]:w-full",
+                isOutOfStock
+                  ? "bg-neutral-200 text-neutral-500 shadow-none cursor-not-allowed"
+                  : "bg-accent text-white hover:bg-accent-dark hover:shadow active:scale-95"
+              )}
             >
               <ShoppingBag className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-3.5 lg:h-3.5 shrink-0" />
-              <span>Add to Cart</span>
+              <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
             </button>
           )}
         </div>

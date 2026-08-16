@@ -1,35 +1,109 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CreditCard, Lock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequireAuth } from "@/components/common/require-auth";
 import { useCartStore } from "@/store/cart.store";
-import { formatPrice } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+import { useToastStore } from "@/store/toast.store";
+import { useCreateOrder } from "@/hooks/use-orders";
+import { formatPrice, cn } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
-import Link from "next/link";
+
+const SHIPPING_FEES = {
+  inside_dhaka: 80,
+  outside_dhaka: 150,
+} as const;
 
 export default function CheckoutPage() {
+  return (
+    <RequireAuth>
+      <CheckoutContent />
+    </RequireAuth>
+  );
+}
+
+function CheckoutContent() {
   const router = useRouter();
-  const { items, totalPrice, clearCart } = useCartStore();
+  const { user } = useAuthStore();
+  const { items, clearCart } = useCartStore();
+  const addToast = useToastStore((state) => state.addToast);
+  const createOrder = useCreateOrder();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      name: user?.username ?? "",
+      phone: "",
+      deliveryZone: "inside_dhaka",
+      area: "",
+      address: "",
+    },
   });
 
-  const onSubmit = async (data: CheckoutFormValues) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Order placed:", data, items);
-    clearCart();
-    router.push("/orders");
+  useEffect(() => {
+    if (user?.username) {
+      setValue("name", user.username);
+    }
+  }, [setValue, user?.username]);
+
+  const deliveryZone = watch("deliveryZone");
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+  const shippingFee = SHIPPING_FEES[deliveryZone];
+  const totalAmount = subtotal + shippingFee;
+  const hasUnavailableItem = items.some(
+    (item) => item.product.stock <= 0 || item.quantity > item.product.stock
+  );
+
+  const onSubmit = async (values: CheckoutFormValues) => {
+    setServerError(null);
+
+    if (hasUnavailableItem) {
+      setServerError(
+        "One or more items in your cart are out of stock. Please update the cart before placing the order."
+      );
+      return;
+    }
+
+    try {
+      const order = await createOrder.mutateAsync({
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        shippingAddress: values,
+        paymentMethod: "cash_on_delivery",
+      });
+
+      clearCart();
+      addToast(`Order ${order.orderNumber} placed successfully`, "success");
+      router.push(`/order-success/${order.id}`);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to place order. Please try again.";
+      setServerError(message);
+      addToast(message, "error");
+    }
   };
 
   if (items.length === 0) {
@@ -52,275 +126,254 @@ export default function CheckoutPage() {
     <div className="container mx-auto px-4 py-8">
       <Link
         href="/cart"
-        className="inline-flex items-center gap-1 text-sm text-rose-500 hover:underline mb-6"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-rose-500 hover:underline"
       >
         <ArrowLeft className="h-3 w-3" />
         Back to Cart
       </Link>
 
-      <h1 className="text-3xl font-light tracking-tight text-neutral-800 mb-8">
-        Checkout
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+          Checkout
+        </h1>
+        <p className="mt-1 text-sm text-neutral-400">
+          Confirm your delivery details and place your order.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Shipping Information */}
-            <div className="rounded-2xl border border-rose-100 bg-white p-6">
-              <h2 className="text-lg font-medium text-neutral-800 mb-4">
-                Shipping Information
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    {...register("fullName")}
-                    placeholder="Jane Doe"
-                    className="mt-1"
-                  />
-                  {errors.fullName && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.fullName.message}
-                    </p>
-                  )}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+          <div className="space-y-8">
+            <Card className="border-rose-100">
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h2 className="text-lg font-medium text-neutral-800">
+                    Shipping Information
+                  </h2>
+                  <p className="mt-1 text-sm text-neutral-400">
+                    We deliver inside Dhaka for ৳80 and outside Dhaka for ৳150.
+                  </p>
                 </div>
 
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    placeholder="jane@example.com"
-                    className="mt-1"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="name">Recipient Name</Label>
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      placeholder="Jane Doe"
+                      className="mt-1"
+                    />
+                    {errors.name && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      {...register("phone")}
+                      placeholder="01XXXXXXXXX"
+                      className="mt-1"
+                    />
+                    {errors.phone && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.phone.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Delivery Location</Label>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      {[
+                        { value: "inside_dhaka", label: "Inside Dhaka" },
+                        { value: "outside_dhaka", label: "Outside Dhaka" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setValue(
+                              "deliveryZone",
+                              option.value as "inside_dhaka" | "outside_dhaka",
+                              { shouldDirty: true, shouldTouch: true }
+                            )
+                          }
+                          className={cn(
+                            "rounded-2xl border px-4 py-3 text-sm font-medium transition-colors",
+                            deliveryZone === option.value
+                              ? "border-rose-300 bg-rose-50 text-rose-700"
+                              : "border-rose-100 bg-white text-neutral-600 hover:bg-rose-50/60"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.deliveryZone && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.deliveryZone.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="area">City / Area</Label>
+                    <Input
+                      id="area"
+                      {...register("area")}
+                      placeholder="Dhanmondi, Uttara, Chattogram..."
+                      className="mt-1"
+                    />
+                    {errors.area && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.area.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="address">Detailed Address</Label>
+                    <Input
+                      id="address"
+                      {...register("address")}
+                      placeholder="House, road, floor, landmark"
+                      className="mt-1"
+                    />
+                    {errors.address && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-rose-100">
+              <CardContent className="p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-rose-500" />
+                  <h2 className="text-lg font-medium text-neutral-800">
+                    Payment Method
+                  </h2>
                 </div>
 
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    {...register("phone")}
-                    placeholder="+1 (555) 000-0000"
-                    className="mt-1"
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4">
+                  <input
+                    type="radio"
+                    checked
+                    readOnly
+                    className="mt-1 h-4 w-4 border-rose-300 text-rose-500 focus:ring-rose-300"
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.phone.message}
+                  <div>
+                    <p className="font-medium text-neutral-800">
+                      Cash on Delivery
                     </p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    {...register("address")}
-                    placeholder="123 Main Street"
-                    className="mt-1"
-                  />
-                  {errors.address && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.address.message}
+                    <p className="mt-1 text-sm text-neutral-500">
+                      Pay the rider when your order arrives.
                     </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    {...register("city")}
-                    placeholder="New York"
-                    className="mt-1"
-                  />
-                  {errors.city && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.city.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    {...register("state")}
-                    placeholder="NY"
-                    className="mt-1"
-                  />
-                  {errors.state && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.state.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="zipCode">ZIP Code</Label>
-                  <Input
-                    id="zipCode"
-                    {...register("zipCode")}
-                    placeholder="10001"
-                    className="mt-1"
-                  />
-                  {errors.zipCode && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.zipCode.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    {...register("country")}
-                    placeholder="United States"
-                    className="mt-1"
-                  />
-                  {errors.country && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.country.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Information */}
-            <div className="rounded-2xl border border-rose-100 bg-white p-6">
-              <h2 className="flex items-center gap-2 text-lg font-medium text-neutral-800 mb-4">
-                <CreditCard className="h-5 w-5 text-rose-400" />
-                Payment Information
-              </h2>
-              <div className="grid gap-4">
-                <div className="sm:col-span-2">
-                  <Label htmlFor="cardName">Name on Card</Label>
-                  <Input
-                    id="cardName"
-                    {...register("cardName")}
-                    placeholder="Jane Doe"
-                    className="mt-1"
-                  />
-                  {errors.cardName && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.cardName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    {...register("cardNumber")}
-                    placeholder="4242 4242 4242 4242"
-                    className="mt-1"
-                  />
-                  {errors.cardNumber && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.cardNumber.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="expiryDate">Expiry Date</Label>
-                  <Input
-                    id="expiryDate"
-                    {...register("expiryDate")}
-                    placeholder="MM/YY"
-                    className="mt-1"
-                  />
-                  {errors.expiryDate && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.expiryDate.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    {...register("cvv")}
-                    placeholder="123"
-                    className="mt-1"
-                  />
-                  {errors.cvv && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.cvv.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+                  </div>
+                </label>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-2xl border border-rose-100 bg-white p-6">
-              <h3 className="text-lg font-medium text-neutral-800">
-                Order Summary
-              </h3>
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <Card className="border-rose-100">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium text-neutral-800">
+                  Order Summary
+                </h3>
 
-              <div className="mt-4 divide-y divide-rose-50">
-                {items.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex justify-between py-2 text-sm"
-                  >
-                    <span className="text-neutral-600">
-                      {item.product.name}{" "}
-                      <span className="text-neutral-400">
-                        x{item.quantity}
+                <div className="mt-4 divide-y divide-rose-50">
+                  {items.map((item) => (
+                    <div
+                      key={item.product.id}
+                      className="flex items-start justify-between gap-3 py-3 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-neutral-700">
+                          {item.product.name}
+                        </p>
+                        <p className="text-xs text-neutral-400">
+                          Qty {item.quantity}
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-medium text-neutral-800">
+                        {formatPrice(item.product.price * item.quantity)}
                       </span>
-                    </span>
-                    <span className="font-medium">
-                      {formatPrice(item.product.price * item.quantity)}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 space-y-2 border-t border-rose-100 pt-4">
+                  <div className="flex justify-between text-sm text-neutral-600">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-neutral-600">
+                    <span>Shipping</span>
+                    <span>{formatPrice(shippingFee)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-rose-100 pt-3 font-medium text-neutral-800">
+                    <span>Total</span>
+                    <span className="text-lg text-rose-600">
+                      {formatPrice(totalAmount)}
                     </span>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-4 space-y-2 border-t border-rose-100 pt-4">
-                <div className="flex justify-between text-sm text-neutral-600">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(totalPrice())}</span>
                 </div>
-                <div className="flex justify-between text-sm text-neutral-600">
-                  <span>Shipping</span>
-                  <span className="text-green-600 font-medium">Free</span>
-                </div>
-                <div className="flex justify-between font-medium text-neutral-800 pt-2 border-t border-rose-100">
-                  <span>Total</span>
-                  <span className="text-lg text-rose-600">
-                    {formatPrice(totalPrice())}
-                  </span>
-                </div>
-              </div>
 
-              <Button
-                type="submit"
-                className="mt-6 w-full"
-                size="lg"
-                disabled={isSubmitting}
-              >
-                <Lock className="mr-2 h-4 w-4" />
-                {isSubmitting ? "Processing..." : "Place Order"}
-              </Button>
+                <div className="mt-5 rounded-2xl bg-rose-50/50 p-4 text-sm text-neutral-600">
+                  <div className="flex items-center gap-2 font-medium text-neutral-800">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    Delivery timeline
+                  </div>
+                  <p className="mt-2">
+                    Inside Dhaka usually arrives in 2-4 business days. Outside
+                    Dhaka usually arrives in 3-6 business days.
+                  </p>
+                </div>
 
-              <p className="mt-3 text-center text-xs text-neutral-400">
-                Your payment info is encrypted and secure.
-              </p>
-            </div>
+                {hasUnavailableItem && (
+                  <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    One or more cart items are currently out of stock. Remove
+                    them or reduce the quantity before checkout.
+                  </p>
+                )}
+
+                {serverError && (
+                  <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {serverError}
+                  </p>
+                )}
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="mt-6 w-full"
+                  disabled={createOrder.isPending || hasUnavailableItem}
+                >
+                  {createOrder.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Placing Order...
+                    </>
+                  ) : (
+                    "Place Order"
+                  )}
+                </Button>
+
+                <p className="mt-3 text-center text-xs text-neutral-400">
+                  By placing this order, you agree to confirm the shipping
+                  address and pay cash on delivery.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </form>
