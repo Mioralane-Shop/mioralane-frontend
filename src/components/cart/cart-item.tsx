@@ -15,6 +15,8 @@ interface CartItemProps {
 export function CartItemRow({ item }: CartItemProps) {
   const { updateQuantity, removeItem } = useCartStore();
   const { product, quantity } = item;
+  const canIncrease = product.stock > 0 && quantity < product.stock;
+  const isOutOfStock = product.stock <= 0;
 
   return (
     <div className="flex gap-4 py-4">
@@ -42,6 +44,11 @@ export function CartItemRow({ item }: CartItemProps) {
           <p className="mt-0.5 text-sm font-semibold text-rose-600">
             {formatPrice(product.price)}
           </p>
+          {isOutOfStock && (
+            <p className="mt-1 text-xs font-medium text-red-500">
+              Out of stock
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
@@ -62,6 +69,7 @@ export function CartItemRow({ item }: CartItemProps) {
               size="icon"
               className="h-7 w-7 rounded-lg"
               onClick={() => updateQuantity(product.id, quantity + 1)}
+              disabled={!canIncrease}
             >
               <Plus className="h-3 w-3" />
             </Button>

@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, ShoppingBag, ShoppingCart, Star, Sparkles } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
+import { useAuthStore } from "@/store/auth.store";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -50,6 +52,7 @@ function comboSetLabel(product: Product): string {
 }
 
 export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
+  const router = useRouter();
   const [mainImgSrc, setMainImgSrc] = useState<string>(
     product.images?.[0] ?? ""
   );
@@ -65,6 +68,10 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
 
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
+  const isTogglingWishlist = useWishlistStore(
+    (s) => s.isToggling === product.id
+  );
+  const { isAuthenticated, _ready } = useAuthStore();
   const addItem = useCartStore((s) => s.addItem);
   const toggleCart = useCartStore((s) => s.toggleCart);
   const isInCart = useCartStore((s) =>
@@ -75,6 +82,7 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const discount = discountPercent(product.price, product.compareAtPrice);
   const hasHoverImage = !hoverFailed && !!hoverImgSrc;
   const volumeInfo = parseVolume(product.volume);
+  const isOutOfStock = product.stock <= 0;
 
   const handleClick = () => {
     if (onNavigate) {
@@ -84,20 +92,41 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
     }
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleWishlist(product.id);
-    addToast(
-      isWishlisted
-        ? "Removed from wishlist"
-        : `${product.name} added to wishlist`,
-      "info"
-    );
+    if (!_ready || isTogglingWishlist) return;
+
+    if (!isAuthenticated) {
+      addToast("Please sign in to use your wishlist", "info");
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    try {
+      const nextState = await toggleWishlist(
+        product.id,
+        product.category === "combo" ? "combo" : "product"
+      );
+      addToast(
+        nextState
+          ? `${product.name} added to wishlist`
+          : "Removed from wishlist",
+        "info"
+      );
+    } catch {
+      addToast("Could not update wishlist. Please try again.", "error");
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addItem(product, 1);
+    addItem(
+      {
+        ...product,
+        itemType: product.category === "combo" ? "combo" : "product",
+      },
+      1
+    );
     addToast(`${product.name} added to cart`, "success");
   };
 
@@ -164,11 +193,13 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
         {/* Wishlist Heart Button */}
         <button
           onClick={handleWishlist}
+          disabled={isTogglingWishlist}
           className={cn(
             "absolute top-3 left-3 z-20 w-8 h-8 sm:w-10 sm:h-10 lg:w-8 lg:h-8 rounded-full bg-surface flex items-center justify-center transition-all duration-150 shadow-sm hover:scale-105",
             isWishlisted
               ? "text-accent fill-accent"
-              : "text-ink-muted hover:text-accent"
+              : "text-ink-muted hover:text-accent",
+            isTogglingWishlist && "cursor-wait opacity-70"
           )}
           title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
           aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
@@ -371,10 +402,16 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
           ) : (
             <button
               onClick={handleAddToCart}
-              className="justify-center whitespace-nowrap shrink-0 px-2.5 py-1.5 sm:px-6 sm:py-3 lg:px-4 lg:py-2 rounded-full text-xs sm:text-base lg:text-xs font-medium transition-all duration-150 flex items-center gap-1.5 shadow-sm bg-accent text-white hover:bg-accent-dark hover:shadow active:scale-95 max-[360px]:w-full"
+              disabled={isOutOfStock}
+              className={cn(
+                "justify-center whitespace-nowrap shrink-0 px-2.5 py-1.5 sm:px-6 sm:py-3 lg:px-4 lg:py-2 rounded-full text-xs sm:text-base lg:text-xs font-medium transition-all duration-150 flex items-center gap-1.5 shadow-sm max-[360px]:w-full",
+                isOutOfStock
+                  ? "bg-neutral-200 text-neutral-500 shadow-none cursor-not-allowed"
+                  : "bg-accent text-white hover:bg-accent-dark hover:shadow active:scale-95"
+              )}
             >
               <ShoppingBag className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-3.5 lg:h-3.5 shrink-0" />
-              <span>Add to Cart</span>
+              <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
             </button>
           )}
         </div>

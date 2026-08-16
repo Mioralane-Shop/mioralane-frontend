@@ -8,7 +8,7 @@ import { useProducts } from "@/hooks/use-products";
 import { DUMMY_PRODUCTS } from "@/constants/site";
 import type { Product } from "@/types/product";
 
-type TabId = "all" | "best" | "new" | "combo";
+type TabId = "all" | "best" | "new";
 
 interface Tab {
   id: TabId;
@@ -19,7 +19,6 @@ const TABS: Tab[] = [
   { id: "all", label: "All" },
   { id: "best", label: "Best" },
   { id: "new", label: "New" },
-  { id: "combo", label: "Combo" },
 ] as const;
 
 const USE_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
@@ -28,10 +27,6 @@ const USE_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
 function filterDummy(tab: TabId): Product[] {
   if (tab === "best") return DUMMY_PRODUCTS.filter((p) => p.tag === "best");
   if (tab === "new") return DUMMY_PRODUCTS.filter((p) => p.tag === "new");
-  if (tab === "combo")
-    return DUMMY_PRODUCTS.filter(
-      (p) => p.category === "combo" || p.category === "sets"
-    );
   return DUMMY_PRODUCTS;
 }
 
@@ -39,7 +34,6 @@ function filterDummy(tab: TabId): Product[] {
 function getFilters(tab: TabId): Record<string, string> | undefined {
   if (tab === "best") return { tab: "bestseller", limit: "8" };
   if (tab === "new") return { tab: "new", limit: "8" };
-  if (tab === "combo") return { category: "sets", limit: "8" };
   return { limit: "8" }; // "all" → fetch first 8
 }
 
@@ -78,11 +72,10 @@ export function FeaturedProducts() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-                  activeTab === tab.id
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === tab.id
                     ? "bg-brand text-white shadow-md"
                     : "bg-white text-ink shadow-sm hover:shadow"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
