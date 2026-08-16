@@ -81,6 +81,7 @@ export function BundlesCarousel() {
       rating: 4.8,
       reviewCount: 120,
       stock: 50,
+      itemType: "combo",
       isNew: false,
       isBestSeller: false,
       createdAt: new Date().toISOString(),

@@ -28,6 +28,7 @@ export interface Product {
   sku?: string;
   isNew?: boolean;
   isBestSeller?: boolean;
+  itemType?: "product" | "combo";
   createdAt: string;
 }
 
@@ -53,7 +54,10 @@ export interface CartItem {
 }
 
 export interface OrderItem {
-  productId: string;
+  itemType: "product" | "combo";
+  sourceId: string;
+  productId?: string;
+  comboId?: string;
   name: string;
   price: number;
   quantity: number;

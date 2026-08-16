@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
+import { useWishlistStore } from "@/store/wishlist.store";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
@@ -463,6 +464,7 @@ export function Navbar() {
   const router = useRouter();
   const { toggleCart, totalItems } = useCartStore();
   const { isAuthenticated, _ready } = useAuthStore();
+  const wishlistCount = useWishlistStore((s) => s.count());
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -636,12 +638,18 @@ export function Navbar() {
               </Link>
             )}
             {/* Wishlist — desktop only (matches mobile reference) */}
-            <button
-              className="hidden lg:inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
+            <Link
+              href="/wishlist"
+              className="relative inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
-            </button>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={toggleCart}
               className="relative p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
@@ -729,12 +737,18 @@ export function Navbar() {
                 >
                   <Search className="h-5 w-5" />
                 </button>
-                <button
-                  className="hidden lg:inline-flex text-ink/70 hover:text-ink transition-colors"
+                <Link
+                  href="/wishlist"
+                  className="relative inline-flex text-ink/70 hover:text-ink transition-colors"
                   aria-label="Wishlist"
                 >
                   <Heart className="h-5 w-5" />
-                </button>
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
                 <button
                   onClick={toggleCart}
                   className="relative text-ink/70 hover:text-ink transition-colors"
