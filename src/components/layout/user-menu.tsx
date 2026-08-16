@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User, Package, Heart, LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
+import { useWishlistStore } from "@/store/wishlist.store";
 import { authService } from "@/services/auth.service";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import {
 
 export function UserMenu() {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const clearWishlist = useWishlistStore((s) => s.clearWishlist);
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -26,6 +28,7 @@ export function UserMenu() {
       // Ignore — local session is cleared regardless
     }
     logout();
+    clearWishlist();
     router.push("/");
   };
 

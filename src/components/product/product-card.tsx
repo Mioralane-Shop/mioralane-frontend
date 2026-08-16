@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, ShoppingBag, ShoppingCart, Star, Sparkles } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
+import { useAuthStore } from "@/store/auth.store";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -50,6 +52,7 @@ function comboSetLabel(product: Product): string {
 }
 
 export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
+  const router = useRouter();
   const [mainImgSrc, setMainImgSrc] = useState<string>(
     product.images?.[0] ?? ""
   );
@@ -65,6 +68,10 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
 
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
+  const isTogglingWishlist = useWishlistStore(
+    (s) => s.isToggling === product.id
+  );
+  const { isAuthenticated, _ready } = useAuthStore();
   const addItem = useCartStore((s) => s.addItem);
   const toggleCart = useCartStore((s) => s.toggleCart);
   const isInCart = useCartStore((s) =>
@@ -85,15 +92,30 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
     }
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleWishlist(product.id);
-    addToast(
-      isWishlisted
-        ? "Removed from wishlist"
-        : `${product.name} added to wishlist`,
-      "info"
-    );
+    if (!_ready || isTogglingWishlist) return;
+
+    if (!isAuthenticated) {
+      addToast("Please sign in to use your wishlist", "info");
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    try {
+      const nextState = await toggleWishlist(
+        product.id,
+        product.category === "combo" ? "combo" : "product"
+      );
+      addToast(
+        nextState
+          ? `${product.name} added to wishlist`
+          : "Removed from wishlist",
+        "info"
+      );
+    } catch {
+      addToast("Could not update wishlist. Please try again.", "error");
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -171,11 +193,13 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
         {/* Wishlist Heart Button */}
         <button
           onClick={handleWishlist}
+          disabled={isTogglingWishlist}
           className={cn(
             "absolute top-3 left-3 z-20 w-8 h-8 sm:w-10 sm:h-10 lg:w-8 lg:h-8 rounded-full bg-surface flex items-center justify-center transition-all duration-150 shadow-sm hover:scale-105",
             isWishlisted
               ? "text-accent fill-accent"
-              : "text-ink-muted hover:text-accent"
+              : "text-ink-muted hover:text-accent",
+            isTogglingWishlist && "cursor-wait opacity-70"
           )}
           title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
           aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}

@@ -21,9 +21,12 @@ import {
 import { useProduct } from "@/hooks/use-products";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
+import { useWishlistStore } from "@/store/wishlist.store";
+import { useAuthStore } from "@/store/auth.store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/product/product-card";
 import { DUMMY_PRODUCTS } from "@/constants/site";
+import { cn } from "@/lib/utils";
 import type { SizeOption } from "@/types/product";
 
 const PAYMENT_METHODS = ["bKash", "Nagad", "Rocket", "COD", "SSLCommerz"];
@@ -68,6 +71,14 @@ export default function ProductPage() {
   const { data: product, isLoading } = useProduct(slug);
   const { addItem } = useCartStore();
   const addToast = useToastStore((s) => s.addToast);
+  const isWishlisted = useWishlistStore((s) =>
+    product ? s.isWishlisted(product.id) : false
+  );
+  const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
+  const isTogglingWishlist = useWishlistStore((s) =>
+    product ? s.isToggling === product.id : false
+  );
+  const { isAuthenticated, _ready } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
@@ -129,6 +140,31 @@ export default function ProductPage() {
     );
     addToast("Proceeding to checkout...", "info");
     router.push("/checkout");
+  };
+
+  const handleWishlist = async () => {
+    if (!product || !_ready || isTogglingWishlist) return;
+
+    if (!isAuthenticated) {
+      addToast("Please sign in to use your wishlist", "info");
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    try {
+      const nextState = await toggleWishlist(
+        product.id,
+        product.category === "combo" ? "combo" : "product"
+      );
+      addToast(
+        nextState
+          ? `${product.name} added to wishlist`
+          : "Removed from wishlist",
+        "info"
+      );
+    } catch {
+      addToast("Could not update wishlist. Please try again.", "error");
+    }
   };
 
   if (isLoading) {
@@ -409,8 +445,19 @@ export default function ProductPage() {
               Add to Cart
             </button>
 
-            <button className="w-12 h-12 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 hover:text-ink hover:border-ink/30 transition-all">
-              <Heart className="h-5 w-5" />
+            <button
+              onClick={handleWishlist}
+              disabled={isTogglingWishlist}
+              className={cn(
+                "w-12 h-12 flex items-center justify-center rounded-full border border-ink/15 transition-all hover:border-rose-300",
+                isWishlisted
+                  ? "bg-rose-50 text-rose-500"
+                  : "text-ink/60 hover:text-rose-500",
+                isTogglingWishlist && "cursor-wait opacity-70"
+              )}
+              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
             </button>
           </div>
 

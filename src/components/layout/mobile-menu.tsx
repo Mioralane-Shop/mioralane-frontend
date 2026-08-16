@@ -82,7 +82,7 @@ export function MobileMenu() {
     { label: isAuthenticated ? "My Account" : "Login", href: isAuthenticated ? "/profile" : "/login" },
     { label: "Shopping Cart", href: "/cart" },
     { label: "Order History", href: "/orders" },
-    { label: "Wishlist", href: "#" },
+    { label: "Wishlist", href: "/wishlist" },
     { label: "Mioralane Club", href: "#" },
     { label: "Shipping & Returns", href: "/returns" },
     { label: "Skincare Quiz", href: "#" },
