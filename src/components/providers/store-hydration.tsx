@@ -15,6 +15,7 @@ export function StoreHydration() {
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
+    useWishlistStore.persist.rehydrate();
   }, []);
 
   useEffect(() => {

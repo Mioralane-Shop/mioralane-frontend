@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Package, Heart, LogOut } from "lucide-react";
+import { User, Package, LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { authService } from "@/services/auth.service";
@@ -84,12 +84,6 @@ export function UserMenu() {
           <Link href="/orders" className="flex items-center gap-3 cursor-pointer">
             <Package className="h-4 w-4" />
             My Orders
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/wishlist" className="flex items-center gap-3 cursor-pointer">
-            <Heart className="h-4 w-4" />
-            Wishlist
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

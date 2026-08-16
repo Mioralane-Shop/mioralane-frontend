@@ -640,7 +640,7 @@ export function Navbar() {
             {/* Wishlist — desktop only (matches mobile reference) */}
             <Link
               href="/wishlist"
-              className="relative hidden p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04] lg:inline-flex"
+              className="relative inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -739,7 +739,7 @@ export function Navbar() {
                 </button>
                 <Link
                   href="/wishlist"
-                  className="relative hidden text-ink/70 hover:text-ink transition-colors lg:inline-flex"
+                  className="relative inline-flex text-ink/70 hover:text-ink transition-colors"
                   aria-label="Wishlist"
                 >
                   <Heart className="h-5 w-5" />

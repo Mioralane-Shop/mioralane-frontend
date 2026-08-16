@@ -95,6 +95,7 @@ export const useWishlistStore = create<WishlistState>()(
     {
       name: "mioralane-wishlist",
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
       partialize: (state) => ({
         productIds: state.productIds,
       }),
