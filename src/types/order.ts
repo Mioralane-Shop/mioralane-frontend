@@ -4,7 +4,10 @@ export type PaymentStatus = "pending" | "paid" | "failed";
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered";
 
 export interface OrderItem {
-  productId: string;
+  itemType: "product" | "combo";
+  sourceId: string;
+  productId?: string;
+  comboId?: string;
   title: string;
   quantity: number;
   price: number;
@@ -40,10 +43,13 @@ export interface Order {
 
 export interface CreateOrderPayload {
   items: Array<{
-    productId: string;
+    itemId: string;
+    itemType: "product" | "combo";
+    title: string;
+    price: number;
+    thumbnail: string;
     quantity: number;
   }>;
   shippingAddress: ShippingAddress;
   paymentMethod?: PaymentMethod;
 }
-

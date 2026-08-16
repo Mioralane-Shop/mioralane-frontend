@@ -156,7 +156,7 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                 <div className="space-y-3">
                   {order.items.map((item) => (
                     <div
-                      key={`${order.id}-${item.productId}`}
+                      key={`${order.id}-${item.sourceId}`}
                       className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white p-4"
                     >
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-rose-50">

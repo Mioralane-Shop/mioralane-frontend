@@ -86,7 +86,11 @@ function CheckoutContent() {
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({
-          productId: item.product.id,
+          itemId: item.product.id,
+          itemType: item.product.itemType ?? (item.product.category === "combo" ? "combo" : "product"),
+          title: item.product.name,
+          price: item.product.price,
+          thumbnail: item.product.images?.[0] ?? "",
           quantity: item.quantity,
         })),
         shippingAddress: values,

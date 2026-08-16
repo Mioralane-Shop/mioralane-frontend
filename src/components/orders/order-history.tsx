@@ -111,7 +111,7 @@ export function OrderHistory({
 
               <div className="mt-5 space-y-3">
                 {order.items.slice(0, 4).map((item) => (
-                  <div key={`${order.id}-${item.productId}`} className="flex items-center gap-3">
+                  <div key={`${order.id}-${item.sourceId}`} className="flex items-center gap-3">
                     <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-rose-50">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img

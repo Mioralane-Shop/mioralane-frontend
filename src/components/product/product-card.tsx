@@ -98,7 +98,13 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addItem(product, 1);
+    addItem(
+      {
+        ...product,
+        itemType: product.category === "combo" ? "combo" : "product",
+      },
+      1
+    );
     addToast(`${product.name} added to cart`, "success");
   };
 
