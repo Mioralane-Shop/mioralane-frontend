@@ -212,11 +212,6 @@ export function HeroSection() {
                     {slide.discountSuffix}
                   </span>
                 </div>
-                <p
-                  className={`mb-4 text-[13px] font-normal ${slide.subtitleClass}`}
-                >
-                  {slide.subtitle}
-                </p>
                 <Link
                   href={slide.href}
                   className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[13px] font-semibold transition-all hover:-translate-y-px ${slide.btnClass}`}
