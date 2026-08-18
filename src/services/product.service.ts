@@ -4,6 +4,7 @@ import type { Product } from "@/types/product";
 export interface PaginatedProductsResponse {
   success: boolean;
   count: number;
+  totalProducts?: number;
   page: number;
   limit: number;
   totalPages: number;
@@ -27,7 +28,9 @@ export const productService = {
   },
 
   getFeatured: async (): Promise<PaginatedProductsResponse> => {
-    const { data } = await api.get<PaginatedProductsResponse>("/products/featured");
+    const { data } = await api.get<PaginatedProductsResponse>("/products", {
+      params: { featured: "true", limit: "8" },
+    });
     return data;
   },
 

@@ -104,6 +104,6 @@ export interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   skinType?: string;
-  sortBy?: "price-asc" | "price-desc" | "newest" | "rating";
+  sortBy?: "price-asc" | "price-desc" | "newest" | "rating" | "popular" | "popularity";
   search?: string;
 }

@@ -41,13 +41,19 @@ function paramOrNull(value: string | null): string | null {
   return value;
 }
 
+function normalizeSort(value: string | null): string {
+  if (!value) return "newest";
+  if (value === "popularity") return "popular";
+  return value;
+}
+
 function buildApiParams(params: URLSearchParams): Record<string, string> {
   const api: Record<string, string> = {};
   const cat = paramOrNull(params.get("category"));
   const st = paramOrNull(params.get("skinType"));
   const cn = paramOrNull(params.get("concern"));
   const s = paramOrNull(params.get("search"));
-  const sort = paramOrNull(params.get("sort"));
+  const sort = normalizeSort(params.get("sort"));
   const minP = params.get("minPrice");
   const maxP = params.get("maxPrice");
   const page = params.get("page");
@@ -75,7 +81,7 @@ function ShopContent() {
   const selectedCategory = paramOrNull(searchParams.get("category"));
   const selectedSkinType = searchParams.get("skinType") || "all";
   const selectedConcern = searchParams.get("concern") || "all";
-  const activeSort = searchParams.get("sort") || "newest";
+  const activeSort = normalizeSort(searchParams.get("sort"));
   const searchQuery = searchParams.get("search") || "";
   const activeMinPrice = searchParams.get("minPrice") || "";
   const activeMaxPrice = searchParams.get("maxPrice") || "";
