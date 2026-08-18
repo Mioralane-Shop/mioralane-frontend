@@ -335,6 +335,14 @@ function getFinish(product: Product) {
   return "";
 }
 
+function clampQuantityToStock(quantity: number, stock: number) {
+  if (stock <= 0) {
+    return 1;
+  }
+
+  return Math.max(1, Math.min(quantity, stock));
+}
+
 function getRoutineProducts(product: Product) {
   const candidates = DUMMY_PRODUCTS.filter(
     (item) => item.id !== product.id && item.category !== "combo" && item.category !== "sets",
@@ -387,6 +395,7 @@ export default function ProductPage() {
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
+  const syncItemStock = useCartStore((s) => s.syncItemStock);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -416,16 +425,26 @@ export default function ProductPage() {
   const displayPrice = selectedSizeOption?.price ?? product?.price ?? 0;
   const compareAtPrice =
     selectedSizeOption?.compareAtPrice ?? product?.compareAtPrice;
+  const effectiveStock = selectedSizeOption?.stock ?? product?.stock ?? 0;
+
+  useEffect(() => {
+    if (!product) return;
+
+    setQuantity((current) => clampQuantityToStock(current, effectiveStock));
+    syncItemStock(product.id, effectiveStock);
+  }, [effectiveStock, product, syncItemStock]);
 
   const addToCart = (qty: number = quantity) => {
-    if (!product) return;
+    if (!product || effectiveStock <= 0) return;
+
+    const quantityToAdd = clampQuantityToStock(qty, effectiveStock);
     addItem(
       {
         ...product,
         price: displayPrice,
         compareAtPrice,
       },
-      qty,
+      quantityToAdd,
     );
     addToast(`${product.name} added to cart`);
     setQuantity(1);
@@ -503,8 +522,8 @@ export default function ProductPage() {
   const benefitChips = getBenefitChips(product);
   const routineProducts = getRoutineProducts(product);
   const stockText =
-    product.stock > 0
-      ? `In Stock · ${product.stock <= 20 ? `Only ${product.stock} left` : "Ready to ship"}`
+    effectiveStock > 0
+      ? `In Stock · ${effectiveStock <= 20 ? `Only ${effectiveStock} left` : "Ready to ship"}`
       : "Out of stock";
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
@@ -798,7 +817,8 @@ export default function ProductPage() {
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="flex h-11 shrink-0 items-center rounded-full border border-ink/25 bg-white">
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
+                    disabled={quantity <= 1}
                     className="flex h-11 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
                     aria-label="Decrease quantity"
                   >
@@ -806,8 +826,9 @@ export default function ProductPage() {
                   </button>
                   <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="flex h-11 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
+                    onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
+                    disabled={quantity >= effectiveStock || effectiveStock <= 0}
+                    className="flex h-11 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
                     aria-label="Increase quantity"
                   >
                     <Plus className="h-4 w-4" />
@@ -816,10 +837,10 @@ export default function ProductPage() {
 
                 <button
                   onClick={() => addToCart()}
-                  disabled={product.stock === 0}
+                  disabled={effectiveStock === 0}
                   className={cn(
                     "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
-                    product.stock === 0
+                    effectiveStock === 0
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
                       : "bg-[#4B3858] text-white hover:bg-accent-dark",
                   )}
@@ -1142,7 +1163,8 @@ export default function ProductPage() {
       )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-ink/10 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="flex items-center rounded-full border border-ink/15">
           <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
+            disabled={quantity <= 1}
             className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink"
             aria-label="Decrease quantity"
           >
@@ -1150,8 +1172,9 @@ export default function ProductPage() {
           </button>
           <span className="w-7 text-center text-sm font-medium">{quantity}</span>
           <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink"
+            onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
+            disabled={quantity >= effectiveStock || effectiveStock <= 0}
+            className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
             aria-label="Increase quantity"
           >
             <Plus className="h-4 w-4" />
@@ -1159,7 +1182,7 @@ export default function ProductPage() {
         </div>
         <button
           onClick={() => addToCart()}
-          disabled={product.stock === 0}
+          disabled={effectiveStock === 0}
           className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
         >
           <ShoppingBag className="h-4 w-4" />

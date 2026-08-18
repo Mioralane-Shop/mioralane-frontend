@@ -11,8 +11,10 @@ import { MobileMenu } from "@/components/layout/mobile-menu";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
 import { getComboMeta, getComboProducts } from "@/constants/combo";
-import { DUMMY_PRODUCTS, BRANDS } from "@/constants/site";
+import { BRANDS } from "@/constants/site";
+import { productService } from "@/services/product.service";
 import { formatPrice } from "@/lib/utils";
+import type { Product } from "@/types/product";
 
 const BOTTOM_NAV = [
   { label: "Skin Care", href: "/shop" },
@@ -469,28 +471,53 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchingResults, setSearchingResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-
-  const searchResults =
-    searchQuery.length >= 2
-      ? DUMMY_PRODUCTS.filter((p) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.brand?.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q)
-        );
-      }).slice(0, 5)
-      : [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    const query = searchQuery.trim();
+    if (query) {
+      router.push(`/shop?search=${encodeURIComponent(query)}`);
       setSearchQuery("");
       setSearchFocused(false);
     }
   };
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (!searchFocused || query.length < 2) {
+      setSearchResults([]);
+      setSearchingResults(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchingResults(true);
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await productService.getAll({ search: query, limit: "5" });
+        if (!cancelled) {
+          setSearchResults(res.products ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setSearchResults([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setSearchingResults(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [searchFocused, searchQuery]);
 
   useEffect(() => {
     let ticking = false;
@@ -524,7 +551,7 @@ export function Navbar() {
 
       {/* Top Row - slides up on scroll */}
       <div
-        className={`fixed top-[36px] left-0 right-0 z-50 bg-white transition-transform duration-300 ease-in-out ${scrolled ? "lg:-translate-y-full" : ""
+        className={`fixed top-[36px] left-0 right-0 z-[60] bg-white transition-transform duration-300 ease-in-out ${scrolled ? "lg:-translate-y-full" : ""
           }`}
       >
         <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
@@ -579,9 +606,13 @@ export function Navbar() {
               )}
 
               {/* Live Suggestions */}
-              {searchFocused && searchQuery.length >= 2 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl shadow-lg border border-border-light overflow-hidden z-50">
-                  {searchResults.length > 0 ? (
+              {searchFocused && searchQuery.trim().length >= 2 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl shadow-lg border border-border-light overflow-hidden z-[80]">
+                  {searchingResults ? (
+                    <div className="p-4 text-center text-sm text-ink/40">
+                      Searching...
+                    </div>
+                  ) : searchResults.length > 0 ? (
                     <div className="p-2">
                       {searchResults.map((product) => (
                         <Link
@@ -616,7 +647,7 @@ export function Navbar() {
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-ink/40">
-                      No products found
+                      No products found for &ldquo;{searchQuery.trim()}&rdquo;
                     </div>
                   )}
                 </div>
