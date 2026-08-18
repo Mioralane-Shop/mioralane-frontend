@@ -4,12 +4,13 @@ import { useRef } from "react";
 import { useCartStore } from "@/store/cart.store";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
+import { SectionHeading } from "@/components/common/section-heading";
 
 const BUNDLES = [
   {
     id: "combo-glass-skin",
     name: "The Glass Skin Routine",
-    badge: "✦ RITUAL SET",
+    badge: "RITUAL SET",
     badgeColor: "#D4637A",
     desc: "Cleanser + Toner + Serum + Moisturizer + Sunscreen — the complete Korean routine for Bangladesh.",
     current: 4250,
@@ -21,7 +22,7 @@ const BUNDLES = [
   {
     id: "combo-acne-set",
     name: "Acne Fighter Bundle",
-    badge: "🌿 ACNE FIGHTER",
+    badge: "GLOW",
     badgeColor: "#2D5A3D",
     desc: "COSRX Cleanser + Snail Mucin + BOJ Glow Serum — target breakouts with this powerful 3-step set.",
     current: 3200,
@@ -33,7 +34,7 @@ const BUNDLES = [
   {
     id: "combo-travel-kit",
     name: "Travel Essentials Kit",
-    badge: "🧳 TRAVEL",
+    badge: "TRAVEL",
     badgeColor: "#8B7355",
     desc: "Mini versions of our bestsellers — perfect for trying before you commit or taking on the go.",
     current: 1850,
@@ -45,7 +46,7 @@ const BUNDLES = [
   {
     id: "combo-uv-shield",
     name: "UV Shield Combo",
-    badge: "☀️ SUN PROTECTION",
+    badge: "SUN PROTECTION",
     badgeColor: "#3D5A80",
     desc: "Beauty of Joseon Sunscreen + COSRX Snail Mucin — protect and repair in one bundle.",
     current: 2800,
@@ -67,7 +68,6 @@ export function BundlesCarousel() {
   };
 
   const handleAdd = (bundle: (typeof BUNDLES)[number]) => {
-    // Create a minimal Product-like object for the cart
     const bundleProduct: Product = {
       id: bundle.id,
       slug: bundle.id,
@@ -93,16 +93,7 @@ export function BundlesCarousel() {
     <section className="py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="mb-10 text-center">
-          <span className="text-sm font-semibold tracking-wider text-brand">
-            Limited Bundles
-          </span>
-          <h2 className="mt-2 text-3xl font-light tracking-tight text-ink">
-            Bundles that actually save you money
-          </h2>
-          <p className="mt-2 text-neutral-500">
-            We bundled these because buying them together makes more sense than
-            separately.
-          </p>
+          <SectionHeading title="BUNDLES" />
         </div>
 
         <div className="relative">
@@ -146,9 +137,6 @@ export function BundlesCarousel() {
                   <h3 className="mt-3 text-xl font-semibold text-ink">
                     {bundle.name}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink/60">
-                    {bundle.desc}
-                  </p>
                 </div>
 
                 <div className="mt-4 flex items-center gap-3">

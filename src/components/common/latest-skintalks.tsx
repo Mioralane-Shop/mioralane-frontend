@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { BLOG_POSTS } from "@/constants/blog";
+import { SectionHeading } from "@/components/common/section-heading";
 
 export function LatestSkintalks() {
   const posts = BLOG_POSTS.slice(0, 3);
@@ -9,14 +10,7 @@ export function LatestSkintalks() {
   return (
     <section className="bg-white py-12 md:py-16">
       <div className="mx-auto max-w-[1200px] px-6">
-        {/* Heading with flanking lines */}
-        <div className="flex items-center justify-center gap-4">
-          <span className="h-px w-10 bg-ink/20 sm:w-16" />
-          <h2 className="text-xl font-bold uppercase tracking-tight text-ink sm:text-2xl">
-            Latest Skintalks
-          </h2>
-          <span className="h-px w-10 bg-ink/20 sm:w-16" />
-        </div>
+        <SectionHeading title="LATEST SKINTALKS" />
         <div className="mt-3 text-center">
           <Link
             href="/blog"
@@ -47,9 +41,6 @@ export function LatestSkintalks() {
                   {post.title}
                 </h3>
                 <p className="mt-1.5 text-xs text-ink/40">{post.date}</p>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/50">
-                  {post.excerpt}
-                </p>
                 <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink transition-colors group-hover:text-accent">
                   View Details <ArrowRight className="h-4 w-4" />
                 </span>
