@@ -57,11 +57,18 @@ export function CartDrawer() {
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-            <ShoppingBag className="h-12 w-12 text-neutral-300" />
-            <p className="text-neutral-500">Your cart is empty</p>
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50">
+              <ShoppingBag className="h-7 w-7 text-rose-300" />
+            </div>
+            <p className="text-base font-medium text-neutral-700">
+              Your cart is empty
+            </p>
+            <p className="max-w-xs text-sm text-neutral-400">
+              Browse our shop to find products you want to add to your routine.
+            </p>
             <Link href="/shop" onClick={closeCart}>
               <Button variant="outline" size="sm">
-                Browse Products
+                Continue Shopping
               </Button>
             </Link>
           </div>

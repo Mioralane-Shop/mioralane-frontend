@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, X, TrendingUp } from "lucide-react";
 import { ProductImage } from "@/components/common/product-image";
-import { DUMMY_PRODUCTS } from "@/constants/site";
+import { productService } from "@/services/product.service";
+import type { Product } from "@/types/product";
 
 const TRENDING = [
   "Snail Mucin",
@@ -25,6 +26,8 @@ export function SearchModal({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,23 +47,51 @@ export function SearchModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await productService.getAll({ search: q, limit: "8" });
+        if (!cancelled) {
+          setResults(res.products ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setResults([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [open, query]);
+
   if (!open) return null;
 
   const q = query.trim().toLowerCase();
-  const results =
-    q.length >= 2
-      ? DUMMY_PRODUCTS.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.brand?.toLowerCase().includes(q) ||
-            p.category?.toLowerCase().includes(q),
-        ).slice(0, 8)
-      : [];
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (query.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
+    const nextQuery = query.trim();
+    if (nextQuery) {
+      router.push(`/shop?search=${encodeURIComponent(nextQuery)}`);
       onClose();
     }
   };
@@ -111,9 +142,11 @@ export function SearchModal({
                 ))}
               </div>
             </div>
+          ) : loading ? (
+            <p className="py-12 text-center text-ink/40">Searching...</p>
           ) : results.length === 0 ? (
             <p className="py-12 text-center text-ink/40">
-              No products found for &ldquo;{query}&rdquo;
+              No products found for &ldquo;{query.trim()}&rdquo;
             </p>
           ) : (
             <div className="space-y-1">

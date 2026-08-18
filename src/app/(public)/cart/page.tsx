@@ -22,15 +22,17 @@ export default function CartPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <ShoppingBag className="h-16 w-16 text-neutral-300" />
-          <h2 className="mt-4 text-xl font-medium text-neutral-600">
+        <div className="rounded-2xl border border-rose-100 bg-white px-6 py-16 text-center shadow-sm">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
+            <ShoppingBag className="h-8 w-8 text-rose-300" />
+          </div>
+          <h2 className="mt-5 text-xl font-medium text-neutral-700">
             Your cart is empty
           </h2>
-          <p className="mt-2 text-neutral-400">
-            Looks like you haven&apos;t added anything yet.
+          <p className="mt-2 text-sm text-neutral-400">
+            Browse our shop to find products you want to add to your routine.
           </p>
-          <Link href="/shop" className="mt-6">
+          <Link href="/shop" className="mt-6 inline-block">
             <Button>Continue Shopping</Button>
           </Link>
         </div>
