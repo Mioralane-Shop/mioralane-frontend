@@ -3,9 +3,8 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { SectionHeading } from "@/components/common/section-heading";
 
-// Placeholder Instagram feed — swap `href` with real post URLs once the IG
-// account is connected (Instagram Basic Display API or SnapWidget/EmbedSocial).
 const IG_POSTS = [
   {
     id: "1",
@@ -79,16 +78,8 @@ export function InstagramSection() {
   return (
     <section className="bg-white py-12 md:py-16">
       <div className="mx-auto max-w-[1200px] px-6">
-        {/* Heading */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold uppercase tracking-tight text-ink md:text-3xl">
-            Follow Us on Instagram{" "}
-            <span className="text-accent">#KSGLOWIES</span>
-          </h2>
-          <p className="mt-2 text-sm text-ink/50">177k followers</p>
-        </div>
+        <SectionHeading title="FOLLOW US ON INSTAGRAM" />
 
-        {/* Carousel */}
         <div className="relative mt-10">
           <button
             onClick={() => scrollByCards(-1)}
@@ -118,7 +109,6 @@ export function InstagramSection() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 150px, (max-width: 1024px) 200px, 220px"
                 />
-                {/* Play overlay for reels/videos */}
                 {post.isVideo && (
                   <span className="absolute inset-0 flex items-center justify-center">
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-ink shadow-md">
@@ -126,7 +116,6 @@ export function InstagramSection() {
                     </span>
                   </span>
                 )}
-                {/* Pink caption overlay */}
                 {post.caption && (
                   <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                     {post.caption}
