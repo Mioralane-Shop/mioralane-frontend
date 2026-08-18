@@ -49,23 +49,33 @@ function normalizeSort(value: string | null): string {
 
 function buildApiParams(params: URLSearchParams): Record<string, string> {
   const api: Record<string, string> = {};
+  const brand = paramOrNull(params.get("brand"));
   const cat = paramOrNull(params.get("category"));
   const st = paramOrNull(params.get("skinType"));
   const cn = paramOrNull(params.get("concern"));
+  const skinConcern = paramOrNull(params.get("skinConcern"));
   const s = paramOrNull(params.get("search"));
   const sort = normalizeSort(params.get("sort"));
   const minP = params.get("minPrice");
   const maxP = params.get("maxPrice");
   const page = params.get("page");
+  const featured = paramOrNull(params.get("featured"));
+  const bestSeller = paramOrNull(params.get("bestSeller"));
+  const inStock = paramOrNull(params.get("inStock"));
 
+  if (brand) api.brand = brand;
   if (cat) api.category = cat;
   if (st) api.skinType = st;
-  if (cn) api.skinConcern = cn;
+  if (skinConcern) api.skinConcern = skinConcern;
+  else if (cn) api.skinConcern = cn;
   if (s) api.search = s;
   if (sort) api.sort = sort;
   if (minP) api.minPrice = minP;
   if (maxP) api.maxPrice = maxP;
   if (page) api.page = page;
+  if (featured) api.featured = featured;
+  if (bestSeller) api.bestSeller = bestSeller;
+  if (inStock) api.inStock = inStock;
   api.limit = "12";
 
   return api;
@@ -101,8 +111,9 @@ function ShopContent() {
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentSearch = searchParams.get("search") || "";
-      if (searchInput !== currentSearch) {
-        updateParam("search", searchInput || null);
+      const nextSearch = searchInput.trim();
+      if (nextSearch !== currentSearch) {
+        updateParam("search", nextSearch || null);
       }
     }, 400);
     return () => clearTimeout(timer);
@@ -113,7 +124,7 @@ function ShopContent() {
   const apiParams = useMemo(() => buildApiParams(searchParams), [searchParams]);
 
   // ── Data fetching ──
-  const { data: products, isLoading } = useProducts(apiParams);
+  const { data: products, isLoading, isError, error } = useProducts(apiParams);
 
   // ── Scroll listener ──
   useEffect(() => {
@@ -164,6 +175,10 @@ function ShopContent() {
     !!searchQuery;
 
   const productCount = products?.length ?? 0;
+  const searchLabel = searchQuery.trim();
+  const pageTitle = searchLabel
+    ? `Search results for "${searchLabel}"`
+    : "Shop All Products";
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 sm:py-10">
@@ -177,11 +192,17 @@ function ShopContent() {
         </div>
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <h1 className="text-3xl md:text-4xl font-serif font-medium text-ink">
-            Shop All Products
+            {pageTitle}
           </h1>
-          <p className="mt-3 text-lg text-ink/50">
-            Batch-verified Korean skincare, directly sourced from Seoul.
-          </p>
+          {searchLabel ? (
+            <p className="mt-3 text-lg text-ink/50">
+              Refine the search or clear it to browse everything.
+            </p>
+          ) : (
+            <p className="mt-3 text-lg text-ink/50">
+              Batch-verified Korean skincare, directly sourced from Seoul.
+            </p>
+          )}
         </div>
       </div>
 
@@ -196,7 +217,7 @@ function ShopContent() {
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                updateParam("search", searchInput || null);
+                updateParam("search", searchInput.trim() || null);
               }
             }}
             className="w-full rounded-full border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-ink/30 outline-none transition-colors focus:border-accent/40"
@@ -418,24 +439,53 @@ function ShopContent() {
                 </div>
               ))}
             </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-border-light bg-surface py-20 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
+                <Filter className="h-7 w-7 text-rose-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-ink">
+                Unable to load products
+              </h2>
+              <p className="mt-1 mb-6 max-w-sm text-sm text-ink/50">
+                {error instanceof Error ? error.message : "Please try again in a moment."}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
+              >
+                Retry
+              </button>
+            </div>
           ) : !products || products.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-border-light bg-surface py-20 text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-ink/[0.04]">
                 <Filter className="h-7 w-7 text-ink/20" />
               </div>
               <h2 className="text-lg font-semibold text-ink">
-                No products found
+                {searchLabel
+                  ? `No products found for "${searchLabel}"`
+                  : "No products found"}
               </h2>
               <p className="mt-1 mb-6 max-w-sm text-sm text-ink/50">
-                Try adjusting your filters or search term to discover more
-                products.
+                Try adjusting your filters or search term to discover more products.
               </p>
-              <button
-                onClick={clearAll}
-                className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
-              >
-                Clear Filters
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {searchLabel && (
+                  <button
+                    onClick={() => updateParam("search", null)}
+                    className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
+                  >
+                    Clear search
+                  </button>
+                )}
+                <button
+                  onClick={clearAll}
+                  className="rounded-full border border-ink/10 px-6 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/20 hover:bg-white"
+                >
+                  Clear filters
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">

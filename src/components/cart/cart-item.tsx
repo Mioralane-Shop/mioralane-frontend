@@ -5,7 +5,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/common/product-image";
 import { useCartStore } from "@/store/cart.store";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import type { CartItem as CartItemType } from "@/types/product";
 
 interface CartItemProps {
@@ -58,6 +58,7 @@ export function CartItemRow({ item }: CartItemProps) {
               size="icon"
               className="h-7 w-7 rounded-lg"
               onClick={() => updateQuantity(product.id, quantity - 1)}
+              disabled={quantity === 1}
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -67,7 +68,10 @@ export function CartItemRow({ item }: CartItemProps) {
             <Button
               variant="outline"
               size="icon"
-              className="h-7 w-7 rounded-lg"
+              className={cn(
+                "h-7 w-7 rounded-lg",
+                "disabled:cursor-not-allowed disabled:text-neutral-300",
+              )}
               onClick={() => updateQuantity(product.id, quantity + 1)}
               disabled={!canIncrease}
             >
