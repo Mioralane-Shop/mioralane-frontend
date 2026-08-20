@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle2, Minus, Package, Plus, Star } from "lucide-react";
+import { CheckCircle2, Heart, Minus, Package, Plus, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/common/product-image";
 import { useCombo } from "@/hooks/use-combos";
 import { useCartStore } from "@/store/cart.store";
+import { useAuthStore } from "@/store/auth.store";
+import { useWishlistStore } from "@/store/wishlist.store";
 import { useToastStore } from "@/store/toast.store";
 import { cn, formatPrice } from "@/lib/utils";
 import type { ComboProduct } from "@/services/combo.service";
@@ -41,15 +44,10 @@ export default function ComboDetailPage() {
 }
 
 function ComboDetailContent({ slug }: { slug: string }) {
+  const router = useRouter();
   const addToast = useToastStore((state) => state.addToast);
   const addItem = useCartStore((state) => state.addItem);
   const toggleCart = useCartStore((state) => state.toggleCart);
-  const isInCart = useCartStore((state) =>
-    state.items.some((item) => item.product.slug === slug)
-  );
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
-
   const {
     data: combo,
     isLoading,
@@ -58,6 +56,19 @@ function ComboDetailContent({ slug }: { slug: string }) {
     refetch,
     isFetching,
   } = useCombo(slug);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+  const isWishlisted = useWishlistStore((state) =>
+    combo ? state.isWishlisted(combo.id) : false
+  );
+  const isTogglingWishlist = useWishlistStore((state) =>
+    combo ? state.isToggling === combo.id : false
+  );
+  const { isAuthenticated, _ready } = useAuthStore();
+  const isInCart = useCartStore((state) =>
+    state.items.some((item) => item.product.slug === slug)
+  );
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const statusCode = getErrorStatus(error);
   const isNotFound = statusCode === 404 || statusCode === 400 || !slug;
@@ -77,6 +88,26 @@ function ComboDetailContent({ slug }: { slug: string }) {
       qty
     );
     addToast(`${displayCombo.name} added to cart`, "success");
+  };
+
+  const handleWishlist = async () => {
+    if (!displayCombo || !_ready || isTogglingWishlist) return;
+
+    if (!isAuthenticated) {
+      addToast("Please sign in to use your wishlist", "info");
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    try {
+      const nextState = await toggleWishlist(displayCombo.id, "combo");
+      addToast(
+        nextState ? `${displayCombo.name} added to wishlist` : "Removed from wishlist",
+        "info"
+      );
+    } catch {
+      addToast("Could not update wishlist. Please try again.", "error");
+    }
   };
 
   if (isLoading) {
@@ -382,32 +413,62 @@ function ComboDetailContent({ slug }: { slug: string }) {
               </div>
 
               {isInCart ? (
-                <button
-                  type="button"
-                  onClick={() => toggleCart()}
-                  className={cn(
-                    "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
-                    "bg-success text-white hover:bg-success/90"
-                  )}
-                >
-                  <Package className="h-4 w-4" />
-                  View Cart
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleCart()}
+                    className={cn(
+                      "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
+                      "bg-success text-white hover:bg-success/90"
+                    )}
+                  >
+                    <Package className="h-4 w-4" />
+                    View Cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWishlist}
+                    disabled={isTogglingWishlist}
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/25 bg-white transition-all hover:border-accent/50 hover:text-accent",
+                      isWishlisted && "border-accent/25 bg-accent-pale text-accent",
+                      isTogglingWishlist && "cursor-wait opacity-70"
+                    )}
+                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
+                  </button>
+                </>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={currentStock === 0}
-                  className={cn(
-                    "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
-                    currentStock === 0
-                      ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
-                      : "bg-[#4B3858] text-white hover:bg-accent-dark"
-                  )}
-                >
-                  <Package className="h-4 w-4" />
-                  Add to Cart
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    disabled={currentStock === 0}
+                    className={cn(
+                      "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
+                      currentStock === 0
+                        ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
+                        : "bg-[#4B3858] text-white hover:bg-accent-dark"
+                    )}
+                  >
+                    <Package className="h-4 w-4" />
+                    Add to Cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWishlist}
+                    disabled={isTogglingWishlist}
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/25 bg-white transition-all hover:border-accent/50 hover:text-accent",
+                      isWishlisted && "border-accent/25 bg-accent-pale text-accent",
+                      isTogglingWishlist && "cursor-wait opacity-70"
+                    )}
+                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
+                  </button>
+                </>
               )}
             </div>
 
