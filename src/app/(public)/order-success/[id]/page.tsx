@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { RequireAuth } from "@/components/common/require-auth";
 import { useOrder } from "@/hooks/use-orders";
 import { formatPrice, cn } from "@/lib/utils";
-import type { OrderStatus } from "@/types/order";
+import type { OrderStatus, PaymentStatus } from "@/types/order";
 
 const ORDER_STEPS: Array<{ key: OrderStatus; label: string; icon: ReactNode }> = [
   { key: "pending", label: "Pending", icon: <Clock3 className="h-4 w-4" /> },
@@ -18,6 +18,39 @@ const ORDER_STEPS: Array<{ key: OrderStatus; label: string; icon: ReactNode }> =
   { key: "shipped", label: "Shipped", icon: <Truck className="h-4 w-4" /> },
   { key: "delivered", label: "Delivered", icon: <CheckCircle2 className="h-4 w-4" /> },
 ];
+
+const PAYMENT_STATUS_META: Record<
+  PaymentStatus,
+  { label: string; className: string }
+> = {
+  pending: {
+    label: "Pending payment",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  paid: {
+    label: "Paid",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  failed: {
+    label: "Payment failed",
+    className: "border-rose-200 bg-rose-50 text-rose-700",
+  },
+};
+
+function formatPaymentMethod(method: string): string {
+  if (method === "cash_on_delivery") {
+    return "Cash on Delivery";
+  }
+
+  return method
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getOrderStatusLabel(status: OrderStatus): string {
+  return ORDER_STEPS.find((step) => step.key === status)?.label ?? "Pending";
+}
 
 export default function OrderSuccessPage() {
   const params = useParams<{ id: string }>();
@@ -31,24 +64,20 @@ export default function OrderSuccessPage() {
 }
 
 function OrderSuccessContent({ orderId }: { orderId: string }) {
-  const { data: order, isLoading, isError } = useOrder(orderId);
+  const { data: order, isLoading, isError, error, refetch, isFetching } = useOrder(orderId);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
-      </div>
-    );
-  }
+  const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
+  const hasOrderId = orderId.trim().length > 0;
+  const isNotFoundError = statusCode === 400 || statusCode === 404;
 
-  if (isError || !order) {
+  if (!hasOrderId) {
     return (
       <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
         <h1 className="text-3xl font-light tracking-tight text-neutral-800">
           Order not found
         </h1>
         <p className="mt-3 text-neutral-400">
-          We could not load this order. Please check your orders page.
+          We could not find that order. Please check your orders page.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Button asChild>
@@ -62,10 +91,61 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+      </div>
+    );
+  }
+
+  if (isError || !order) {
+    if (isNotFoundError) {
+      return (
+        <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
+          <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+            Order not found
+          </h1>
+          <p className="mt-3 text-neutral-400">
+            We could not find that order. Please check your orders page.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button asChild>
+              <Link href="/orders">View Orders</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/shop">Continue Shopping</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
+        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+          Could not load order
+        </h1>
+        <p className="mt-3 text-neutral-400">
+          We could not load this order right now. Please try again.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button onClick={() => refetch()} disabled={isFetching}>
+            {isFetching ? "Retrying..." : "Retry"}
+          </Button>
+          <Button asChild>
+            <Link href="/orders">View Orders</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const status = order.orderStatus ?? order.status ?? "pending";
   const activeStepIndex = ORDER_STEPS.findIndex((step) => step.key === status);
   const isInsideDhaka = order.shippingAddress.deliveryZone === "inside_dhaka";
   const deliveryWindow = isInsideDhaka ? "2-4 business days" : "3-6 business days";
+  const paymentStatusMeta = PAYMENT_STATUS_META[order.paymentStatus];
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
@@ -94,6 +174,14 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                 <p className="mt-1 font-mono text-sm font-semibold">
                   {order.orderNumber}
                 </p>
+                <div className="mt-3">
+                  <p className="text-xs uppercase tracking-wider text-white/75">
+                    Order status
+                  </p>
+                  <p className="mt-1 text-sm font-semibold">
+                    {getOrderStatusLabel(status)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -193,7 +281,7 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
 
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm text-neutral-600">
-                      <span>Items total</span>
+                      <span>Items subtotal</span>
                       <span>{formatPrice(order.itemsTotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-neutral-600">
@@ -211,6 +299,22 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                   <div className="mt-5 grid gap-3 rounded-2xl bg-rose-50/60 p-4 text-sm text-neutral-600">
                     <div>
                       <p className="text-xs uppercase tracking-wider text-neutral-400">
+                        Customer name
+                      </p>
+                      <p className="mt-1 font-medium text-neutral-800">
+                        {order.shippingAddress.name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-neutral-400">
+                        Customer phone
+                      </p>
+                      <p className="mt-1 font-medium text-neutral-800">
+                        {order.shippingAddress.phone}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-neutral-400">
                         Delivery zone
                       </p>
                       <p className="mt-1 font-medium text-neutral-800">
@@ -219,25 +323,46 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Delivery address
+                        Area
                       </p>
                       <p className="mt-1 font-medium text-neutral-800">
                         {order.shippingAddress.area}
                       </p>
-                      <p className="text-neutral-500">
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-neutral-400">
+                        Full address
+                      </p>
+                      <p className="mt-1 font-medium text-neutral-800">
                         {order.shippingAddress.address}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Payment
+                        Payment method
                       </p>
                       <p className="mt-1 font-medium text-neutral-800">
-                        Cash on Delivery
+                        {formatPaymentMethod(order.paymentMethod)}
                       </p>
-                      <Badge variant="outline" className="mt-2 w-fit border-amber-200 bg-amber-50 text-amber-700">
-                        {order.paymentStatus}
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-neutral-400">
+                        Payment status
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className={cn("mt-2 w-fit", paymentStatusMeta.className)}
+                      >
+                        {paymentStatusMeta.label}
                       </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-neutral-400">
+                        Order status
+                      </p>
+                      <p className="mt-1 font-medium text-neutral-800">
+                        {getOrderStatusLabel(status)}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
