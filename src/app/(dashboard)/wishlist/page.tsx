@@ -11,6 +11,16 @@ import { useToastStore } from "@/store/toast.store";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
+function getWishlistItemType(product: Product) {
+  return product.itemType ?? (product.category === "combo" ? "combo" : "product");
+}
+
+function getWishlistItemHref(product: Product) {
+  return getWishlistItemType(product) === "combo"
+    ? `/combo/${product.slug}`
+    : `/product/${product.slug}`;
+}
+
 function WishlistProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
   const toggleCart = useCartStore((s) => s.toggleCart);
@@ -18,12 +28,14 @@ function WishlistProductCard({ product }: { product: Product }) {
   const isRemoving = useWishlistStore((s) => s.isToggling === product.id);
   const addToast = useToastStore((s) => s.addToast);
   const isOutOfStock = product.stock <= 0;
+  const itemType = getWishlistItemType(product);
+  const itemHref = getWishlistItemHref(product);
 
   const handleAddToCart = () => {
     addItem(
       {
         ...product,
-        itemType: product.category === "combo" ? "combo" : "product",
+        itemType,
       },
       1
     );
@@ -35,7 +47,7 @@ function WishlistProductCard({ product }: { product: Product }) {
     try {
       await removeFromWishlist(
         product.id,
-        product.category === "combo" ? "combo" : "product"
+        itemType
       );
       addToast("Removed from wishlist", "info");
     } catch {
@@ -46,7 +58,7 @@ function WishlistProductCard({ product }: { product: Product }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-border-light bg-white shadow-sm transition-shadow hover:shadow-md">
       <Link
-        href={`/product/${product.slug}`}
+        href={itemHref}
         className="relative block aspect-square overflow-hidden bg-ink/[0.03]"
       >
         <ProductImage
@@ -67,7 +79,7 @@ function WishlistProductCard({ product }: { product: Product }) {
           {product.brand}
         </p>
         <Link
-          href={`/product/${product.slug}`}
+          href={itemHref}
           className="mt-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-ink transition-colors hover:text-accent"
         >
           {product.name}
@@ -117,7 +129,7 @@ function WishlistProductCard({ product }: { product: Product }) {
 }
 
 export default function WishlistPage() {
-  const { products, isLoading, fetchWishlist } = useWishlistStore();
+  const { products, isLoading, error, fetchWishlist } = useWishlistStore();
 
   useEffect(() => {
     fetchWishlist().catch(() => {
@@ -145,6 +157,25 @@ export default function WishlistPage() {
         {isLoading ? (
           <div className="flex min-h-[320px] items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />
+          </div>
+        ) : error ? (
+          <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-border-light bg-white px-6 py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
+              <Heart className="h-7 w-7 text-rose-300" />
+            </div>
+            <h2 className="text-lg font-semibold text-ink">
+              Could not load your wishlist
+            </h2>
+            <p className="mb-6 mt-1 max-w-sm text-sm text-ink/50">
+              We ran into a problem loading your saved items. Please try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => fetchWishlist()}
+              className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark no-underline"
+            >
+              Retry
+            </button>
           </div>
         ) : products.length === 0 ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-border-light bg-white px-6 py-16 text-center">
