@@ -15,13 +15,15 @@ interface CartItemProps {
 export function CartItemRow({ item }: CartItemProps) {
   const { updateQuantity, removeItem } = useCartStore();
   const { product, quantity } = item;
+  const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
+  const itemHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const canIncrease = product.stock > 0 && quantity < product.stock;
   const isOutOfStock = product.stock <= 0;
 
   return (
     <div className="flex gap-4 py-4">
       <Link
-        href={`/product/${product.slug}`}
+        href={itemHref}
         className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50"
       >
         <ProductImage
@@ -36,7 +38,7 @@ export function CartItemRow({ item }: CartItemProps) {
 
       <div className="flex flex-1 flex-col justify-between">
         <div>
-          <Link href={`/product/${product.slug}`}>
+          <Link href={itemHref}>
             <h4 className="text-sm font-medium text-neutral-800 hover:text-rose-500 transition-colors line-clamp-1">
               {product.name}
             </h4>

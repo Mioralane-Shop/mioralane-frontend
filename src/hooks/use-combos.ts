@@ -21,3 +21,12 @@ export function useCombos() {
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 }
+
+export function useCombo(slug: string) {
+    return useQuery<ComboProduct>({
+        queryKey: ["combo", slug],
+        queryFn: () => comboService.getBySlug(slug),
+        enabled: !!slug,
+        staleTime: 5 * 60 * 1000,
+    });
+}
