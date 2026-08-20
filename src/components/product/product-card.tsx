@@ -83,12 +83,14 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const hasHoverImage = !hoverFailed && !!hoverImgSrc;
   const volumeInfo = parseVolume(product.volume);
   const isOutOfStock = product.stock <= 0;
+  const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
+  const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
 
   const handleClick = () => {
     if (onNavigate) {
       onNavigate(product);
     } else if (typeof window !== "undefined") {
-      window.location.href = `/product/${product.slug}`;
+      window.location.href = cardHref;
     }
   };
 
@@ -105,7 +107,7 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
     try {
       const nextState = await toggleWishlist(
         product.id,
-        product.category === "combo" ? "combo" : "product"
+        itemType
       );
       addToast(
         nextState
@@ -123,7 +125,7 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
     addItem(
       {
         ...product,
-        itemType: product.category === "combo" ? "combo" : "product",
+        itemType,
       },
       1
     );
