@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -38,6 +38,8 @@ function CheckoutContent() {
   const addToast = useToastStore((state) => state.addToast);
   const createOrder = useCreateOrder();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
 
   const {
     register,
@@ -74,6 +76,10 @@ function CheckoutContent() {
   );
 
   const onSubmit = async (values: CheckoutFormValues) => {
+    if (submitLockRef.current || createOrder.isPending) {
+      return;
+    }
+
     setServerError(null);
 
     if (hasUnavailableItem) {
@@ -82,6 +88,9 @@ function CheckoutContent() {
       );
       return;
     }
+
+    submitLockRef.current = true;
+    setIsSubmitting(true);
 
     try {
       const order = await createOrder.mutateAsync({
@@ -107,6 +116,9 @@ function CheckoutContent() {
           : "Unable to place order. Please try again.";
       setServerError(message);
       addToast(message, "error");
+    } finally {
+      submitLockRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -360,9 +372,9 @@ function CheckoutContent() {
                   type="submit"
                   size="lg"
                   className="mt-6 w-full"
-                  disabled={createOrder.isPending || hasUnavailableItem}
+                  disabled={createOrder.isPending || isSubmitting || hasUnavailableItem}
                 >
-                  {createOrder.isPending ? (
+                  {createOrder.isPending || isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Placing Order...
