@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product/product-card";
 import { useProducts } from "@/hooks/use-products";
-import { DUMMY_PRODUCTS } from "@/constants/site";
 import { SectionHeading } from "@/components/common/section-heading";
-import type { Product } from "@/types/product";
 
 type TabId = "all" | "best" | "new";
 
@@ -22,14 +21,6 @@ const TABS: Tab[] = [
   { id: "new", label: "New" },
 ] as const;
 
-const USE_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
-
-function filterDummy(tab: TabId): Product[] {
-  if (tab === "best") return DUMMY_PRODUCTS.filter((p) => p.tag === "best");
-  if (tab === "new") return DUMMY_PRODUCTS.filter((p) => p.tag === "new");
-  return DUMMY_PRODUCTS;
-}
-
 function getFilters(tab: TabId): Record<string, string> | undefined {
   if (tab === "best") return { tab: "bestseller", limit: "8" };
   if (tab === "new") return { tab: "new", limit: "8" };
@@ -39,16 +30,17 @@ function getFilters(tab: TabId): Record<string, string> | undefined {
 export function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState<TabId>("all");
 
-  const { data: products, isLoading } = useProducts(
-    USE_DUMMY ? undefined : getFilters(activeTab)
-  );
+  const {
+    data: products,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useProducts(getFilters(activeTab));
 
-  const filtered = useMemo(() => {
-    if (USE_DUMMY) {
-      return filterDummy(activeTab as TabId).slice(0, 8);
-    }
-    return (products ?? []).slice(0, 8);
-  }, [products, activeTab]);
+  const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
+  const isNotFoundError = statusCode === 404;
 
   return (
     <section className="bg-surface py-12 md:py-16">
@@ -81,13 +73,40 @@ export function FeaturedProducts() {
               />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
+            <AlertCircle className="h-16 w-16 text-rose-300" />
+            <h3 className="mt-4 text-lg font-semibold text-ink">
+              {isNotFoundError ? "Products not found" : "Could not load products"}
+            </h3>
+            <p className="mt-2 max-w-sm text-sm text-ink-muted">
+              {isNotFoundError
+                ? "The product catalog endpoint returned a not found response."
+                : "We ran into a problem fetching the product catalog. Please try again."}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button onClick={() => refetch()} disabled={isFetching}>
+                {isFetching ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Retrying...
+                  </>
+                ) : (
+                  "Retry"
+                )}
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/shop">Browse Shop</Link>
+              </Button>
+            </div>
+          </div>
+        ) : !products || products.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-lg text-neutral-400">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((product) => (
+            {products.slice(0, 8).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

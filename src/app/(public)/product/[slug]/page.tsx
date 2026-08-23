@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
+  AlertCircle,
   ArrowRight,
   ChevronRight,
   ChevronLeft,
@@ -19,15 +20,16 @@ import {
   Sparkles,
   Star,
   Truck,
+  Loader2,
   X,
 } from "lucide-react";
-import { useProduct } from "@/hooks/use-products";
+import { useProduct, useRelatedProducts } from "@/hooks/use-products";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DUMMY_PRODUCTS } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product, SizeOption } from "@/types/product";
 
@@ -343,20 +345,8 @@ function clampQuantityToStock(quantity: number, stock: number) {
   return Math.max(1, Math.min(quantity, stock));
 }
 
-function getRoutineProducts(product: Product) {
-  const candidates = DUMMY_PRODUCTS.filter(
-    (item) => item.id !== product.id && item.category !== "combo" && item.category !== "sets",
-  );
-
-  return ROUTINE_STEPS.map((step) => {
-    const isCurrent = step.id === getRoutineStep(product).id;
-    const match = candidates.find((item) => getRoutineStep(item).id === step.id);
-    return {
-      step,
-      product: isCurrent ? product : match,
-      isCurrent,
-    };
-  });
+function getErrorStatus(error: unknown) {
+  return (error as { response?: { status?: number } } | undefined)?.response?.status;
 }
 
 function StarRating({ rating, size = "sm" }: { rating: number; size?: "xs" | "sm" }) {
@@ -378,7 +368,14 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "xs" | "sm
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
-  const { data: product, isLoading } = useProduct(slug);
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useProduct(slug);
   const { addItem } = useCartStore();
   const addToast = useToastStore((s) => s.addToast);
   const isWishlisted = useWishlistStore((s) =>
@@ -396,6 +393,10 @@ export default function ProductPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
   const syncItemStock = useCartStore((s) => s.syncItemStock);
+  const { data: relatedProducts = [] } = useRelatedProducts(
+    product?.category ?? "",
+    product?.id ?? ""
+  );
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -473,16 +474,8 @@ export default function ProductPage() {
     }
   };
 
-  const relatedProducts = useMemo(
-    () =>
-      product
-        ? DUMMY_PRODUCTS.filter(
-            (p) =>
-              p.id !== product.id && p.category !== "combo" && p.category !== "sets",
-          ).slice(0, 4)
-        : [],
-    [product],
-  );
+  const statusCode = getErrorStatus(error);
+  const isNotFound = statusCode === 404 || statusCode === 400 || !slug;
 
   if (isLoading) {
     return (
@@ -501,7 +494,7 @@ export default function ProductPage() {
     );
   }
 
-  if (!product) {
+  if (isError && isNotFound) {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-20 text-center">
         <h1 className="text-2xl font-serif text-ink">Product Not Found</h1>
@@ -518,9 +511,41 @@ export default function ProductPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-20 text-center">
+        <AlertCircle className="mx-auto h-16 w-16 text-rose-300" />
+        <h1 className="mt-4 text-3xl font-light tracking-tight text-neutral-800">
+          Could not load product
+        </h1>
+        <p className="mt-3 text-neutral-400">
+          We could not load this product right now. Please try again.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button onClick={() => refetch()} disabled={isFetching}>
+            {isFetching ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Retrying...
+              </>
+            ) : (
+              "Retry"
+            )}
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/shop">View Shop</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return null;
+  }
+
   const images = product.images?.length ? product.images : ["/images/hero-product.jpg"];
   const benefitChips = getBenefitChips(product);
-  const routineProducts = getRoutineProducts(product);
   const stockText =
     effectiveStock > 0
       ? `In Stock · ${effectiveStock <= 20 ? `Only ${effectiveStock} left` : "Ready to ship"}`
@@ -1099,44 +1124,6 @@ export default function ProductPage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#FAF9F7] py-16 sm:py-20 lg:py-24">
-        <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent">Routine Builder</p>
-            <h2 className="mt-4 text-3xl font-serif font-medium text-ink sm:text-4xl">Complete the Ritual</h2>
-            <p className="mt-4 text-sm leading-6 text-ink/55">Build a balanced skincare journey around the product you&apos;re viewing.</p>
-          </div>
-          <div className="mt-10 overflow-x-auto pb-2">
-            <div className="flex min-w-[980px] gap-4">
-              {routineProducts.map(({ step, product: routineProduct, isCurrent }, index) => (
-                <div key={step.id} className={cn("relative flex w-56 shrink-0 flex-col rounded-[1.75rem] border bg-white p-4", isCurrent ? "border-accent" : "border-ink/10")}>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-ink/35">{String(index + 1).padStart(2, "0")} {step.label}</p>
-                  {routineProduct ? (
-                    <>
-                      <Link href={`/product/${routineProduct.slug}`} className="relative mt-4 aspect-square overflow-hidden rounded-2xl bg-[#FAF9F7]">
-                        <Image src={routineProduct.images[0]} alt={routineProduct.name} fill className="object-cover" sizes="224px" />
-                      </Link>
-                      <div className="mt-4 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">{routineProduct.brand}</p>
-                        <Link href={`/product/${routineProduct.slug}`} className="mt-1 line-clamp-2 block font-sans text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{routineProduct.name}</Link>
-                        <p className="mt-2 text-sm font-semibold text-ink">{formatPrice(routineProduct.price)}</p>
-                      </div>
-                      {isCurrent ? (
-                        <div className="mt-4 rounded-full bg-accent-pale px-3 py-2 text-center text-xs font-bold uppercase tracking-[0.16em] text-accent">You are here</div>
-                      ) : (
-                        <button onClick={() => { addItem(routineProduct, 1); addToast(`${routineProduct.name} added to cart`); }} className="mt-4 rounded-full border border-ink/15 py-2 text-sm font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Routine</button>
-                      )}
-                    </>
-                  ) : (
-                    <div className="mt-4 flex aspect-square items-center justify-center rounded-2xl bg-[#FAF9F7] text-center text-sm text-ink/35">No product selected</div>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CheckCircle2, Clock3, Package, Truck } from "lucide-react";
+import { CheckCircle2, CircleX, Clock3, Package, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,11 @@ const STATUS_META: Record<OrderStatus, { label: string; className: string; icon:
     label: "Delivered",
     className: "bg-emerald-100 text-emerald-700 border-emerald-200",
     icon: <CheckCircle2 className="h-4 w-4" />,
+  },
+  cancelled: {
+    label: "Cancelled",
+    className: "bg-rose-100 text-rose-700 border-rose-200",
+    icon: <CircleX className="h-4 w-4" />,
   },
 };
 
@@ -72,7 +77,7 @@ export function OrderHistory({
     <div className="space-y-4">
       {visibleOrders.map((order) => {
         const status = getOrderStatus(order);
-        const statusMeta = STATUS_META[status];
+        const statusMeta = STATUS_META[status] ?? STATUS_META.pending;
         const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
         return (
