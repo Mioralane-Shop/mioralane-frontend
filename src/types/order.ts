@@ -1,7 +1,7 @@
 export type DeliveryZone = "inside_dhaka" | "outside_dhaka";
 export type PaymentMethod = "cash_on_delivery";
 export type PaymentStatus = "pending" | "paid" | "failed";
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered";
+export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
 export interface OrderItem {
   itemType: "product" | "combo";
