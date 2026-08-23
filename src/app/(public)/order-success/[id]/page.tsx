@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
-import { CheckCircle2, Clock3, Package, Truck, Loader2 } from "lucide-react";
+import { CheckCircle2, CircleX, Clock3, Package, Truck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,42 @@ const ORDER_STEPS: Array<{ key: OrderStatus; label: string; icon: ReactNode }> =
   { key: "shipped", label: "Shipped", icon: <Truck className="h-4 w-4" /> },
   { key: "delivered", label: "Delivered", icon: <CheckCircle2 className="h-4 w-4" /> },
 ];
+
+const ORDER_STATUS_META: Record<
+  OrderStatus,
+  { label: string; className: string; icon: ReactNode; description: string }
+> = {
+  pending: {
+    label: "Pending",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+    icon: <Clock3 className="h-4 w-4" />,
+    description: "We have received the order.",
+  },
+  processing: {
+    label: "Processing",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+    icon: <Package className="h-4 w-4" />,
+    description: "Our team is preparing the package.",
+  },
+  shipped: {
+    label: "Shipped",
+    className: "border-blue-200 bg-blue-50 text-blue-700",
+    icon: <Truck className="h-4 w-4" />,
+    description: "The courier is handling delivery.",
+  },
+  delivered: {
+    label: "Delivered",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    icon: <CheckCircle2 className="h-4 w-4" />,
+    description: "Delivered successfully.",
+  },
+  cancelled: {
+    label: "Cancelled",
+    className: "border-rose-200 bg-rose-50 text-rose-700",
+    icon: <CircleX className="h-4 w-4" />,
+    description: "This order was cancelled before fulfillment.",
+  },
+};
 
 const PAYMENT_STATUS_META: Record<
   PaymentStatus,
@@ -46,10 +82,6 @@ function formatPaymentMethod(method: string): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
-}
-
-function getOrderStatusLabel(status: OrderStatus): string {
-  return ORDER_STEPS.find((step) => step.key === status)?.label ?? "Pending";
 }
 
 export default function OrderSuccessPage() {
@@ -142,7 +174,9 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
   }
 
   const status = order.orderStatus ?? order.status ?? "pending";
-  const activeStepIndex = ORDER_STEPS.findIndex((step) => step.key === status);
+  const isCancelled = status === "cancelled";
+  const statusMeta = ORDER_STATUS_META[status] ?? ORDER_STATUS_META.pending;
+  const activeStepIndex = isCancelled ? -1 : ORDER_STEPS.findIndex((step) => step.key === status);
   const isInsideDhaka = order.shippingAddress.deliveryZone === "inside_dhaka";
   const deliveryWindow = isInsideDhaka ? "2-4 business days" : "3-6 business days";
   const paymentStatusMeta = PAYMENT_STATUS_META[order.paymentStatus];
@@ -155,15 +189,16 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Order Confirmed
+                  {isCancelled ? <CircleX className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  {isCancelled ? "Order Cancelled" : "Order Confirmed"}
                 </div>
                 <h1 className="mt-4 text-3xl font-light tracking-tight">
-                  Your order is placed
+                  {isCancelled ? "Your order was cancelled" : "Your order is placed"}
                 </h1>
                 <p className="mt-2 max-w-xl text-sm text-white/85">
-                  We have received your order and will contact you if we need
-                  any delivery clarification.
+                  {isCancelled
+                    ? "This order was cancelled and will not move through the delivery timeline."
+                    : "We have received your order and will contact you if we need any delivery clarification."}
                 </p>
               </div>
 
@@ -178,9 +213,10 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                   <p className="text-xs uppercase tracking-wider text-white/75">
                     Order status
                   </p>
-                  <p className="mt-1 text-sm font-semibold">
-                    {getOrderStatusLabel(status)}
-                  </p>
+                  <Badge variant="outline" className={cn("mt-2 w-fit gap-1.5 border-white/20 bg-white/10", statusMeta.className)}>
+                    {statusMeta.icon}
+                    {statusMeta.label}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -193,14 +229,22 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                   Delivery timeline
                 </h2>
                 <p className="mt-1 text-sm text-neutral-500">
-                  {isInsideDhaka
-                    ? "Inside Dhaka orders usually move faster through our courier chain."
-                    : "Outside Dhaka orders take a little longer because of the extended courier route."}
+                  {isCancelled
+                    ? "This order stopped before dispatch, so the delivery steps are not progressing."
+                    : isInsideDhaka
+                      ? "Inside Dhaka orders usually move faster through our courier chain."
+                      : "Outside Dhaka orders take a little longer because of the extended courier route."}
                 </p>
+
+                {isCancelled ? (
+                  <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {statusMeta.description}
+                  </div>
+                ) : null}
 
                 <div className="mt-5 space-y-3">
                   {ORDER_STEPS.map((step, index) => {
-                    const isActive = index <= activeStepIndex;
+                    const isActive = !isCancelled && index <= activeStepIndex;
                     return (
                       <div
                         key={step.key}
@@ -222,7 +266,9 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                         <div>
                           <p className="font-medium">{step.label}</p>
                           <p className="text-xs text-neutral-500">
-                            {step.key === "pending"
+                            {isCancelled
+                              ? "Cancelled before this step could begin"
+                              : step.key === "pending"
                               ? "We have received the order"
                               : step.key === "processing"
                                 ? "Our team prepares the package"
@@ -360,9 +406,13 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                       <p className="text-xs uppercase tracking-wider text-neutral-400">
                         Order status
                       </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {getOrderStatusLabel(status)}
-                      </p>
+                      <Badge
+                        variant="outline"
+                        className={cn("mt-2 w-fit gap-1.5", statusMeta.className)}
+                      >
+                        {statusMeta.icon}
+                        {statusMeta.label}
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>
