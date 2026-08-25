@@ -3,10 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, X, TrendingUp } from "lucide-react";
+import {
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  Search,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { ProductImage } from "@/components/common/product-image";
-import { productService } from "@/services/product.service";
-import type { Product } from "@/types/product";
+import { useProductSearch } from "@/hooks/use-product-search";
 
 const TRENDING = [
   "Snail Mucin",
@@ -26,9 +32,14 @@ export function SearchModal({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const {
+    data: results = [],
+    isLoading,
+    isError,
+    isSettling,
+    refetch,
+  } = useProductSearch(query, { enabled: open, limit: 8 });
 
   useEffect(() => {
     if (open) {
@@ -36,6 +47,7 @@ export function SearchModal({
       const t = window.setTimeout(() => inputRef.current?.focus(), 60);
       return () => window.clearTimeout(t);
     }
+    setQuery("");
   }, [open]);
 
   useEffect(() => {
@@ -47,45 +59,9 @@ export function SearchModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-
-    const timer = window.setTimeout(async () => {
-      try {
-        const res = await productService.getAll({ search: q, limit: "8" });
-        if (!cancelled) {
-          setResults(res.products ?? []);
-        }
-      } catch {
-        if (!cancelled) {
-          setResults([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }, 250);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [open, query]);
-
   if (!open) return null;
 
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -98,7 +74,6 @@ export function SearchModal({
 
   return (
     <div className="fixed inset-0 z-[95] flex flex-col bg-white animate-in fade-in duration-200">
-      {/* Top bar */}
       <div className="border-b border-ink/10">
         <form
           onSubmit={submit}
@@ -134,6 +109,7 @@ export function SearchModal({
                 {TRENDING.map((t) => (
                   <button
                     key={t}
+                    type="button"
                     onClick={() => setQuery(t)}
                     className="rounded-full border border-ink/10 px-4 py-2 text-sm text-ink/70 transition-colors hover:border-accent hover:text-accent"
                   >
@@ -142,11 +118,34 @@ export function SearchModal({
                 ))}
               </div>
             </div>
-          ) : loading ? (
-            <p className="py-12 text-center text-ink/40">Searching...</p>
+          ) : isLoading || isSettling ? (
+            <div className="flex items-center justify-center gap-2 py-12 text-sm text-ink/40">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Searching...
+            </div>
+          ) : isError ? (
+            <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-rose-500">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-medium text-ink">
+                Couldn&apos;t load search results.
+              </p>
+              <p className="mt-1 text-sm text-ink/50">
+                Please try again in a moment.
+              </p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </button>
+            </div>
           ) : results.length === 0 ? (
             <p className="py-12 text-center text-ink/40">
-              No products found for &ldquo;{query.trim()}&rdquo;
+              No products found for &ldquo;{q}&rdquo;
             </p>
           ) : (
             <div className="space-y-1">
@@ -178,10 +177,11 @@ export function SearchModal({
                 </Link>
               ))}
               <button
+                type="button"
                 onClick={() => submit()}
                 className="w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-accent transition-colors hover:bg-ink/[0.04]"
               >
-                See all results for &ldquo;{query}&rdquo; →
+                See all results for &ldquo;{query}&rdquo; &rarr;
               </button>
             </div>
           )}
