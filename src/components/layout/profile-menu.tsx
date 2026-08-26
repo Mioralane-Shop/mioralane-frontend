@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,13 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
-import { authService } from "@/services/auth.service";
-import { useToastStore } from "@/store/toast.store";
+import { useAccountLogout } from "@/hooks/use-account-logout";
 
 export function ProfileMenu() {
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const addToast = useToastStore((s) => s.addToast);
-  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const handleSignOut = useAccountLogout();
 
   if (!isAuthenticated) {
     return (
@@ -34,18 +31,6 @@ export function ProfileMenu() {
   }
 
   const initial = (user?.username?.[0] ?? "U").toUpperCase();
-
-  const handleSignOut = async () => {
-    try {
-      await authService.logout();
-    } catch {
-      addToast("Unable to sign out right now. Please try again.", "error");
-      return;
-    }
-
-    logout();
-    router.push("/");
-  };
 
   return (
     <DropdownMenu>
@@ -76,7 +61,9 @@ export function ProfileMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={handleSignOut}
+          onSelect={() => {
+            void handleSignOut();
+          }}
           className="text-red-500 focus:bg-red-50 focus:text-red-600"
         >
           Sign Out

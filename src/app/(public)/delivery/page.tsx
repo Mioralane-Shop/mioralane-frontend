@@ -39,12 +39,16 @@ export default function DeliveryPage() {
 
       <PolicySection title="Tracking">
         <p>
-          Once your order ships, you&apos;ll receive a tracking link via SMS and
-          WhatsApp. You can also use our{" "}
+          Live public tracking is not available yet. For real order status,
+          logged-in customers can use{" "}
+          <a href="/orders" className="text-accent underline">
+            My Orders
+          </a>
+          . Our{" "}
           <a href="/track-order" className="text-accent underline">
             Track Order
           </a>{" "}
-          page with your order ID.
+          page remains the future tracking entry point.
         </p>
       </PolicySection>
     </PolicyLayout>
