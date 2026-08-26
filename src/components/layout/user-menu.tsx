@@ -7,6 +7,7 @@ import { User, Package, LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { authService } from "@/services/auth.service";
+import { useToastStore } from "@/store/toast.store";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,14 +20,17 @@ import {
 export function UserMenu() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const clearWishlist = useWishlistStore((s) => s.clearWishlist);
+  const addToast = useToastStore((s) => s.addToast);
   const router = useRouter();
 
   const handleSignOut = async () => {
     try {
       await authService.logout();
     } catch {
-      // Ignore — local session is cleared regardless
+      addToast("Unable to sign out right now. Please try again.", "error");
+      return;
     }
+
     logout();
     clearWishlist();
     router.push("/");
@@ -98,5 +102,3 @@ export function UserMenu() {
     </DropdownMenu>
   );
 }
-
-

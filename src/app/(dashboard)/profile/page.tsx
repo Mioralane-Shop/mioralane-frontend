@@ -13,6 +13,7 @@ import { OrderHistory } from "@/components/orders/order-history";
 import { useAuthStore } from "@/store/auth.store";
 import { authService } from "@/services/auth.service";
 import { useOrders } from "@/hooks/use-orders";
+import { useToastStore } from "@/store/toast.store";
 
 export default function ProfilePage() {
   return (
@@ -25,6 +26,7 @@ export default function ProfilePage() {
 function ProfileContent() {
   const { user, logout } = useAuthStore();
   const { data: orders = [], isLoading } = useOrders();
+  const addToast = useToastStore((s) => s.addToast);
   const router = useRouter();
 
   useEffect(() => {
@@ -95,8 +97,10 @@ function ProfileContent() {
                   try {
                     await authService.logout();
                   } catch {
-                    // Ignore network failures. Local session is cleared regardless.
+                    addToast("Unable to sign out right now. Please try again.", "error");
+                    return;
                   }
+
                   logout();
                   router.push("/");
                 }}

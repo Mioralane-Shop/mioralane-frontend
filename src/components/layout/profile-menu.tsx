@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
 import { authService } from "@/services/auth.service";
+import { useToastStore } from "@/store/toast.store";
 
 export function ProfileMenu() {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const addToast = useToastStore((s) => s.addToast);
   const router = useRouter();
 
-  // Logged out: only the "Sign In" button → routes to /login
   if (!isAuthenticated) {
     return (
       <Button
@@ -36,14 +37,14 @@ export function ProfileMenu() {
 
   const handleSignOut = async () => {
     try {
-      // End the session server-side first.
       await authService.logout();
     } catch {
-      // Network/API errors shouldn't strand the user — still clear locally.
-    } finally {
-      logout();
-      router.push("/");
+      addToast("Unable to sign out right now. Please try again.", "error");
+      return;
     }
+
+    logout();
+    router.push("/");
   };
 
   return (
