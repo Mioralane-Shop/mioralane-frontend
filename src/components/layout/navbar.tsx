@@ -11,8 +11,8 @@ import { MobileMenu } from "@/components/layout/mobile-menu";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
 import { NavigationItem } from "@/components/layout/navigation-item";
-import { getComboMeta, getComboProducts } from "@/constants/combo";
 import { BRANDS } from "@/constants/site";
+import { useCombos } from "@/hooks/use-combos";
 import { useProductSearch } from "@/hooks/use-product-search";
 import { formatPrice } from "@/lib/utils";
 
@@ -90,7 +90,7 @@ function ComboNavItem() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const combos = getComboProducts();
+  const { data: combos = [] } = useCombos();
 
   return (
     <div
@@ -122,11 +122,10 @@ function ComboNavItem() {
             </div>
             <div className="space-y-1.5">
               {combos.map((product) => {
-                const meta = getComboMeta(product);
                 return (
                   <Link
                     key={product.id}
-                    href={`/product/${product.slug}`}
+                    href={`/combo/${product.slug}`}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-ink/[0.04] no-underline"
                   >
@@ -142,19 +141,19 @@ function ComboNavItem() {
                       <p className="truncate text-sm font-medium text-ink">
                         {product.name}
                       </p>
-                      {meta?.includedItems && (
+                      {product.includedItems?.length ? (
                         <p className="truncate text-xs text-ink-muted">
-                          {meta.includedItems.join(" • ")}
+                          {product.includedItems.join(" • ")}
                         </p>
-                      )}
+                      ) : null}
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-bold text-ink">
                         {formatPrice(product.price)}
                       </p>
-                      {meta?.savings ? (
+                      {product.savings ? (
                         <p className="text-[11px] font-medium text-success">
-                          Save {formatPrice(meta.savings)}
+                          Save {formatPrice(product.savings)}
                         </p>
                       ) : null}
                     </div>
