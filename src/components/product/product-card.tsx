@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, ShoppingBag, ShoppingCart, Star, Sparkles } from "lucide-react";
+import { Heart, ShoppingBag, ShoppingCart, Sparkles } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCartStore } from "@/store/cart.store";
@@ -339,34 +339,6 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
               )}
             </div>
           )}
-
-          {/* Star Rating */}
-          <div
-            className={cn(
-              "flex items-center gap-1 text-xs sm:text-sm lg:text-xs",
-              isCombo ? "mb-0" : "mt-1.5 sm:mt-2 lg:mt-1.5"
-            )}
-          >
-            <div className="flex items-center text-gold">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    "w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-3 lg:h-3",
-                    i < Math.floor(product.rating)
-                      ? "fill-gold text-gold"
-                      : "fill-border-light text-border-light"
-                  )}
-                />
-              ))}
-            </div>
-            <span className="font-semibold text-ink ml-1">
-              {product.rating}
-            </span>
-            <span className="text-ink-muted">
-              ({product.reviewCount})
-            </span>
-          </div>
 
           {/* Combo routine tag — bottom of card, above price section */}
           {comboRoutineTag && (

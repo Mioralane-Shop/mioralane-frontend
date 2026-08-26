@@ -33,8 +33,8 @@ function p(data: P): Product {
   return {
     description: data.description ?? "",
     tags: data.tags ?? [],
-    rating: data.rating ?? 4.6,
-    reviewCount: data.reviewCount ?? 10,
+    rating: data.rating ?? 0,
+    reviewCount: data.reviewCount ?? 0,
     stock: data.stock ?? 20,
     isNew: data.isNew ?? true,
     isBestSeller: data.isBestSeller ?? false,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle2, Heart, Minus, Package, Plus, Star } from "lucide-react";
+import { CheckCircle2, Heart, Minus, Package, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -184,7 +184,6 @@ function ComboDetailContent({ slug }: { slug: string }) {
     ? displayCombo.images
     : ["/images/hero-product.jpg"];
   const currentStock = displayCombo.stock ?? 0;
-  const itemCount = displayCombo.reviewCount ?? 0;
   const savings =
     displayCombo.savings ??
     (displayCombo.compareAtPrice && displayCombo.compareAtPrice > displayCombo.price
@@ -270,25 +269,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
               <h1 className="mt-2 max-w-xl text-4xl font-serif font-medium leading-[1.05] text-ink sm:text-5xl">
                 {displayCombo.name}
               </h1>
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink/55">
-                <div className="flex items-center gap-1 text-gold">
-                  {[0, 1, 2, 3, 4].map((index) => (
-                    <Star
-                      key={index}
-                      className={cn(
-                        "h-4 w-4",
-                        index < Math.floor(displayCombo.rating)
-                          ? "fill-gold text-gold"
-                          : "fill-border text-border"
-                      )}
-                    />
-                  ))}
-                </div>
-                <span>
-                  {displayCombo.rating.toFixed(1)} â€¢ {itemCount} reviews
-                </span>
-                {sizeLabel ? <span>{sizeLabel}</span> : null}
-              </div>
+              {sizeLabel ? <div className="mt-4 text-sm text-ink/55">{sizeLabel}</div> : null}
             </div>
 
             {displayCombo.badge ? (
@@ -487,3 +468,5 @@ function ComboDetailContent({ slug }: { slug: string }) {
     </div>
   );
 }
+
+

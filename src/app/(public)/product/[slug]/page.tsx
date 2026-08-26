@@ -18,7 +18,6 @@ import {
   Shield,
   ShoppingBag,
   Sparkles,
-  Star,
   Truck,
   Loader2,
   X,
@@ -40,30 +39,6 @@ const PRODUCT_TABS: Array<{ key: ProductTab; label: string }> = [
   { key: "ingredients", label: "Ingredients" },
   { key: "shipping", label: "Shipping & Returns" },
   { key: "reviews", label: "Reviews" },
-];
-
-const SAMPLE_REVIEWS = [
-  {
-    author: "Nusrat J.",
-    location: "Dhaka",
-    rating: 5,
-    date: "2 weeks ago",
-    text: "Absolutely love this. Delivery was fast and the product is 100% authentic. My skin has never felt better.",
-  },
-  {
-    author: "Tanvir H.",
-    location: "Chattogram",
-    rating: 5,
-    date: "1 month ago",
-    text: "Been using this for a few weeks now. Genuine product, beautifully packaged. Will definitely repurchase.",
-  },
-  {
-    author: "Sadia M.",
-    location: "Sylhet",
-    rating: 4,
-    date: "1 month ago",
-    text: "Works well and the price is fair. Took a bit to arrive outside Dhaka but customer service was very helpful.",
-  },
 ];
 
 const ROUTINE_STEPS = [
@@ -347,22 +322,6 @@ function clampQuantityToStock(quantity: number, stock: number) {
 
 function getErrorStatus(error: unknown) {
   return (error as { response?: { status?: number } } | undefined)?.response?.status;
-}
-
-function StarRating({ rating, size = "sm" }: { rating: number; size?: "xs" | "sm" }) {
-  return (
-    <div className="flex items-center gap-0.5 text-gold">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={cn(
-            size === "xs" ? "h-3 w-3" : "h-4 w-4",
-            i < Math.floor(rating) ? "fill-gold text-gold" : "fill-border text-border",
-          )}
-        />
-      ))}
-    </div>
-  );
 }
 
 export default function ProductPage() {
@@ -757,10 +716,11 @@ export default function ProductPage() {
               <h1 className="mt-2 max-w-xl text-4xl font-serif font-medium leading-[1.05] text-ink sm:text-5xl">
                 {product.name}
               </h1>
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink/55">
-                <StarRating rating={product.rating} />
-                <span>{product.rating.toFixed(1)} Ã‚Â· {product.reviewCount} Reviews</span>
-              </div>
+              {selectedSizeLabel ? (
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink/55">
+                  <span>{selectedSizeLabel}</span>
+                </div>
+              ) : null}
             </div>
 
             <div>
@@ -928,7 +888,6 @@ export default function ProductPage() {
                   )}
                 >
                   {tab.label}
-                  {tab.key === "reviews" && ` (${product.reviewCount})`}
                   {activeTab === tab.key && (
                     <span className="absolute inset-x-0 bottom-0 h-px bg-accent" />
                   )}
@@ -1085,43 +1044,11 @@ export default function ProductPage() {
             )}
 
             {activeTab === "reviews" && (
-              <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">
-                <div>
-                  <p className="text-5xl font-semibold tracking-tight text-ink">{product.rating.toFixed(1)} / 5</p>
-                  <div className="mt-3"><StarRating rating={product.rating} /></div>
-                  <p className="mt-3 text-sm text-ink/50">Based on {product.reviewCount} reviews</p>
-                  <div className="mt-6 space-y-2">
-                    {[5, 4, 3, 2, 1].map((rating) => {
-                      const width = rating === 5 ? "88%" : rating === 4 ? "24%" : rating === 3 ? "12%" : "3%";
-                      return (
-                        <div key={rating} className="flex items-center gap-3 text-xs text-ink/50">
-                          <span className="w-8">{rating} ?</span>
-                          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white"><span className="block h-full rounded-full bg-gold" style={{ width }} /></span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {["All", "5 Stars", "With Photos", "Dry Skin", "Sensitive Skin"].map((filter) => (
-                      <button key={filter} className="rounded-full border border-ink/10 px-4 py-2 text-xs font-semibold text-ink/55 transition-colors hover:border-accent/30 hover:text-accent">{filter}</button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {SAMPLE_REVIEWS.map((review) => (
-                    <article key={review.author} className="border-t border-ink/10 pt-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-sans text-sm font-semibold text-ink">{review.author} Â· Verified Buyer</h3>
-                          <p className="mt-1 text-xs text-ink/40">{review.location} Â· {review.date}</p>
-                        </div>
-                        <StarRating rating={review.rating} size="xs" />
-                      </div>
-                      <p className="mt-4 text-sm leading-6 text-ink/60">&quot;{review.text}&quot;</p>
-                    </article>
-                  ))}
-                </div>
+              <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
+                <p className="text-sm font-semibold text-ink">No reviews yet</p>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-ink/60">
+                  Customer reviews will appear here once a real review system is introduced.
+                </p>
               </div>
             )}
           </div>
@@ -1139,7 +1066,6 @@ export default function ProductPage() {
                   <div className="mt-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
                     <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                    <div className="mt-2 flex items-center gap-2 text-sm text-ink/55"><Star className="h-3.5 w-3.5 fill-gold text-gold" /><span>{p.rating.toFixed(1)}</span></div>
                     <div className="mt-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem(p, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>
