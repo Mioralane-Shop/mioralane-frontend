@@ -10,6 +10,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
+import { NavigationItem } from "@/components/layout/navigation-item";
 import { getComboMeta, getComboProducts } from "@/constants/combo";
 import { BRANDS } from "@/constants/site";
 import { useProductSearch } from "@/hooks/use-product-search";
@@ -21,9 +22,9 @@ const BOTTOM_NAV = [
   { label: "Combo", href: "/combo" },
   { label: "New", href: "/shop?sort=newest" },
   { label: "Brands", href: "/shop" },
-  { label: "Support", href: "#" },
+  { label: "Support", comingSoon: true },
   { label: "Blog", href: "/blog" },
-  { label: "Sales", href: "/shop?sort=offers" },
+  { label: "Sales", comingSoon: true },
 ];
 
 function BrandsNavItem() {
@@ -168,20 +169,31 @@ function ComboNavItem() {
   );
 }
 
-const MEGA_MENU_COLUMNS = [
+type MegaMenuLink = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
+
+type MegaMenuColumn = {
+  id: string;
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+  links: MegaMenuLink[];
+};
+
+const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
   {
     id: "cleansers",
     label: "Cleansers",
     href: "/shop?category=cleansers",
     links: [
-      { label: "Oil Cleansers", href: "/shop?category=oil-cleansers" },
-      {
-        label: "Water Based Cleansers",
-        href: "/shop?category=water-cleansers",
-      },
-      { label: "Cleansing Balms", href: "/shop?category=cleansing-balms" },
-      { label: "Make-Up Removers", href: "/shop?category=makeup-removers" },
-      { label: "Micellar Waters", href: "/shop?category=micellar-waters" },
+      { label: "Oil Cleansers", comingSoon: true },
+      { label: "Water Based Cleansers", comingSoon: true },
+      { label: "Cleansing Balms", comingSoon: true },
+      { label: "Make-Up Removers", comingSoon: true },
+      { label: "Micellar Waters", comingSoon: true },
     ],
   },
   {
@@ -189,40 +201,31 @@ const MEGA_MENU_COLUMNS = [
     label: "Toners",
     href: "/shop?category=toners",
     links: [
-      { label: "Hydrating Toners", href: "/shop?category=hydrating-toners" },
-      { label: "Calming Toners", href: "/shop?category=calming-toners" },
-      { label: "Mist Toners", href: "/shop?category=mist-toners" },
-      {
-        label: "Exfoliating Toners",
-        href: "/shop?category=exfoliating-toners",
-      },
-      { label: "Toner Pads", href: "/shop?category=toner-pads" },
+      { label: "Hydrating Toners", comingSoon: true },
+      { label: "Calming Toners", comingSoon: true },
+      { label: "Mist Toners", comingSoon: true },
+      { label: "Exfoliating Toners", comingSoon: true },
+      { label: "Toner Pads", comingSoon: true },
     ],
   },
   {
     id: "treatments",
     label: "Treatments",
-    href: "/shop?category=treatments",
+    comingSoon: true,
     links: [
-      { label: "Serums", href: "/shop?category=serums" },
-      { label: "Ampoules", href: "/shop?category=ampoules" },
-      { label: "Essences", href: "/shop?category=essences" },
-      { label: "Spot Treatments", href: "/shop?category=spot-treatments" },
+      { label: "Serums", comingSoon: true },
+      { label: "Ampoules", comingSoon: true },
+      { label: "Essences", comingSoon: true },
+      { label: "Spot Treatments", comingSoon: true },
     ],
   },
   {
     id: "exfoliators",
     label: "Exfoliators",
-    href: "/shop?category=exfoliators",
+    comingSoon: true,
     links: [
-      {
-        label: "Physical Exfoliators",
-        href: "/shop?category=physical-exfoliators",
-      },
-      {
-        label: "Chemical Exfoliators",
-        href: "/shop?category=chemical-exfoliators",
-      },
+      { label: "Physical Exfoliators", comingSoon: true },
+      { label: "Chemical Exfoliators", comingSoon: true },
     ],
   },
   {
@@ -232,12 +235,12 @@ const MEGA_MENU_COLUMNS = [
     links: [
       { label: "Acne", href: "/shop?concern=acne" },
       { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
-      { label: "Dry Skin", href: "/shop?concern=dry-skin" },
-      { label: "Fungal Acne Safe", href: "/shop?concern=fungal-acne-safe" },
-      { label: "Hyperpigmentation", href: "/shop?concern=hyperpigmentation" },
-      { label: "Skin Redness", href: "/shop?concern=redness" },
+      { label: "Dry Skin", comingSoon: true },
+      { label: "Fungal Acne Safe", comingSoon: true },
+      { label: "Hyperpigmentation", comingSoon: true },
+      { label: "Skin Redness", comingSoon: true },
       { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
-      { label: "Oily Skin", href: "/shop?concern=oily" },
+      { label: "Oily Skin", comingSoon: true },
     ],
   },
   {
@@ -245,10 +248,10 @@ const MEGA_MENU_COLUMNS = [
     label: "Moisturizers",
     href: "/shop?category=moisturizers",
     links: [
-      { label: "Face Creams", href: "/shop?category=face-creams" },
-      { label: "Gel Moisturizers", href: "/shop?category=gel-moisturizers" },
-      { label: "Facial Oils", href: "/shop?category=facial-oils" },
-      { label: "Emulsions", href: "/shop?category=emulsions" },
+      { label: "Face Creams", comingSoon: true },
+      { label: "Gel Moisturizers", comingSoon: true },
+      { label: "Facial Oils", comingSoon: true },
+      { label: "Emulsions", comingSoon: true },
     ],
   },
   {
@@ -256,20 +259,20 @@ const MEGA_MENU_COLUMNS = [
     label: "Masks",
     href: "/shop?category=masks",
     links: [
-      { label: "Peeling Masks", href: "/shop?category=peeling-masks" },
-      { label: "Sheet Masks", href: "/shop?category=sheet-masks" },
-      { label: "Sleeping Masks", href: "/shop?category=sleeping-masks" },
-      { label: "Wash-Off Masks", href: "/shop?category=wash-off-masks" },
+      { label: "Peeling Masks", comingSoon: true },
+      { label: "Sheet Masks", comingSoon: true },
+      { label: "Sleeping Masks", comingSoon: true },
+      { label: "Wash-Off Masks", comingSoon: true },
     ],
   },
   {
     id: "lip-eye",
     label: "Lip & Eye Care",
-    href: "/shop?category=lip-eye-care",
+    comingSoon: true,
     links: [
-      { label: "Eye Creams", href: "/shop?category=eye-creams" },
-      { label: "Eye Patches", href: "/shop?category=eye-patches" },
-      { label: "Lip Care", href: "/shop?category=lip-care" },
+      { label: "Eye Creams", comingSoon: true },
+      { label: "Eye Patches", comingSoon: true },
+      { label: "Lip Care", comingSoon: true },
     ],
   },
   {
@@ -277,24 +280,24 @@ const MEGA_MENU_COLUMNS = [
     label: "Sunscreens",
     href: "/shop?category=sun-care",
     links: [
-      { label: "SPF 50+", href: "/shop?category=spf50" },
-      { label: "SPF 30", href: "/shop?category=spf30" },
-      { label: "Sun Sticks", href: "/shop?category=sun-sticks" },
-      { label: "After Sun Care", href: "/shop?category=after-sun" },
+      { label: "SPF 50+", comingSoon: true },
+      { label: "SPF 30", comingSoon: true },
+      { label: "Sun Sticks", comingSoon: true },
+      { label: "After Sun Care", comingSoon: true },
     ],
   },
   {
     id: "ingredients",
     label: "Shop By Ingredients",
-    href: "/shop",
+    comingSoon: true,
     links: [
-      { label: "AHA BHA PHA", href: "/shop?ingredient=aha-bha-pha" },
-      { label: "Centella", href: "/shop?ingredient=centella" },
-      { label: "Hyaluronic Acid", href: "/shop?ingredient=hyaluronic-acid" },
-      { label: "Peptides", href: "/shop?ingredient=peptides" },
-      { label: "Propolis", href: "/shop?ingredient=propolis" },
-      { label: "Snail Mucin", href: "/shop?ingredient=snail-mucin" },
-      { label: "Vitamin C", href: "/shop?ingredient=vitamin-c" },
+      { label: "AHA BHA PHA", comingSoon: true },
+      { label: "Centella", comingSoon: true },
+      { label: "Hyaluronic Acid", comingSoon: true },
+      { label: "Peptides", comingSoon: true },
+      { label: "Propolis", comingSoon: true },
+      { label: "Snail Mucin", comingSoon: true },
+      { label: "Vitamin C", comingSoon: true },
     ],
   },
 ];
@@ -414,8 +417,10 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
                 className="min-w-0"
               >
                 <div className="border-t border-[#C98A7D]/30 pt-4">
-                  <Link
+                  <NavigationItem
+                    label={col.label}
                     href={col.href}
+                    comingSoon={col.comingSoon}
                     onClick={() => setOpen(false)}
                     className="block"
                   >
@@ -427,18 +432,18 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
                     >
                       {col.label}
                     </span>
-                  </Link>
+                  </NavigationItem>
                 </div>
                 <ul className="mt-5 space-y-3.5">
                   {col.links.map((link) => (
                     <li key={link.label}>
-                      <Link
+                      <NavigationItem
+                        label={link.label}
                         href={link.href}
+                        comingSoon={link.comingSoon}
                         onClick={() => setOpen(false)}
                         className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
-                      >
-                        {link.label}
-                      </Link>
+                      />
                     </li>
                   ))}
                 </ul>
@@ -724,13 +729,13 @@ export function Navbar() {
                   return <ComboNavItem key={link.href + link.label} />;
                 }
                 return (
-                  <Link
-                    key={link.href + link.label}
+                  <NavigationItem
+                    key={link.label}
+                    label={link.label}
                     href={link.href}
-                    className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
-                  >
-                    {link.label}
-                  </Link>
+                    comingSoon={link.comingSoon}
+                    className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+                  />
                 );
               })}
             </div>

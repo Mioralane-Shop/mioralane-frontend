@@ -12,14 +12,20 @@ export const SITE_WHATSAPP = "8801700000000";
 export const ANNOUNCEMENT_TEXT =
   "Free delivery on orders over ৳2,000 in Dhaka · Cash on Delivery available";
 
+export type NavLinkConfig = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
+
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/shop" },
   { label: "Combo", href: "/combo" },
-  { label: "Offers", href: "/shop?sort=offers" },
+  { label: "Offers", comingSoon: true },
   { label: "New Arrival", href: "/shop?sort=newest" },
-  { label: "Best Seller", href: "/shop?sort=best-seller" },
-];
+  { label: "Best Seller", href: "/shop?bestSeller=true" },
+] as const satisfies readonly NavLinkConfig[];
 
 export const BRANDS = [
   "3W Clinic",

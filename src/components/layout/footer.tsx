@@ -7,7 +7,7 @@ const footerLinks = {
     links: [
       { label: "All Products", href: "/shop" },
       { label: "Cleansers", href: "/shop?category=cleansers" },
-      { label: "Toners & Essences", href: "/shop?category=serums" },
+      { label: "Toners & Essences", href: "/shop?category=toners" },
       { label: "Serums & Ampoules", href: "/shop?category=serums" },
       { label: "Sunscreen", href: "/shop?category=sun-care" },
       { label: "Bundles", href: "/combo" },
