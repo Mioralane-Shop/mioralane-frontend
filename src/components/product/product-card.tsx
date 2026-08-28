@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, ShoppingBag, ShoppingCart, Sparkles } from "lucide-react";
@@ -216,12 +217,15 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
 
         {/* Primary Image */}
         {!mainFailed && mainImgSrc ? (
-          <img
+          <Image
             src={mainImgSrc}
             alt={product.name}
+            fill
             referrerPolicy="no-referrer"
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 33vw"
             className={cn(
-              "w-full h-full object-cover rounded-lg transition-all duration-500 ease-in-out group-hover:scale-105",
+              "object-cover rounded-lg transition-all duration-500 ease-in-out group-hover:scale-105",
               hasHoverImage && "group-hover:opacity-0"
             )}
             loading="lazy"
@@ -244,11 +248,14 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
 
         {/* Hover Image (second view) */}
         {hasHoverImage && !hoverFailed && hoverImgSrc && (
-          <img
+          <Image
             src={hoverImgSrc}
             alt={`${product.name} alternate view`}
+            fill
             referrerPolicy="no-referrer"
-            className="absolute inset-0 w-full h-full object-cover rounded-lg opacity-0 transition-all duration-500 ease-in-out group-hover:opacity-100 group-hover:scale-105 p-1"
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="absolute inset-0 object-cover rounded-lg opacity-0 transition-all duration-500 ease-in-out group-hover:opacity-100 group-hover:scale-105 p-1"
             loading="lazy"
             onError={() => {
               // If hover image is same as main, just hide on failure

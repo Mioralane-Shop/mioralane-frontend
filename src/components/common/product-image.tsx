@@ -35,20 +35,16 @@ export function ProductImage({
     ? `https://picsum.photos/seed/${fallbackId ?? "product"}/800/800`
     : src;
 
-  const commonProps = {
-    alt,
-    className,
-    sizes,
-    onError: () => setFailed(true),
-  };
-
   if (fill) {
-    return <Image {...commonProps} src={effectiveSrc} fill />;
+    return <Image alt={alt} className={className} sizes={sizes} onError={() => setFailed(true)} src={effectiveSrc} fill />;
   }
 
   return (
     <Image
-      {...commonProps}
+      alt={alt}
+      className={className}
+      sizes={sizes}
+      onError={() => setFailed(true)}
       src={effectiveSrc}
       width={width ?? 200}
       height={height ?? 200}
