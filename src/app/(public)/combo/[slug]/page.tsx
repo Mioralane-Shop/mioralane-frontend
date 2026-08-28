@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Heart, Minus, Package, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/common/product-image";
 import { useCombo } from "@/hooks/use-combos";
-import { useCartStore } from "@/store/cart.store";
+import { getCartItemType, useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useToastStore } from "@/store/toast.store";
@@ -65,10 +65,17 @@ function ComboDetailContent({ slug }: { slug: string }) {
   );
   const { isAuthenticated, _ready } = useAuthStore();
   const isInCart = useCartStore((state) =>
-    state.items.some((item) => item.product.slug === slug)
+    state.items.some(
+      (item) => getCartItemType(item.product) === "combo" && item.product.slug === slug,
+    )
   );
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  useEffect(() => {
+    setQuantity(1);
+    setSelectedImage(0);
+  }, [slug]);
 
   const statusCode = getErrorStatus(error);
   const isNotFound = statusCode === 404 || statusCode === 400 || !slug;
@@ -182,19 +189,19 @@ function ComboDetailContent({ slug }: { slug: string }) {
 
   const images = displayCombo.images?.length
     ? displayCombo.images
-    : ["/images/hero-product.jpg"];
+    : [];
   const currentStock = displayCombo.stock ?? 0;
   const savings =
-    displayCombo.savings ??
+    displayCombo.savings && displayCombo.savings > 0
+      ? displayCombo.savings
+      :
     (displayCombo.compareAtPrice && displayCombo.compareAtPrice > displayCombo.price
       ? displayCombo.compareAtPrice - displayCombo.price
-      : displayCombo.savings ?? 0);
+      : 0);
   const compareAtPrice =
     displayCombo.compareAtPrice && displayCombo.compareAtPrice > displayCombo.price
       ? displayCombo.compareAtPrice
-      : savings > 0
-        ? displayCombo.price + savings
-        : undefined;
+      : undefined;
   const sizeLabel = displayCombo.volume || displayCombo.size || "";
   const itemTypeLabel = formatLabel(displayCombo.itemType ?? "combo");
 
@@ -224,14 +231,20 @@ function ComboDetailContent({ slug }: { slug: string }) {
                     {displayCombo.badge}
                   </span>
                 ) : null}
-                <ProductImage
-                  src={images[selectedImage]}
-                  alt={displayCombo.name}
-                  fill
-                  className="object-contain p-5"
-                  sizes="(max-width: 768px) 100vw, 52rem"
-                  fallbackId={displayCombo.id}
-                />
+                {images[selectedImage] ? (
+                  <ProductImage
+                    src={images[selectedImage]}
+                    alt={displayCombo.name}
+                    fill
+                    className="object-contain p-5"
+                    sizes="(max-width: 768px) 100vw, 52rem"
+                    fallbackId={displayCombo.id}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
+                    <Package className="h-10 w-10" aria-hidden="true" />
+                  </div>
+                )}
               </div>
 
               {images.length > 1 ? (
@@ -282,20 +295,68 @@ function ComboDetailContent({ slug }: { slug: string }) {
               <p className="max-w-xl text-sm leading-7 text-ink/60">
                 {displayCombo.description}
               </p>
-
-              {displayCombo.includedItems?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {displayCombo.includedItems.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-ink/10 bg-[#FAF9F7] px-3 py-1.5 text-xs text-ink/65"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </div>
+
+            <Card className="border-rose-100">
+              <CardContent className="space-y-4 p-5">
+                <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-neutral-400">Brand</p>
+                    <p className="mt-1 font-medium text-neutral-800">
+                      {displayCombo.brand || "Mioralane Bundle"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-neutral-400">Category</p>
+                    <p className="mt-1 font-medium text-neutral-800">
+                      {displayCombo.category || "combo"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-neutral-400">Routine tag</p>
+                    <p className="mt-1 font-medium text-neutral-800">
+                      {displayCombo.routineTag || "Bundle routine"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-neutral-400">Bundle size</p>
+                    <p className="mt-1 font-medium text-neutral-800">
+                      {sizeLabel || "Bundle"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-rose-100">
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink/45">
+                    What&apos;s Included
+                  </p>
+                  <span className="text-xs text-ink/45">
+                    {displayCombo.includedItems?.length ?? 0} item{displayCombo.includedItems?.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                {displayCombo.includedItems?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {displayCombo.includedItems.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-ink/10 bg-[#FAF9F7] px-3 py-1.5 text-xs text-ink/65"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm leading-7 text-ink/55">
+                    Included items are not listed for this combo yet.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
             <div className="grid gap-3 rounded-3xl border border-rose-100 bg-rose-50/40 p-5 sm:grid-cols-3">
               <div>
@@ -330,45 +391,6 @@ function ComboDetailContent({ slug }: { slug: string }) {
                 </p>
               </div>
             </div>
-
-            <Card className="border-rose-100">
-              <CardContent className="p-5">
-                <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-neutral-400">
-                      Routine tag
-                    </p>
-                    <p className="mt-1 font-medium text-neutral-800">
-                      {displayCombo.routineTag || "Bundle routine"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-neutral-400">
-                      Bundle size
-                    </p>
-                    <p className="mt-1 font-medium text-neutral-800">
-                      {sizeLabel || "Bundle"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-neutral-400">
-                      Payment
-                    </p>
-                    <p className="mt-1 font-medium text-neutral-800">
-                      Cash on Delivery
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-neutral-400">
-                      Payment status
-                    </p>
-                    <p className="mt-1 font-medium text-neutral-800">
-                      Pending payment
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <div className="flex items-center gap-3">
               <div className="flex h-11 shrink-0 items-center rounded-full border border-ink/15">

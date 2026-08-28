@@ -152,14 +152,12 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
       : null;
   const comboRoutineTag = isCombo ? combo?.routineTag : undefined;
 
-  /* Original (struck-through) price — real compareAt for regular products,
+  /* Original (struck-through) price – real compareAt for regular products,
      or current price + savings for combo bundles */
   const displayCompareAt =
     product.compareAtPrice && product.compareAtPrice > product.price
       ? product.compareAtPrice
-      : isCombo && comboSavings > 0
-        ? product.price + comboSavings
-        : undefined;
+      : undefined;
 
   /* Image badge label — bundle-specific for combos (e.g. "TRAVEL KIT"),
      else tag-based for regular products */

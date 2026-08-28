@@ -2,12 +2,12 @@
 
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { AlertCircle, Loader2, Package } from "lucide-react";
 import { useCartStore } from "@/store/cart.store";
 import { formatPrice } from "@/lib/utils";
 import { SectionHeading } from "@/components/common/section-heading";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/common/product-image";
 import { useCombos } from "@/hooks/use-combos";
 import type { ComboProduct } from "@/services/combo.service";
 
@@ -32,7 +32,11 @@ const CARD_STYLES = [
 
 function getSavings(combo: ComboProduct) {
   const compareAtPrice = combo.compareAtPrice ?? 0;
-  return combo.savings ?? (compareAtPrice > combo.price ? compareAtPrice - combo.price : 0);
+  return combo.savings && combo.savings > 0
+    ? combo.savings
+    : compareAtPrice > combo.price
+      ? compareAtPrice - combo.price
+      : 0;
 }
 
 function getCompareAtPrice(combo: ComboProduct) {
@@ -41,9 +45,7 @@ function getCompareAtPrice(combo: ComboProduct) {
   if (compareAtPrice > combo.price) {
     return compareAtPrice;
   }
-
-  const savings = getSavings(combo);
-  return savings > 0 ? combo.price + savings : undefined;
+  return undefined;
 }
 
 function BundleCard({
@@ -95,12 +97,13 @@ function BundleCard({
 
         {image ? (
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/60 bg-white/50 shadow-sm">
-            <Image
+            <ProductImage
               src={image}
               alt={combo.name}
               fill
               sizes="64px"
               className="object-cover"
+              fallbackId={combo.id}
             />
           </div>
         ) : null}
