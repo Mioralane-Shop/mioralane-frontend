@@ -113,7 +113,7 @@ function getBestForChips(product: Product) {
 function getRoutineStepLabel(product: Product) {
   const step = getRoutineStep(product);
   const index = ROUTINE_STEPS.findIndex((item) => item.id === step.id) + 1;
-  return `${String(index).padStart(2, "0")} Ã‚Â· ${step.label.toUpperCase()}`;
+  return `${String(index).padStart(2, "0")} Ã‚? ${step.label.toUpperCase()}`;
 }
 
 function getUsageWindow(product: Product) {
@@ -216,52 +216,52 @@ function getIngredientHighlights(product: Product) {
   const highlights = [
     {
       name: "Hyaluronic Acid",
-      meta: "Deep Hydration Ã‚Â· Plumping",
+      meta: "Deep Hydration Ã‚? Plumping",
       match: /hyalur|ha\b|water-fit|moistur/i,
     },
     {
       name: "Centella Asiatica",
-      meta: "Calming Ã‚Â· Sensitive Skin Friendly",
+      meta: "Calming Ã‚? Sensitive Skin Friendly",
       match: /centella|cica|sooth|calm/i,
     },
     {
       name: "Niacinamide",
-      meta: "Brightening Ã‚Â· Tone Support",
+      meta: "Brightening Ã‚? Tone Support",
       match: /niacinamide|bright|glow|spot|tone/i,
     },
     {
       name: "Panthenol",
-      meta: "Barrier Support Ã‚Â· Comfort",
+      meta: "Barrier Support Ã‚? Comfort",
       match: /panthenol|barrier|repair/i,
     },
     {
       name: "Snail Mucin",
-      meta: "Repair Ã‚Â· Recovery",
+      meta: "Repair Ã‚? Recovery",
       match: /snail/i,
     },
     {
       name: "Propolis",
-      meta: "Glow Ã‚Â· Support",
+      meta: "Glow Ã‚? Support",
       match: /propolis/i,
     },
     {
       name: "Ceramide",
-      meta: "Barrier Support Ã‚Â· Moisture",
+      meta: "Barrier Support Ã‚? Moisture",
       match: /ceramide/i,
     },
     {
       name: "Tea Tree / BHA",
-      meta: "Clarifying Ã‚Â· Oil Control",
+      meta: "Clarifying Ã‚? Oil Control",
       match: /bha|tea tree|acne|oil/i,
     },
     {
       name: "Vitamin C",
-      meta: "Brightening Ã‚Â· Radiance",
+      meta: "Brightening Ã‚? Radiance",
       match: /vitamin c|ascorb|c-vit/i,
     },
     {
       name: "SPF Filters",
-      meta: "UV Protection Ã‚Â· Daily Wear",
+      meta: "UV Protection Ã‚? Daily Wear",
       match: /spf|uv|sunscreen|sun/i,
     },
   ];
@@ -279,7 +279,7 @@ function getShippingNotes(product: Product) {
     delivery: [
       { label: "Inside Dhaka", value: "1-2 Business Days" },
       { label: "Outside Dhaka", value: "2-4 Business Days" },
-      { label: "Free Delivery", value: "Orders over Ã Â§Â³2,000" },
+      { label: "Free Delivery", value: "Orders over ?2,000" },
     ],
     returns:
       "Unused and unopened products may be returned within 7 days of delivery, subject to inspection.",
@@ -295,20 +295,20 @@ function getBenefitStatement(product: Product) {
 
 function getTexture(product: Product) {
   const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  if (text.includes("gel")) return "Gel Ã‚Â· Fresh";
-  if (text.includes("cream") || text.includes("rich")) return "Cream Ã‚Â· Comforting";
-  if (text.includes("oil")) return "Silky oil Ã‚Â· Rinses clean";
+  if (text.includes("gel")) return "Gel Ã‚? Fresh";
+  if (text.includes("cream") || text.includes("rich")) return "Cream Ã‚? Comforting";
+  if (text.includes("oil")) return "Silky oil Ã‚? Rinses clean";
   if (text.includes("lightweight") || text.includes("serum") || text.includes("ampoule")) {
-    return "Lightweight Ã‚Â· Fast absorbing";
+    return "Lightweight Ã‚? Fast absorbing";
   }
   return "";
 }
 
 function getFinish(product: Product) {
   const text = `${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  if (text.includes("no white cast")) return "No white cast Ã‚Â· Natural";
-  if (text.includes("non-greasy") || text.includes("non greasy")) return "Fresh Ã‚Â· Non-greasy";
-  if (text.includes("glow") || text.includes("plump")) return "Healthy glow Ã‚Â· Plump";
+  if (text.includes("no white cast")) return "No white cast Ã‚? Natural";
+  if (text.includes("non-greasy") || text.includes("non greasy")) return "Fresh Ã‚? Non-greasy";
+  if (text.includes("glow") || text.includes("plump")) return "Healthy glow Ã‚? Plump";
   return "";
 }
 
@@ -831,7 +831,7 @@ export default function ProductPage() {
                   )}
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  Add to Cart Ã‚Â· {formatPrice(displayPrice)}
+                  Add to Cart Ã‚? {formatPrice(displayPrice)}
                 </button>
 
                 <button
@@ -980,7 +980,7 @@ export default function ProductPage() {
                   </p>
                   <div className="space-y-2 text-sm leading-6 text-ink/60">
                     <p>{product.skinType || "All skin types"}</p>
-                    <p>{product.concerns?.join(" Â· ") || "Balanced daily care"}</p>
+                    <p>{product.concerns?.join(" ? ") || "Balanced daily care"}</p>
                     <p>{getTexture(product) || getFinish(product) || "Lightweight and easy to layer"}</p>
                   </div>
                 </section>

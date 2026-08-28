@@ -31,13 +31,14 @@ export function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState<TabId>("all");
 
   const {
-    data: products,
+    data: response,
     isLoading,
     isError,
     error,
     refetch,
     isFetching,
   } = useProducts(getFilters(activeTab));
+  const products = response?.products ?? [];
 
   const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
   const isNotFoundError = statusCode === 404;
@@ -100,7 +101,7 @@ export function FeaturedProducts() {
               </Button>
             </div>
           </div>
-        ) : !products || products.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-lg text-neutral-400">No products found</p>
           </div>
