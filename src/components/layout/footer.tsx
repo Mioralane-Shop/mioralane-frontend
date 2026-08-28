@@ -46,9 +46,8 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm leading-relaxed font-light max-w-[300px]">
-              Authentic Korean skincare, sourced with care, delivered with
-              trust. Building Bangladesh&apos;s most trusted destination for
-              K-beauty.
+              Curated Korean skincare, sourced with care and packaged with
+              attention. A calm place to shop K-beauty essentials.
             </p>
           </div>
 

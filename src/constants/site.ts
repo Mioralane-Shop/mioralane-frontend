@@ -3,14 +3,14 @@ import { CATALOG_2026_PRODUCTS } from "./catalog-2026";
 
 export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =
-  "Authentic Korean skincare delivered to Bangladesh. COSRX, Beauty of Joseon, ANUA, Purito — batch-verified, beautifully packaged.";
+  "Curated Korean skincare and routine bundles for everyday care. COSRX, Beauty of Joseon, ANUA, Purito, and more.";
 export const SITE_URL = "https://mioralane.com";
 
 // WhatsApp order number (international format, digits only — replace with the real number)
 export const SITE_WHATSAPP = "8801700000000";
 
 export const ANNOUNCEMENT_TEXT =
-  "Free delivery on orders over ৳2,000 in Dhaka · Cash on Delivery available";
+  "Curated Korean skincare and routine bundles for everyday care";
 
 export type NavLinkConfig = {
   label: string;
