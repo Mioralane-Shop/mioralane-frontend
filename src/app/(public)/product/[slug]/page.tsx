@@ -386,13 +386,14 @@ export default function ProductPage() {
   const compareAtPrice =
     selectedSizeOption?.compareAtPrice ?? product?.compareAtPrice;
   const effectiveStock = selectedSizeOption?.stock ?? product?.stock ?? 0;
+  const productItemType = product?.itemType ?? (product?.category === "combo" ? "combo" : "product");
 
   useEffect(() => {
     if (!product) return;
 
     setQuantity((current) => clampQuantityToStock(current, effectiveStock));
-    syncItemStock(product.id, effectiveStock);
-  }, [effectiveStock, product, syncItemStock]);
+    syncItemStock(product.id, effectiveStock, productItemType);
+  }, [effectiveStock, product, productItemType, syncItemStock]);
 
   const addToCart = (qty: number = quantity) => {
     if (!product || effectiveStock <= 0) return;
@@ -403,6 +404,7 @@ export default function ProductPage() {
         ...product,
         price: displayPrice,
         compareAtPrice,
+        itemType: productItemType,
       },
       quantityToAdd,
     );
@@ -849,7 +851,7 @@ export default function ProductPage() {
               </div>
 
               <p className="text-center text-xs text-ink/45">
-                Secure checkout · bKash · Nagad · Rocket · COD
+                Secure checkout · Cash on Delivery only
               </p>
 
               <div className="grid gap-3 border-t border-ink/10 pt-4 md:grid-cols-3 md:gap-4">
@@ -1066,7 +1068,7 @@ export default function ProductPage() {
                   <div className="mt-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
                     <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                    <div className="mt-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem(p, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
+                    <div className="mt-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>
               ))}

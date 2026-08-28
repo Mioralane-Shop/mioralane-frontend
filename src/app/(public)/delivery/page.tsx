@@ -29,13 +29,12 @@ export default function DeliveryPage() {
         </ul>
       </PolicySection>
 
-      <PolicySection title="Cash on Delivery">
-        <p>
+        <PolicySection title="Cash on Delivery">
+          <p>
           Cash on Delivery (COD) is available nationwide. Please keep the exact
-          amount ready, or pay via bKash, Nagad or Rocket to our delivery
-          partner upon arrival.
-        </p>
-      </PolicySection>
+          amount ready for the delivery partner upon arrival.
+          </p>
+        </PolicySection>
 
       <PolicySection title="Tracking">
         <p>

@@ -66,7 +66,9 @@ function ComboDetailContent({ slug }: { slug: string }) {
   const { isAuthenticated, _ready } = useAuthStore();
   const isInCart = useCartStore((state) =>
     state.items.some(
-      (item) => getCartItemType(item.product) === "combo" && item.product.slug === slug,
+      (item) =>
+        (item.itemId || item.product.id) === (combo?.id ?? "") &&
+        (item.itemType ?? getCartItemType(item.product)) === "combo",
     )
   );
   const [quantity, setQuantity] = useState(1);

@@ -75,8 +75,13 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const { isAuthenticated, _ready } = useAuthStore();
   const addItem = useCartStore((s) => s.addItem);
   const toggleCart = useCartStore((s) => s.toggleCart);
+  const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
   const isInCart = useCartStore((s) =>
-    s.items.some((item) => item.product.id === product.id)
+    s.items.some(
+      (item) =>
+        (item.itemId || item.product.id) === product.id &&
+        (item.itemType ?? item.product.itemType ?? (item.product.category === "combo" ? "combo" : "product")) === itemType,
+    )
   );
   const addToast = useToastStore((s) => s.addToast);
 
@@ -84,7 +89,6 @@ export function ProductCard({ product, onNavigate, combo }: ProductCardProps) {
   const hasHoverImage = !hoverFailed && !!hoverImgSrc;
   const volumeInfo = parseVolume(product.volume);
   const isOutOfStock = product.stock <= 0;
-  const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
   const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
 
   const handleClick = () => {

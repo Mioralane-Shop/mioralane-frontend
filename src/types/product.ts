@@ -49,6 +49,8 @@ export interface Category {
 }
 
 export interface CartItem {
+  itemId: string;
+  itemType: "product" | "combo";
   product: Product;
   quantity: number;
   catalogStatus?: CartCatalogStatus;

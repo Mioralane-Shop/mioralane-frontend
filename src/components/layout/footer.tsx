@@ -77,7 +77,7 @@ export function Footer() {
             &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
           <div className="flex gap-2.5">
-            {["bKash", "Nagad", "Rocket", "COD"].map((method) => (
+            {["Cash on Delivery", "Nationwide Delivery", "Authentic Stock", "Support"].map((method) => (
               <span
                 key={method}
                 className="px-3 py-1.5 rounded-md bg-white/6 text-[11px] font-semibold text-white/40"
