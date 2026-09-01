@@ -1,131 +1,78 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const PROMOS = [
   {
-    badge: "✦ REGIMEN",
-    title: "4-Step Glass Skin\nRoutine",
-    desc: "Cleanse • Tone • Treat • Seal",
-    cta: "Shop Routine →",
-    href: "/shop",
-    bg: "#D8E2DC",
-    img: "/images/promo-routine.jpg",
-  },
-  {
-    badge: "⚡ MOBILE BANKING",
-    title: "Flexible Checkout",
-    desc: "Fast local payment options",
-    cta: "Shop & Save →",
-    href: "/shop",
-    bg: "#FFE5EC",
-    img: "/images/promo-cashback.jpg",
-  },
-  {
-    badge: "🧭 SEOUL DIRECT",
+    badge: "NEW THIS WEEK",
     title: "New Arrivals",
-    desc: "Fresh from Seoul this week",
-    cta: "Explore Now →",
-    href: "/shop",
-    bg: "#EAEFEA",
+    desc: "Fresh Korean skincare drops",
+    cta: "Explore New",
+    href: "/shop?sort=newest",
+    bg: "#D8E2DC",
     img: "/images/promo-arrivals.jpg",
   },
   {
-    badge: "🧳 TRAVEL MINIS",
-    title: "Mini Size, Big Glow",
-    desc: "Travel-friendly skincare essentials",
-    cta: "Shop Minis →",
-    href: "/shop?category=sets",
+    badge: "CURATED FOR YOU",
+    title: "Shop by Routine",
+    desc: "Build a routine that fits your skin goals",
+    cta: "Explore Routines",
+    href: "/combo",
+    bg: "#FFE5EC",
+    img: "/images/promo-routine.jpg",
+  },
+  {
+    badge: "MOST LOVED",
+    title: "Popular Picks",
+    desc: "Customer-favorite skincare essentials",
+    cta: "Shop Popular",
+    href: "/shop?sort=popular",
     bg: "#EAE3DA",
-    img: "/images/promo-minis.jpg",
+    img: "/images/promo-cashback.jpg",
   },
 ];
 
 export function PromoCarousel() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (dir: number) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
-    }
-  };
-
   return (
     <section className="py-10 md:py-14">
       <div className="container mx-auto px-4">
-        <div className="relative">
-          {/* Arrows */}
-          <button
-            onClick={() => scroll(-1)}
-            className="absolute -left-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 shadow-md backdrop-blur transition hover:bg-white hover:shadow-lg md:flex"
-            aria-label="Scroll left"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
+        <div className="scrollbar-none flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 md:overflow-visible">
+          {PROMOS.map((promo) => (
+            <Link
+              key={promo.title}
+              href={promo.href}
+              className="group flex min-w-[280px] snap-start items-center justify-between rounded-2xl border border-transparent px-5 py-5 shadow-[0_6px_18px_-16px_rgba(17,24,39,0.28)] transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-black/8 hover:shadow-[0_10px_22px_-18px_rgba(17,24,39,0.22)] md:min-w-0 md:px-7 md:py-5"
+              style={{ background: promo.bg }}
             >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-
-          <div
-            ref={scrollRef}
-            className="scrollbar-none flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
-          >
-            {PROMOS.map((promo) => (
-              <Link
-                key={promo.title}
-                href={promo.href}
-                className="flex min-w-[280px] flex-1 snap-start items-center justify-between rounded-2xl p-6 transition-shadow hover:shadow-lg md:min-w-[300px]"
-                style={{ background: promo.bg }}
-              >
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-semibold tracking-wider text-ink/50">
-                    {promo.badge}
+              <div className="flex flex-col gap-1.5 pr-4 md:gap-2">
+                <span className="text-[11px] font-semibold tracking-wider text-ink/50">
+                  {promo.badge}
+                </span>
+                <h3 className="whitespace-pre-line text-lg font-semibold leading-tight text-ink">
+                  {promo.title}
+                </h3>
+                <p className="text-sm leading-snug text-ink/50">
+                  {promo.desc}
+                </p>
+                <span className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-ink/72">
+                  <span>{promo.cta}</span>
+                  <span className="transition-transform duration-200 group-hover:translate-x-1">
+                    →
                   </span>
-                  <h3 className="whitespace-pre-line text-lg font-semibold leading-snug text-ink">
-                    {promo.title}
-                  </h3>
-                  <p className="text-sm text-ink/50">{promo.desc}</p>
-                  <span className="mt-1 text-sm font-medium text-brand">
-                    {promo.cta}
-                  </span>
-                </div>
-                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
-                  <Image
-                    src={promo.img}
-                    alt={promo.title.replace("\n", " ")}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <button
-            onClick={() => scroll(1)}
-            className="absolute -right-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 shadow-md backdrop-blur transition hover:bg-white hover:shadow-lg md:flex"
-            aria-label="Scroll right"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
+                </span>
+              </div>
+              <div className="relative h-[78px] w-[78px] flex-shrink-0 overflow-hidden rounded-xl md:h-[80px] md:w-[80px]">
+                <Image
+                  src={promo.img}
+                  alt={promo.title.replace("\n", " ")}
+                  fill
+                  className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                  sizes="80px"
+                />
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

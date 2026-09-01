@@ -833,7 +833,7 @@ export default function ProductPage() {
                   )}
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  Add to Cart Ã‚? {formatPrice(displayPrice)}
+                  Add to Cart {formatPrice(displayPrice)}
                 </button>
 
                 <button

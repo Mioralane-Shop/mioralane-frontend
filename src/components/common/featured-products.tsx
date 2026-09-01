@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product/product-card";
 import { useProducts } from "@/hooks/use-products";
@@ -39,6 +39,11 @@ export function FeaturedProducts() {
     isFetching,
   } = useProducts(getFilters(activeTab));
   const products = response?.products ?? [];
+  const singleProducts = products.filter((product) => {
+    const itemType =
+      product.itemType ?? (product.category === "combo" ? "combo" : "product");
+    return itemType !== "combo" && product.category !== "combo";
+  });
 
   const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
   const isNotFoundError = statusCode === 404;
@@ -47,17 +52,16 @@ export function FeaturedProducts() {
     <section className="bg-surface py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="mb-10 flex flex-col items-center gap-4 text-center">
-          <SectionHeading title="FEATURED PRODUCTS" />
+          <SectionHeading title="Discover Your Next Favorite" />
           <div className="mt-2 flex gap-2">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${
-                  activeTab === tab.id
+                className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${activeTab === tab.id
                     ? "border-[#2D2A26] bg-[#2D2A26] text-white shadow-[0_10px_24px_rgba(45,42,38,0.18)]"
                     : "border-neutral-200 bg-white text-[#2D2A26] shadow-sm hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -101,14 +105,14 @@ export function FeaturedProducts() {
               </Button>
             </div>
           </div>
-        ) : products.length === 0 ? (
+        ) : singleProducts.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-lg text-neutral-400">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {products.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {singleProducts.slice(0, 8).map((product) => (
+              <ProductCard key={product.id} product={product} compactImage />
             ))}
           </div>
         )}
@@ -117,9 +121,10 @@ export function FeaturedProducts() {
           <Link href="/shop">
             <Button
               variant="outline"
-              className="rounded-full border-brand px-8 text-brand hover:bg-brand hover:text-white"
+              className="rounded-full border-[#1F1A17] px-8 text-[#1F1A17] transition-[color,transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:!border-brand-500 hover:!bg-transparent hover:!text-brand-500 hover:shadow-[0_10px_22px_-18px_rgba(212,99,122,0.45)]"
             >
               View All Products
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         </div>
