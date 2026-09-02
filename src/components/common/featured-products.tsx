@@ -49,10 +49,13 @@ export function FeaturedProducts() {
   const isNotFoundError = statusCode === 404;
 
   return (
-    <section className="bg-surface pt-12 pb-14 md:pt-16 md:pb-14">
-      <div className="container mx-auto px-4">
-        <div className="mb-10 flex flex-col items-center gap-4 text-center">
-          <SectionHeading title="Discover Your Next Favorite" />
+    <section className="home-section bg-surface">
+      <div className="mx-auto max-w-[1440px] px-4">
+        <div className="home-section-heading flex flex-col items-center gap-4 text-center">
+          <SectionHeading
+            title="Discover Your Next Favorite"
+            titleClassName="text-[22px] md:text-[25px] lg:text-[29px]"
+          />
           <div className="mt-2 flex gap-2">
             {TABS.map((tab) => (
               <button
@@ -117,7 +120,7 @@ export function FeaturedProducts() {
           </div>
         )}
 
-        <div className="mt-18 text-center md:mt-16">
+        <div className="mt-16 text-center md:mt-18">
           <Link href="/shop">
             <Button
               variant="outline"

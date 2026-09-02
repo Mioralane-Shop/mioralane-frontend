@@ -41,6 +41,20 @@
   }
 }
 
+@layer components {
+  .home-section {
+    @apply py-16 md:py-[72px] lg:py-20;
+  }
+
+  .home-section-heading {
+    @apply mb-10 md:mb-12;
+  }
+
+  .home-section-content {
+    @apply mt-10 md:mt-12;
+  }
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
@@ -86,7 +100,7 @@
   --discount-border-angle: 0deg;
   border-color: transparent;
   background:
-    linear-gradient(#eee7da, #eee7da) padding-box,
+    linear-gradient(#f4e4b2, #f4e4b2) padding-box,
     conic-gradient(
         from var(--discount-border-angle),
         #d8c9b4 0deg 258deg,
@@ -138,6 +152,55 @@
     rgba(246, 207, 102, 0.16) 282deg,
     rgba(255, 242, 184, 0.5) 292deg,
     rgba(246, 207, 102, 0.16) 302deg,
+    rgba(0, 0, 0, 0) 316deg 360deg
+  );
+  filter: blur(4px);
+  opacity: 0.55;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: discount-running-border 4.8s linear infinite;
+}
+
+.hero-cta-glow {
+  --discount-border-angle: 0deg;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#d4637a, #d4637a) padding-box,
+    conic-gradient(
+        from var(--discount-border-angle),
+        rgba(212, 99, 122, 0.3) 0deg 258deg,
+        #b84e64 272deg,
+        #f2d4da 286deg,
+        #fff0f4 292deg,
+        #f2d4da 298deg,
+        #b84e64 312deg,
+        rgba(212, 99, 122, 0.3) 326deg 360deg
+      )
+      border-box;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(212, 99, 122, 0.24);
+  animation: discount-running-border 4.8s linear infinite;
+}
+
+.hero-cta-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--discount-border-angle),
+    rgba(0, 0, 0, 0) 0deg 270deg,
+    rgba(242, 212, 218, 0.18) 282deg,
+    rgba(255, 240, 244, 0.5) 292deg,
+    rgba(242, 212, 218, 0.18) 302deg,
     rgba(0, 0, 0, 0) 316deg 360deg
   );
   filter: blur(4px);
@@ -250,6 +313,17 @@ textarea:focus-visible {
   }
 
   .bundle-card-running-border::before {
+    display: none;
+  }
+
+  .hero-cta-glow {
+    border-color: #f2d4da;
+    background: #d4637a;
+    box-shadow: 0 8px 18px rgba(212, 99, 122, 0.18);
+    animation: none !important;
+  }
+
+  .hero-cta-glow::before {
     display: none;
   }
 }

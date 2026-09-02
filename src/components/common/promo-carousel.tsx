@@ -35,8 +35,8 @@ const PROMOS = [
 
 export function PromoCarousel() {
   return (
-    <section className="py-10 md:py-14">
-      <div className="container mx-auto px-4">
+    <section className="pt-8 pb-16 md:pt-9 md:pb-[72px] lg:pt-10 lg:pb-20">
+      <div className="mx-auto max-w-[1440px] px-4">
         <div className="scrollbar-none flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 md:overflow-visible">
           {PROMOS.map((promo) => (
             <Link

@@ -31,15 +31,15 @@ export default function HomePage() {
       <Reveal>
         <NewToKBeautySection />
       </Reveal>
-      <Reveal>
+      {/* <Reveal>
         <LatestSkintalks />
-      </Reveal>
+      </Reveal> */}
       <Reveal>
         <InstagramSection />
       </Reveal>
-      <Reveal>
+      {/* <Reveal>
         <NewsletterSection />
-      </Reveal>
+      </Reveal> */}
     </>
   );
 }

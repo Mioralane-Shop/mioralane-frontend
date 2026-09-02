@@ -581,10 +581,13 @@ export function BundlesCarousel() {
   const isNotFoundError = statusCode === 404;
 
   return (
-    <section className="bg-[#FFFAFB] py-14 shadow-[0_6px_24px_rgba(26,26,26,0.04)] md:py-20">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 md:mb-14">
-          <SectionHeading title="BUNDLES & SETS" />
+    <section className="home-section bg-[#fef6f7] shadow-[0_6px_24px_rgba(26,26,26,0.04)]">
+      <div className="mx-auto max-w-[1440px] px-4">
+        <div className="home-section-heading">
+          <SectionHeading
+            title="BUNDLES & SETS"
+            titleClassName="text-[22px] md:text-[25px] lg:text-[29px]"
+          />
         </div>
 
         {isLoading ? (
