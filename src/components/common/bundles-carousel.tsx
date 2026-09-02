@@ -424,7 +424,7 @@ function BundleCard({
                 onAddToCart(combo);
               }}
               disabled={combo.stock <= 0}
-              className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-accent-dark hover:shadow disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-accent-dark hover:shadow disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
             >
               <span>{combo.stock > 0 ? "Add Bundle" : "Out of Stock"}</span>
               {combo.stock > 0 ? <ArrowRight className="h-4 w-4" /> : null}

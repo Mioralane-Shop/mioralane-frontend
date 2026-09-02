@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/common/section-heading";
 
 const CARDS = [
@@ -64,9 +63,8 @@ export function NewToKBeautySection() {
                 <h3 className="text-lg font-bold uppercase tracking-tight text-ink">
                   {card.title}
                 </h3>
-                <span className="mt-5 inline-flex w-fit items-center justify-center gap-3 rounded-full border border-[#2D2A26] px-8 py-3 text-xs font-medium uppercase tracking-[0.18em] text-[#2D2A26] transition-colors duration-200 group-hover:bg-[#2D2A26] group-hover:text-white">
+                <span className="mt-5 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-colors group-hover:bg-accent">
                   {card.cta}
-                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </span>
               </div>
             </Link>
