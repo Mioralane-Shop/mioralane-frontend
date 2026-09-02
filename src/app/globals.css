@@ -101,6 +101,58 @@
   animation: discount-running-border 4.6s linear infinite;
 }
 
+.bundle-card-running-border {
+  --discount-border-angle: 0deg;
+  border-color: transparent;
+  background:
+    linear-gradient(var(--bundle-card-bg, #fbf2f1), var(--bundle-card-bg, #fbf2f1)) padding-box,
+    conic-gradient(
+        from var(--discount-border-angle),
+        #d8c9b4 0deg 258deg,
+        #8f6420 272deg,
+        #f6cf66 286deg,
+        #fff2b8 292deg,
+        #f6cf66 298deg,
+        #8f6420 312deg,
+        #d8c9b4 326deg 360deg
+      )
+      border-box;
+  animation: discount-running-border 4.8s linear infinite;
+}
+
+.bundle-card-running-border:hover {
+  border-color: transparent;
+}
+
+.bundle-card-running-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  z-index: 30;
+  background: conic-gradient(
+    from var(--discount-border-angle),
+    rgba(0, 0, 0, 0) 0deg 270deg,
+    rgba(246, 207, 102, 0.16) 282deg,
+    rgba(255, 242, 184, 0.5) 292deg,
+    rgba(246, 207, 102, 0.16) 302deg,
+    rgba(0, 0, 0, 0) 316deg 360deg
+  );
+  filter: blur(4px);
+  opacity: 0.55;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: discount-running-border 4.8s linear infinite;
+}
+
 /* Typography */
 h1,
 h2,
@@ -189,5 +241,15 @@ textarea:focus-visible {
     border-color: #d8c9b4;
     background: #eee7da;
     animation: none !important;
+  }
+
+  .bundle-card-running-border {
+    border-color: #d8c9b4;
+    background: var(--bundle-card-bg, #fbf2f1);
+    animation: none !important;
+  }
+
+  .bundle-card-running-border::before {
+    display: none;
   }
 }

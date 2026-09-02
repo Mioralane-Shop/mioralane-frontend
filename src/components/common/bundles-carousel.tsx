@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/common/product-image";
+import { SectionHeading } from "@/components/common/section-heading";
 import { useCombos } from "@/hooks/use-combos";
 import { cn, formatPrice } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
@@ -27,24 +29,28 @@ import type { ComboProduct } from "@/services/combo.service";
 const CARD_TREATMENTS = [
   {
     background: "bg-[#FBF2F1]",
+    backgroundColor: "#FBF2F1",
     wash: "from-[#FBF2F1] via-[#FBF2F1]/95 to-[#FBF2F1]/15",
     badge: "bg-[#D4637A] text-white",
     savings: "bg-[#F4D8DD] text-[#B84E64]",
   },
   {
     background: "bg-[#F7F0E8]",
+    backgroundColor: "#F7F0E8",
     wash: "from-[#F7F0E8] via-[#F7F0E8]/95 to-[#F7F0E8]/20",
     badge: "bg-[#A88D70] text-white",
     savings: "bg-[#EBDAC8] text-[#8A6A4B]",
   },
   {
     background: "bg-[#F5F0EC]",
+    backgroundColor: "#F5F0EC",
     wash: "from-[#F5F0EC] via-[#F5F0EC]/95 to-[#F5F0EC]/20",
     badge: "bg-[#8B7355] text-white",
     savings: "bg-white/70 text-[#7D6651]",
   },
   {
     background: "bg-[#F8F6F1]",
+    backgroundColor: "#F8F6F1",
     wash: "from-[#F8F6F1] via-[#F8F6F1]/95 to-[#F8F6F1]/20",
     badge: "bg-[#A68B6B] text-white",
     savings: "bg-[#EEE7DA] text-[#79664B]",
@@ -60,20 +66,6 @@ function getSavings(combo: ComboProduct) {
     : compareAtPrice > combo.price
       ? compareAtPrice - combo.price
       : 0;
-}
-
-function getDiscountPercent(combo: ComboProduct, savings: number) {
-  const compareAtPrice = combo.compareAtPrice ?? 0;
-
-  if (compareAtPrice > combo.price) {
-    return Math.round((savings / compareAtPrice) * 100);
-  }
-
-  if (savings > 0) {
-    return Math.round((savings / (combo.price + savings)) * 100);
-  }
-
-  return 0;
 }
 
 function getCompareAtPrice(combo: ComboProduct) {
@@ -149,14 +141,54 @@ function getComboImage(combo: ComboProduct) {
 }
 
 function getShortDescription(combo: ComboProduct) {
-  const description = combo.description?.trim();
+  const sourceText = [
+    combo.name,
+    combo.badge,
+    combo.description,
+    combo.routineTag,
+    combo.skinType,
+    ...(combo.tags ?? []),
+    ...(combo.concerns ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const includedCount = combo.includedItems?.filter(Boolean).length ?? 0;
+  const sizeCount = (combo.size ?? combo.volume ?? "").match(/\d+/)?.[0];
+  const stepCount = includedCount || (sizeCount ? Number(sizeCount) : 0);
+  const stepLabel = stepCount > 0 ? `${stepCount}-step` : "curated";
+  const travelReady = sourceText.match(/travel|on-the-go|mini|trial|kit/);
 
-  if (!description) return "";
+  const skinType = combo.skinType
+    ? formatAttributeLabel(combo.skinType).toLowerCase()
+    : sourceText.match(/sensitive/)
+      ? "sensitive"
+      : sourceText.match(/acne|blemish/)
+        ? "blemish-prone"
+        : sourceText.match(/dry|dehydrated/)
+          ? "dry"
+          : sourceText.match(/oily|combination/)
+            ? "combination"
+            : "everyday";
 
-  const withoutSavings = description.split(/\s+save\s+/i)[0]?.trim() || description;
-  return withoutSavings.length > 78
-    ? `${withoutSavings.slice(0, 75).trim()}...`
-    : withoutSavings;
+  const benefit = sourceText.match(/calm|centella|soothe|sensitive/)
+    ? "A calming"
+    : sourceText.match(/bright|glow|vitamin c|dark spot/)
+      ? "A brightening"
+      : sourceText.match(/acne|blemish|clarify/)
+        ? "A clarifying"
+        : sourceText.match(/hydrate|moist|barrier|repair/)
+          ? "A hydrating"
+          : "A curated";
+
+  const ending = travelReady
+    ? "travel-ready skin."
+    : skinType === "everyday"
+      ? "daily skin."
+      : `${skinType} skin.`;
+
+  const copy = `${benefit} ${stepLabel} routine for ${ending}`;
+  return copy.length > 78 ? `${copy.slice(0, 75).trim()}...` : copy;
 }
 
 function formatAttributeLabel(value: string) {
@@ -234,10 +266,10 @@ function BundleCard({
   const image = getComboImage(combo);
   const savings = getSavings(combo);
   const compareAtPrice = getCompareAtPrice(combo);
-  const discountPercent = getDiscountPercent(combo, savings);
   const label = (combo.brand || combo.badge || "Bundle").toUpperCase();
   const description = getShortDescription(combo);
   const attributes = getAttributeRows(combo);
+  const hasAnimatedBundleBadge = label === "MIORALANE BUNDLE";
 
   return (
     <article
@@ -251,26 +283,34 @@ function BundleCard({
         }
       }}
       className={cn(
-        "group flex h-full min-w-full snap-start cursor-pointer flex-col overflow-hidden rounded-[1.75rem] border border-border/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow",
+        "group relative isolate flex h-full min-w-full snap-start cursor-pointer flex-col overflow-hidden rounded-[1.75rem] border border-border/80 shadow-sm transition-[border-color,box-shadow,background-color] duration-300 hover:border-accent/25 hover:shadow-[0_4px_12px_rgba(26,26,26,0.05)]",
+        hasAnimatedBundleBadge && "bundle-card-running-border",
         "lg:min-w-[calc((100%-1.5rem)/2)]",
         treatment.background
       )}
+      style={
+        hasAnimatedBundleBadge
+          ? ({
+            "--bundle-card-bg": treatment.backgroundColor,
+          } as CSSProperties)
+          : undefined
+      }
     >
-      <div className="relative min-h-[336px] overflow-hidden sm:min-h-[368px] lg:min-h-[316px]">
+      <div className="relative min-h-[312px] overflow-hidden sm:min-h-[342px] lg:min-h-[292px]">
         {image ? (
           <ProductImage
             src={image}
             alt={comboName}
             fill
             sizes="(max-width: 1024px) 100vw, 48vw"
-            className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.015]"
+            className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.012]"
             fallbackId={combo.id}
           />
         ) : null}
 
         <div
           className={cn(
-            "absolute inset-0 bg-gradient-to-b via-[55%] to-transparent lg:bg-gradient-to-r",
+            "absolute inset-0 bg-gradient-to-b via-[55%] to-transparent transition-opacity duration-300 group-hover:opacity-90 lg:bg-gradient-to-r",
             treatment.wash
           )}
         />
@@ -304,13 +344,13 @@ function BundleCard({
           </div>
         ) : null} */}
 
-        <div className="relative z-10 flex min-h-[336px] max-w-[20rem] flex-col justify-center p-4 pr-24 sm:min-h-[368px] sm:max-w-[21rem] sm:p-5.5 sm:pr-28 lg:min-h-[316px] lg:w-[42%] lg:max-w-[22rem] lg:pr-3">
+        <div className="relative z-10 flex min-h-[312px] max-w-[20rem] flex-col justify-center p-4 pr-24 sm:min-h-[342px] sm:max-w-[21rem] sm:px-5.5 sm:py-5 sm:pr-28 lg:min-h-[292px] lg:w-[42%] lg:max-w-[22rem] lg:pr-3">
           <div>
             <span className="inline-flex max-w-full rounded-full bg-accent px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">
               <span className="truncate">{label}</span>
             </span>
 
-            <h3 className="mt-[17px] max-w-[14.5rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[16rem] sm:text-[1.65rem] lg:max-w-[17rem]">
+            <h3 className="mt-[15px] max-w-[14.5rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[16rem] sm:text-[1.65rem] lg:max-w-[17rem]">
               <span className="sm:hidden">{heroTitle.mobile}</span>
               <span className="hidden sm:block">
                 <span className="block whitespace-nowrap">{heroTitle.desktopFirstLine}</span>
@@ -321,13 +361,13 @@ function BundleCard({
             </h3>
 
             {description ? (
-              <p className="mt-[13px] line-clamp-2 max-w-[16rem] text-[13px] leading-[1.48] text-ink-muted sm:text-sm">
+              <p className="mt-[11px] line-clamp-2 max-w-[16rem] text-[13px] leading-[1.42] text-ink-muted sm:text-sm">
                 {description}
               </p>
             ) : null}
 
             {attributes.length > 0 ? (
-              <div className="mt-5 space-y-[9px] text-[13px] text-ink-soft sm:text-sm">
+              <div className="mt-5.5 space-y-[8px] text-[13px] text-ink-soft sm:text-sm">
                 {attributes.map((attribute) => {
                   const Icon = attribute.icon;
 
@@ -344,8 +384,8 @@ function BundleCard({
         </div>
       </div>
 
-      <div className="border-t border-white/70 bg-white/60 px-4.5 py-3.5 backdrop-blur-sm sm:px-6">
-        <div className="space-y-3.5">
+      <div className="border-t border-white/70 bg-white/60 px-4.5 py-3 backdrop-blur-sm sm:px-6">
+        <div className="space-y-2.5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="whitespace-nowrap text-[1.5rem] font-bold tracking-tight text-ink">
@@ -541,18 +581,10 @@ export function BundlesCarousel() {
   const isNotFoundError = statusCode === 404;
 
   return (
-    <section className="py-14 md:py-20">
+    <section className="bg-[#FFFAFB] py-14 shadow-[0_6px_24px_rgba(26,26,26,0.04)] md:py-20">
       <div className="container mx-auto px-4">
-        <div className="mx-auto mb-12 max-w-2xl text-center md:mb-14">
-          <p className="text-xs font-bold uppercase tracking-[0.36em] text-accent/70">
-            Routines &amp; Sets
-          </p>
-          <h2 className="mt-3 font-serif text-5xl font-medium leading-none tracking-tight text-ink md:text-6xl">
-            Bundles
-          </h2>
-          <p className="mt-5 text-base text-ink-muted md:text-lg">
-            Complete skincare routines, curated for real results.
-          </p>
+        <div className="mb-12 md:mb-14">
+          <SectionHeading title="BUNDLES & SETS" />
         </div>
 
         {isLoading ? (
