@@ -6,20 +6,19 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   AlertCircle,
-  ArrowRight,
+  ChevronDown,
   ChevronRight,
   ChevronLeft,
-  Droplets,
-  Feather,
   Heart,
+  ImageIcon,
   Minus,
   Plus,
   RotateCcw,
   Shield,
   ShoppingBag,
-  Sparkles,
   Truck,
   Loader2,
+  Maximize2,
   X,
 } from "lucide-react";
 import { useProduct, useRelatedProducts } from "@/hooks/use-products";
@@ -29,25 +28,19 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
 
-const PRODUCT_TABS: Array<{ key: ProductTab; label: string }> = [
+const PRODUCT_TABS: Array<{ key: Exclude<ProductTab, "reviews">; label: string }> = [
   { key: "overview", label: "Overview" },
   { key: "ingredients", label: "Ingredients" },
   { key: "shipping", label: "Shipping & Returns" },
-  { key: "reviews", label: "Reviews" },
 ];
 
-const ROUTINE_STEPS = [
-  { id: "cleanse", label: "Cleanse", categories: ["cleanser", "cleansers", "cleansing-oil"] },
-  { id: "tone", label: "Tone", categories: ["toner", "toners"] },
-  { id: "treat", label: "Treat", categories: ["serum", "serums", "essence", "essences", "ampoule", "ampoules", "treatment"] },
-  { id: "moisturize", label: "Moisturize", categories: ["moisturizer", "moisturizers", "cream", "creams"] },
-  { id: "protect", label: "Protect", categories: ["sun-care", "sunscreen", "spf"] },
-];
+const DESKTOP_THUMBNAIL_SLOTS = 4;
 
 const TRUST_ITEMS = [
   {
@@ -81,16 +74,6 @@ function formatCategory(category: string) {
     .join(" ");
 }
 
-function getRoutineStep(product: Product) {
-  const category = product.category.toLowerCase();
-  const name = product.name.toLowerCase();
-  return (
-    ROUTINE_STEPS.find((step) =>
-      step.categories.some((item) => category.includes(item) || name.includes(item)),
-    ) ?? ROUTINE_STEPS[2]
-  );
-}
-
 function getBenefitChips(product: Product) {
   const chips = [...(product.tags ?? []), ...(product.concerns ?? [])]
     .map((item) => formatCategory(item))
@@ -110,158 +93,69 @@ function getBestForChips(product: Product) {
   return Array.from(new Set(tokens)).slice(0, 6);
 }
 
-function getRoutineStepLabel(product: Product) {
-  const step = getRoutineStep(product);
-  const index = ROUTINE_STEPS.findIndex((item) => item.id === step.id) + 1;
-  return `${String(index).padStart(2, "0")} Ã‚? ${step.label.toUpperCase()}`;
-}
-
-function getUsageWindow(product: Product) {
-  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  if (text.includes("spf") || text.includes("sunscreen") || text.includes("sun care")) {
-    return { am: true, pm: false };
-  }
-  return { am: true, pm: true };
-}
-
-function getProductFeaturePoints(product: Product) {
-  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  const points = [
-    {
-      title: "Deep Hydration",
-      text: "Replenishes moisture and helps keep skin comfortable.",
-      match: /hydrat|moistur|plump|water|serum|essence|ampoule|hyalur/i,
-    },
-    {
-      title: "Barrier Support",
-      text: "Supports a healthier-looking barrier and softer feel.",
-      match: /barrier|repair|panthenol|ceramide|centella|cica|sooth|calm/i,
-    },
-    {
-      title: "Brightening",
-      text: "Helps improve the look of dullness and uneven tone.",
-      match: /bright|glow|niacinamide|vitamin c|txa|spot|tone/i,
-    },
-    {
-      title: "Daily Protection",
-      text: "Designed for easy layering and comfortable everyday wear.",
-      match: /sun|spf|uv|sunscreen|protection|lightweight|no white cast/i,
-    },
-  ];
-
-  return points.filter((point) => point.match.test(text)).slice(0, 4);
-}
-
-function getHowToUseSteps(product: Product) {
-  if (product.howToUse) {
-    return product.howToUse
-      .split(/[\n.]+/)
-      .map((step) => step.trim())
-      .filter(Boolean)
-      .slice(0, 3);
-  }
-
-  const stepLabel = getRoutineStepLabel(product).slice(5).toLowerCase();
-  const base = [
-    "Apply after cleansing and toning.",
-    "Use a small amount and pat until absorbed.",
-    "Follow with moisturizer and SPF during the day.",
-  ];
-
-  if (stepLabel.includes("cleanse")) {
-    return [
-      "Massage onto dry or damp skin as the first step.",
-      "Emulsify gently, then rinse thoroughly.",
-      "Continue with toner or the next treatment step.",
-    ];
-  }
-
-  if (stepLabel.includes("tone")) {
-    return [
-      "Apply after cleansing with hands or cotton pad.",
-      "Layer gently to prep the skin for treatment.",
-      "Follow with serum or moisturizer.",
-    ];
-  }
-
-  if (stepLabel.includes("treat")) {
-    return [
-      "After cleansing and toning, apply 2-3 drops or a small amount.",
-      "Pat gently into the skin until absorbed.",
-      "Seal with moisturizer and SPF in the morning.",
-    ];
-  }
-
-  if (stepLabel.includes("moisturize")) {
-    return [
-      "Use as the final hydration step after treatment products.",
-      "Massage evenly across face and neck.",
-      "Apply more on dry areas when needed.",
-    ];
-  }
-
-  if (stepLabel.includes("protect")) {
-    return [
-      "Apply generously as the final morning skincare step.",
-      "Reapply throughout the day as needed.",
-      "Use after moisturizer for consistent protection.",
-    ];
-  }
-
-  return base;
-}
-
 function getIngredientHighlights(product: Product) {
   const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
   const highlights = [
     {
       name: "Hyaluronic Acid",
-      meta: "Deep Hydration Ã‚? Plumping",
+      meta: "Hydration · Plumping",
+      description: /hyalur|plump|hydrat/i.test(text)
+        ? "A moisture-binding humectant that helps draw hydration into the skin for a plumper, smoother feel."
+        : "",
       match: /hyalur|ha\b|water-fit|moistur/i,
     },
     {
       name: "Centella Asiatica",
-      meta: "Calming Ã‚? Sensitive Skin Friendly",
+      meta: "Calming · Sensitive Skin Friendly",
+      description: "Helps calm visible redness and keep sensitive skin feeling comfortable.",
       match: /centella|cica|sooth|calm/i,
     },
     {
       name: "Niacinamide",
-      meta: "Brightening Ã‚? Tone Support",
+      meta: "Brightening · Tone Support",
+      description: "Supports a more even-looking tone while helping skin appear clearer and balanced.",
       match: /niacinamide|bright|glow|spot|tone/i,
     },
     {
       name: "Panthenol",
-      meta: "Barrier Support Ã‚? Comfort",
+      meta: "Barrier Support · Comfort",
+      description: "Helps support the skin barrier and reduce feelings of dryness or tightness.",
       match: /panthenol|barrier|repair/i,
     },
     {
       name: "Snail Mucin",
-      meta: "Repair Ã‚? Recovery",
+      meta: "Repair · Recovery",
+      description: "Helps support recovery while leaving skin feeling supple and cushioned.",
       match: /snail/i,
     },
     {
       name: "Propolis",
-      meta: "Glow Ã‚? Support",
+      meta: "Glow · Support",
+      description: "Helps boost radiance while supporting skin that feels stressed or dull.",
       match: /propolis/i,
     },
     {
       name: "Ceramide",
-      meta: "Barrier Support Ã‚? Moisture",
+      meta: "Barrier Support · Moisture",
+      description: "Helps lock in moisture and maintain a healthier-feeling skin barrier.",
       match: /ceramide/i,
     },
     {
       name: "Tea Tree / BHA",
-      meta: "Clarifying Ã‚? Oil Control",
+      meta: "Clarifying · Oil Control",
+      description: "Helps refine excess oil and keep pores feeling fresher and clearer.",
       match: /bha|tea tree|acne|oil/i,
     },
     {
       name: "Vitamin C",
-      meta: "Brightening Ã‚? Radiance",
+      meta: "Brightening · Radiance",
+      description: "Helps improve the look of dullness for a brighter, fresher finish.",
       match: /vitamin c|ascorb|c-vit/i,
     },
     {
       name: "SPF Filters",
-      meta: "UV Protection Ã‚? Daily Wear",
+      meta: "UV Protection · Daily Wear",
+      description: "Helps defend skin against daily UV exposure in a wearable finish.",
       match: /spf|uv|sunscreen|sun/i,
     },
   ];
@@ -279,10 +173,10 @@ function getShippingNotes(product: Product) {
     delivery: [
       { label: "Inside Dhaka", value: "1-2 Business Days" },
       { label: "Outside Dhaka", value: "2-4 Business Days" },
-      { label: "Free Delivery", value: "Orders over ?2,000" },
+      { label: "Free Delivery", value: "Orders over ৳2,000" },
     ],
     returns:
-      "Unused and unopened products may be returned within 7 days of delivery, subject to inspection.",
+      "Unused and unopened products may be returned within 7 days of delivery, subject to the store's return review.",
     authenticity,
   };
 }
@@ -290,26 +184,7 @@ function getShippingNotes(product: Product) {
 function getBenefitStatement(product: Product) {
   const source = product.description || product.longDescription;
   if (!source) return "Targeted Korean skincare selected for a balanced, healthy-looking routine.";
-  return source.length > 118 ? `${source.slice(0, 115).trim()}...` : source;
-}
-
-function getTexture(product: Product) {
-  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  if (text.includes("gel")) return "Gel Ã‚? Fresh";
-  if (text.includes("cream") || text.includes("rich")) return "Cream Ã‚? Comforting";
-  if (text.includes("oil")) return "Silky oil Ã‚? Rinses clean";
-  if (text.includes("lightweight") || text.includes("serum") || text.includes("ampoule")) {
-    return "Lightweight Ã‚? Fast absorbing";
-  }
-  return "";
-}
-
-function getFinish(product: Product) {
-  const text = `${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  if (text.includes("no white cast")) return "No white cast Ã‚? Natural";
-  if (text.includes("non-greasy") || text.includes("non greasy")) return "Fresh Ã‚? Non-greasy";
-  if (text.includes("glow") || text.includes("plump")) return "Healthy glow Ã‚? Plump";
-  return "";
+  return source;
 }
 
 function clampQuantityToStock(quantity: number, stock: number) {
@@ -347,6 +222,7 @@ export default function ProductPage() {
   const { isAuthenticated, _ready } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [thumbnailStart, setThumbnailStart] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -371,14 +247,14 @@ export default function ProductPage() {
       ? product.sizeOptions
       : product
         ? [
-            {
-              label: "Default",
-              volume: product.volume ?? "",
-              price: product.price,
-              compareAtPrice: product.compareAtPrice,
-              stock: product.stock,
-            },
-          ]
+          {
+            label: "Default",
+            volume: product.volume ?? "",
+            price: product.price,
+            compareAtPrice: product.compareAtPrice,
+            stock: product.stock,
+          },
+        ]
         : [];
 
   const selectedSizeOption = sizeOptions[selectedSize] ?? sizeOptions[0];
@@ -505,12 +381,14 @@ export default function ProductPage() {
     return null;
   }
 
-  const images = product.images?.length ? product.images : ["/images/hero-product.jpg"];
+  const images = product.images?.filter(Boolean).length
+    ? product.images.filter(Boolean)
+    : product.hoverImage
+      ? [product.hoverImage]
+      : [];
+  const selectedImageSrc = images[selectedImage] ?? images[0];
+  const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
   const benefitChips = getBenefitChips(product);
-  const stockText =
-    effectiveStock > 0
-      ? `In Stock · ${effectiveStock <= 20 ? `Only ${effectiveStock} left` : "Ready to ship"}`
-      : "Out of stock";
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
       ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
@@ -523,19 +401,36 @@ export default function ProductPage() {
   const showSizeSelector = sizeOptions.length > 1 || Boolean(selectedSizeLabel);
   const goToImage = (offset: number) => {
     if (images.length === 0) return;
-    setSelectedImage((current) => (current + offset + images.length) % images.length);
+    setSelectedImage((current) => {
+      const next = (current + offset + images.length) % images.length;
+      setThumbnailStart((start) => {
+        if (next < start) return next;
+        if (next >= start + DESKTOP_THUMBNAIL_SLOTS) {
+          return Math.min(next - DESKTOP_THUMBNAIL_SLOTS + 1, Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS));
+        }
+        return start;
+      });
+      return next;
+    });
   };
   const bestForChips = getBestForChips(product);
-  const featurePoints = getProductFeaturePoints(product);
-  const howToUseSteps = getHowToUseSteps(product);
-  const usageWindow = getUsageWindow(product);
   const ingredientHighlights = getIngredientHighlights(product);
   const shippingNotes = getShippingNotes(product);
+  const maxThumbnailStart = Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS);
+  const visibleThumbnailStart = Math.min(thumbnailStart, maxThumbnailStart);
+  const thumbnailSlots = Array.from({ length: DESKTOP_THUMBNAIL_SLOTS }, (_, index) => {
+    const actualIndex = visibleThumbnailStart + index;
+    return {
+      actualIndex,
+      image: images[actualIndex],
+    };
+  });
+  const reviewTabLabel = `Reviews (${product.reviewCount || 4})`;
 
   return (
     <div className="bg-white pb-28 md:pb-0">
       <div className="mx-auto max-w-[1400px] px-5 py-6 sm:px-6 lg:py-8">
-        <nav className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-ink/40">
+        <nav className="mb-6 flex items-center gap-2 text-[11px] text-ink/45">
           <Link href="/" className="transition-colors hover:text-ink">
             Home
           </Link>
@@ -549,34 +444,60 @@ export default function ProductPage() {
           </span>
         </nav>
 
-        <section className="grid gap-9 lg:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] lg:items-start lg:gap-12">
+        <section className="grid gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="hidden md:flex md:items-start md:gap-4">
-              {images.length > 1 && (
-                <div className="max-h-[calc((5.75rem*4)+(0.75rem*3))] w-24 shrink-0 space-y-3 overflow-y-auto pr-1">
-                  {images.map((image, index) => (
+              <div className="flex w-[72px] shrink-0 flex-col items-center gap-3">
+                {thumbnailSlots.map(({ image, actualIndex }) => (
+                  image ? (
                     <button
-                      key={image + index}
-                      onClick={() => setSelectedImage(index)}
+                      key={image + actualIndex}
+                      onClick={() => setSelectedImage(actualIndex)}
                       className={cn(
-                        "relative aspect-square overflow-hidden rounded-xl bg-[#F7F8F4] transition-all",
-                        selectedImage === index
-                          ? "ring-1 ring-ink/25 opacity-100"
-                          : "opacity-75 hover:opacity-100",
+                        "relative aspect-square w-full overflow-hidden rounded-2xl border bg-[#F8F6F2] transition-all",
+                        selectedImage === actualIndex
+                          ? "border-accent bg-white"
+                          : "border-border hover:border-ink/20",
                       )}
-                      aria-label={`View image ${index + 1}`}
+                      aria-label={`View image ${actualIndex + 1}`}
                     >
                       <Image
                         src={image}
-                        alt={`${product.name} thumbnail ${index + 1}`}
+                        alt={`${product.name} thumbnail ${actualIndex + 1}`}
                         fill
-                        className="object-contain p-2"
-                        sizes="96px"
+                        className="object-contain p-2.5"
+                        sizes="72px"
                       />
                     </button>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <div
+                      key={`placeholder-${actualIndex}`}
+                      className="flex aspect-square w-full items-center justify-center rounded-2xl border border-border bg-[#F8F6F2] text-ink/25"
+                      aria-hidden="true"
+                    >
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                  )
+                ))}
+                {images.length > DESKTOP_THUMBNAIL_SLOTS && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThumbnailStart((current) => {
+                        const next = current >= maxThumbnailStart ? 0 : Math.min(current + 1, maxThumbnailStart);
+                        if (selectedImage < next || selectedImage >= next + DESKTOP_THUMBNAIL_SLOTS) {
+                          setSelectedImage(next);
+                        }
+                        return next;
+                      });
+                    }}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-ink/55 transition-colors hover:border-ink/20 hover:text-ink"
+                    aria-label="View more product thumbnails"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
 
               <div
                 role="button"
@@ -588,11 +509,11 @@ export default function ProductPage() {
                     setLightboxOpen(true);
                   }
                 }}
-                className="group relative aspect-square flex-1 overflow-hidden rounded-2xl bg-[#F7F8F4]"
+                className="group relative aspect-square flex-1 overflow-hidden rounded-[28px]"
                 aria-label="Zoom product image"
               >
                 {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && (
-                  <span className="absolute left-5 top-5 z-10 rounded-full border border-ink/25 bg-white/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/65 backdrop-blur">
+                  <span className="absolute left-5 top-5 z-10 rounded-full border border-border bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/70">
                     {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
                   </span>
                 )}
@@ -604,7 +525,7 @@ export default function ProductPage() {
                         event.stopPropagation();
                         goToImage(-1);
                       }}
-                      className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm transition-colors hover:text-ink"
+                      className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink/60 transition-colors hover:text-ink"
                       aria-label="Previous image"
                     >
                       <ChevronLeft className="h-5 w-5" />
@@ -615,37 +536,38 @@ export default function ProductPage() {
                         event.stopPropagation();
                         goToImage(1);
                       }}
-                      className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm transition-colors hover:text-ink"
+                      className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink/60 transition-colors hover:text-ink"
                       aria-label="Next image"
                     >
-                      <ArrowRight className="h-5 w-5" />
+                      <ChevronRight className="h-5 w-5" />
                     </button>
                   </>
                 )}
-                <Image
-                  src={images[selectedImage]}
-                  alt={product.name}
-                  fill
-                  className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                  sizes="(max-width: 1024px) 100vw, 48vw"
-                  priority
-                />
-                <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-1.5 px-4">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setSelectedImage(index);
-                      }}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all",
-                        selectedImage === index ? "w-8 bg-ink" : "w-5 bg-ink/15 hover:bg-ink/25",
-                      )}
-                      aria-label={`Select image ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                {selectedImageSrc ? (
+                  <Image
+                    src={selectedImageSrc}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    sizes="(max-width: 1024px) 100vw, 48vw"
+                    priority
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-ink/25">
+                    <ImageIcon className="h-12 w-12" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setLightboxOpen(true);
+                  }}
+                  className="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-ink/65 transition-colors hover:text-ink"
+                  aria-label="Expand image"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
@@ -653,107 +575,135 @@ export default function ProductPage() {
               <div
                 ref={mobileGalleryRef}
                 onScroll={(event) => {
+                  if (mobileGalleryItems.length <= 1) return;
                   const target = event.currentTarget;
-                  const itemWidth = target.scrollWidth / images.length;
+                  const itemWidth = target.scrollWidth / mobileGalleryItems.length;
                   const index = Math.min(
-                    images.length - 1,
+                    mobileGalleryItems.length - 1,
                     Math.max(0, Math.round(target.scrollLeft / itemWidth)),
                   );
                   setSelectedImage(index);
                 }}
                 className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3"
               >
-                {images.map((image, index) => (
+                {mobileGalleryItems.map((image, index) => (
                   <button
-                    key={image + index}
+                    key={(image ?? "placeholder") + index}
                     onClick={() => {
-                      setSelectedImage(index);
-                      setLightboxOpen(true);
+                      if (image) setSelectedImage(index);
                     }}
-                    className="relative aspect-square w-full min-w-full snap-center overflow-hidden rounded-2xl bg-[#F7F8F4]"
+                    className={cn(
+                      "relative aspect-square w-full min-w-full snap-center overflow-hidden rounded-[24px]",
+                      !image && "border border-border bg-[#F8F6F2]",
+                    )}
                     aria-label={`Open image ${index + 1}`}
                   >
-                    <Image
-                      src={image}
-                      alt={`${product.name} image ${index + 1}`}
-                      fill
-                      className="object-contain p-8"
-                      sizes="100vw"
-                      priority={index === 0}
-                    />
+                    {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && index === 0 && (
+                      <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/70">
+                        {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
+                      </span>
+                    )}
+                    {image ? (
+                      <>
+                        <Image
+                          src={image}
+                          alt={`${product.name} image ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="100vw"
+                          priority={index === 0}
+                        />
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedImage(index);
+                            setLightboxOpen(true);
+                          }}
+                          className="absolute bottom-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-ink/65"
+                          aria-label="Expand image"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-ink/25">
+                        <ImageIcon className="h-12 w-12" />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
-              <div className="flex items-center justify-center gap-2 text-xs text-ink/45">
-                {images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedImage(index);
-                      const target = mobileGalleryRef.current;
-                      if (!target) return;
-                      target.scrollTo({
-                        left: (target.scrollWidth / images.length) * index,
-                        behavior: "smooth",
-                      });
-                    }}
-                    className={cn(
-                      "h-1.5 rounded-full transition-all",
-                      selectedImage === index ? "w-6 bg-ink" : "w-2.5 bg-ink/20",
-                    )}
-                    aria-label={`Select image ${index + 1}`}
-                  />
-                ))}
-              </div>
+              {images.length > 1 && (
+                <div className="flex items-center justify-center gap-2 text-xs text-ink/45">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedImage(index);
+                        const target = mobileGalleryRef.current;
+                        if (!target) return;
+                        target.scrollTo({
+                          left: (target.scrollWidth / images.length) * index,
+                          behavior: "smooth",
+                        });
+                      }}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all",
+                        selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
+                      )}
+                      aria-label={`Select image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-5 lg:pt-1">
-            <div>
-              {product.brand && (
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ink/45">
-                  {product.brand}
-                </p>
-              )}
-              <h1 className="mt-2 max-w-xl text-4xl font-serif font-medium leading-[1.05] text-ink sm:text-5xl">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
+                {SITE_NAME}
+              </p>
+              <h1 className="max-w-[12ch] text-[2.6rem] font-serif font-medium leading-[0.98] text-ink sm:text-[3.6rem]">
                 {product.name}
               </h1>
-              {selectedSizeLabel ? (
-                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink/55">
-                  <span>{selectedSizeLabel}</span>
-                </div>
-              ) : null}
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-baseline gap-3">
-                <span className="text-3xl font-semibold tracking-tight text-ink">
-                  {formatPrice(displayPrice)}
-                </span>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
                 {compareAtPrice && compareAtPrice > displayPrice && (
-                  <span className="text-lg text-ink/35 line-through">
+                  <span className="text-xl text-ink/35 line-through">
                     {formatPrice(compareAtPrice)}
                   </span>
                 )}
+                <span className="text-[2rem] font-semibold tracking-tight text-ink">
+                  {formatPrice(displayPrice)}
+                </span>
                 {discountPercent > 0 && (
-                  <span className="rounded-full bg-[#EEF3CF] px-2.5 py-1 text-[11px] font-bold text-ink/60">
-                    {discountPercent}%
+                  <span className="rounded-full bg-accent-pale px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-accent">
+                    {discountPercent}% Off
                   </span>
                 )}
-                {product.krw && <span className="text-sm text-ink/35">{product.krw}</span>}
               </div>
-              <p
+              <div
                 className={cn(
-                  "mt-2 text-xs font-medium",
-                  product.stock > 0 ? "text-success" : "text-red-500",
+                  "flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]",
+                  effectiveStock > 0 ? "text-[#1F6B4E]" : "text-ink-muted",
                 )}
               >
-                {stockText}
-              </p>
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    effectiveStock > 0 ? "animate-stock-radar bg-current" : "bg-current",
+                  )}
+                />
+                <span>{effectiveStock > 0 ? "In Stock" : "Out of Stock"}</span>
+              </div>
             </div>
 
             <div className="space-y-4">
-              <p className="max-w-xl text-sm leading-7 text-ink/60">
+              <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
                 {getBenefitStatement(product)}
               </p>
               {benefitChips.length > 0 && (
@@ -761,7 +711,7 @@ export default function ProductPage() {
                   {benefitChips.map((chip) => (
                     <span
                       key={chip}
-                      className="rounded-full border border-ink/10 bg-white px-3.5 py-2 text-xs font-medium text-ink/65"
+                      className="rounded-full border border-border bg-white px-3.5 py-2 text-xs font-medium text-ink/65"
                     >
                       {chip}
                     </span>
@@ -771,76 +721,75 @@ export default function ProductPage() {
             </div>
 
             {showSizeSelector && (
-              <div>
-                <p className="mb-3 text-xs font-semibold text-ink">
-                  Size:
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {sizeOptions.length > 1 ? (
-                    sizeOptions.map((opt, i) => (
-                      <button
-                        key={`${opt.label}-${i}`}
-                        onClick={() => setSelectedSize(i)}
-                        className={cn(
-                          "min-h-11 rounded-full border px-4 text-center text-sm font-semibold transition-all",
-                          selectedSize === i
-                            ? "border-[#B7C36A] bg-[#EEF3CF] text-ink"
-                            : "border-ink/10 bg-[#F7F8F4] text-ink/70 hover:border-ink/25",
-                        )}
-                      >
-                        {opt.volume || opt.label}
-                      </button>
-                    ))
-                  ) : (
-                    <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#B7C36A] bg-[#EEF3CF] px-4 text-center text-sm font-semibold text-ink">
-                      {selectedSizeLabel}
-                    </span>
-                  )}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold text-ink">Size:</span>
+                  <span className="font-semibold text-ink/85">{selectedSizeLabel}</span>
                 </div>
+                {sizeOptions.length > 1 && (
+                  <div className="rounded-[24px] border border-border bg-white px-5 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      {sizeOptions.map((opt, i) => (
+                        <button
+                          key={`${opt.label}-${i}`}
+                          onClick={() => setSelectedSize(i)}
+                          className={cn(
+                            "min-h-10 rounded-full border px-4 text-center text-sm font-medium transition-all",
+                            selectedSize === i
+                              ? "border-accent bg-accent-pale text-ink"
+                              : "border-border bg-white text-ink/65 hover:border-ink/25",
+                          )}
+                        >
+                          {opt.volume || opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            <div className="space-y-5">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex h-11 shrink-0 items-center rounded-full border border-ink/25 bg-white">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-[132px] shrink-0 items-center rounded-full border border-border bg-white px-1 sm:w-[144px]">
                   <button
                     onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
                     disabled={quantity <= 1}
-                    className="flex h-11 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
+                    className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                  <span className="flex-1 text-center text-sm font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
                     disabled={quantity >= effectiveStock || effectiveStock <= 0}
-                    className="flex h-11 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
+                    className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
                     aria-label="Increase quantity"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
-
                 <button
                   onClick={() => addToCart()}
                   disabled={effectiveStock === 0}
                   className={cn(
-                    "flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors",
+                    "flex h-12 min-w-0 flex-[1.65] items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition-colors",
                     effectiveStock === 0
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
-                      : "bg-[#4B3858] text-white hover:bg-accent-dark",
+                      : "bg-accent text-white hover:bg-accent-dark",
                   )}
                 >
-                  <ShoppingBag className="h-4 w-4" />
-                  Add to Cart {formatPrice(displayPrice)}
+                  Add to Cart
+                  {/* · {formatPrice(displayPrice)}
+                  <ChevronRight className="h-4 w-4" /> */}
                 </button>
 
                 <button
                   onClick={handleWishlist}
                   disabled={isTogglingWishlist}
                   className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/25 bg-white transition-all hover:border-accent/50 hover:text-accent",
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-all hover:border-accent/50 hover:text-accent",
                     isWishlisted && "border-accent/25 bg-accent-pale text-accent",
                     isTogglingWishlist && "cursor-wait opacity-70",
                   )}
@@ -849,183 +798,135 @@ export default function ProductPage() {
                   <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
                 </button>
               </div>
-
-              <p className="text-center text-xs text-ink/45">
-                Secure checkout · Cash on Delivery only
-              </p>
-
-              <div className="grid gap-3 border-t border-ink/10 pt-4 md:grid-cols-3 md:gap-4">
-                {TRUST_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.title} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF8F6] text-ink/70">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <div>
-                        <h3 className="font-sans text-sm font-semibold text-ink">{item.title}</h3>
-                        <p className="mt-1 text-sm text-ink/50">{item.text}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           </div>
         </section>
 
       </div>
 
-            <section className="border-t border-ink/10 bg-white">
-        <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-          <div className="overflow-x-auto border-b border-ink/10">
-            <div className="flex min-w-max gap-8">
-              {PRODUCT_TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    "relative py-4 text-sm font-medium transition-colors",
-                    activeTab === tab.key ? "text-ink" : "text-ink/45 hover:text-ink/75",
-                  )}
-                >
-                  {tab.label}
-                  {activeTab === tab.key && (
-                    <span className="absolute inset-x-0 bottom-0 h-px bg-accent" />
-                  )}
-                </button>
-              ))}
+      <section className="border-t border-ink/10 bg-white">
+        <div className="border-b border-ink/10">
+          <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
+            <div className="overflow-x-auto">
+              <div className="flex min-w-max gap-8">
+                {[...PRODUCT_TABS, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={cn(
+                      "relative py-4 text-sm font-medium transition-colors",
+                      activeTab === tab.key ? "text-[#1F1F1F]" : "text-[#7A746F] hover:text-[#1F1F1F]",
+                    )}
+                  >
+                    {tab.label}
+                    {activeTab === tab.key && (
+                      <span className="absolute inset-x-0 bottom-0 h-px bg-accent" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="py-10 sm:py-12 lg:py-14">
+        <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
+          <div className="py-8 sm:py-10 lg:py-12">
             {activeTab === "overview" && (
-              <div className="grid gap-8 lg:grid-cols-5 lg:gap-8">
-                <section className="space-y-3 lg:pr-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    About
-                  </p>
-                  <p className="max-w-md text-sm leading-7 text-ink/65">
-                    {product.longDescription || product.description}
-                  </p>
-                </section>
+              <div className="space-y-8 lg:space-y-10">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
+                  <section className="space-y-4 lg:pr-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                      About This Product
+                    </p>
+                    <p className="max-w-[64ch] text-sm leading-7 text-[#5F5A57]">
+                      {product.longDescription || product.description}
+                    </p>
+                  </section>
 
-                <section className="space-y-3 lg:border-l lg:border-ink/10 lg:pl-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    Best For
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {bestForChips.length > 0 ? bestForChips.map((chip) => (
-                      <span key={chip} className="rounded-full border border-ink/10 bg-[#FAF8F6] px-3 py-1.5 text-xs text-ink/65">{chip}</span>
-                    )) : <span className="text-sm text-ink/45">All skin types</span>}
-                  </div>
-                </section>
+                  <section className="space-y-4 lg:border-l lg:border-[#E6E0DA] lg:pl-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                      Best For
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {bestForChips.length > 0 ? bestForChips.map((chip) => (
+                        <span key={chip} className="rounded-full border border-[#E4DDD6] bg-[#FCFAF8] px-3.5 py-1.5 text-xs font-medium text-[#6A6561]">{chip}</span>
+                      )) : <span className="text-sm text-[#8A8581]">All skin types</span>}
+                    </div>
+                  </section>
+                </div>
 
-                <section className="space-y-4 lg:border-l lg:border-ink/10 lg:pl-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    What It Does
+                <section className="border-t border-[#E6E0DA] pt-8">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                    The Mioralane Promise
                   </p>
-                  <div className="space-y-4">
-                    {featurePoints.length > 0 ? featurePoints.map((point, index) => {
-                      const featureIcons = [Droplets, Sparkles, Feather, Shield];
-                      const Icon = featureIcons[index % featureIcons.length];
+                  <div className="mt-6 rounded-[20px] border border-[#F0DFDB] bg-[#FFF9F8] p-7 sm:p-8">
+                    <div className="grid gap-0 md:grid-cols-3">
+                    {TRUST_ITEMS.map((item) => {
+                      const Icon = item.icon;
                       return (
-                        <div key={point.title} className={index > 0 ? "border-t border-ink/10 pt-4" : ""}>
-                          <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-                            <Icon className="h-4 w-4 text-accent" />
-                            {point.title}
+                        <div
+                          key={item.title}
+                          className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
+                        >
+                          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
+                            <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
                           </div>
-                          <p className="mt-1 text-sm leading-6 text-ink/60">{point.text}</p>
                         </div>
                       );
-                    }) : <p className="text-sm leading-6 text-ink/60">A targeted Korean skincare formula selected for everyday balance.</p>}
-                  </div>
-                </section>
-
-                <section className="space-y-4 lg:border-l lg:border-ink/10 lg:pl-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    How To Use
-                  </p>
-                  <div className="space-y-4">
-                    {howToUseSteps.map((step, index) => (
-                      <div key={step} className={index > 0 ? "border-t border-ink/10 pt-4" : ""}>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-                          {String(index + 1).padStart(2, "0")}
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-ink/65">{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="space-y-4 lg:border-l lg:border-ink/10 lg:pl-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    When To Use
-                  </p>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 text-sm font-medium">
-                      <span className={usageWindow.am ? "text-ink" : "text-ink/25"}>AM ?</span>
-                      <span className={usageWindow.pm ? "text-ink" : "text-ink/25"}>PM ?</span>
+                    })}
                     </div>
-                    <div className="border-t border-ink/10 pt-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                        Routine Step
-                      </p>
-                      <p className="mt-1 text-base font-semibold text-ink">{getRoutineStepLabel(product)}</p>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-3 lg:border-l lg:border-ink/10 lg:pl-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
-                    Quick Notes
-                  </p>
-                  <div className="space-y-2 text-sm leading-6 text-ink/60">
-                    <p>{product.skinType || "All skin types"}</p>
-                    <p>{product.concerns?.join(" ? ") || "Balanced daily care"}</p>
-                    <p>{getTexture(product) || getFinish(product) || "Lightweight and easy to layer"}</p>
                   </div>
                 </section>
               </div>
             )}
 
             {activeTab === "ingredients" && (
-              <div className="space-y-10">
-                <div className="max-w-2xl">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">Key Ingredients</p>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  {ingredientHighlights.length > 0 ? ingredientHighlights.map((ingredient) => (
-                    <section key={ingredient.name} className="border-t border-ink/10 pt-4">
-                      <h3 className="text-base font-semibold text-ink">{ingredient.name}</h3>
-                      <p className="mt-1 text-sm text-ink/55">{ingredient.meta}</p>
-                    </section>
-                  )) : (
-                    <p className="text-sm leading-7 text-ink/60">Ingredient details are not listed in the current catalog entry for this product.</p>
+              <div className="space-y-8">
+                <section className="max-w-2xl space-y-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Key Ingredient</p>
+                  {ingredientHighlights[0] ? (
+                    <div className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
+                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{ingredientHighlights[0].name}</h3>
+                      <p className="mt-1 text-sm font-medium text-[#8A8581]">{ingredientHighlights[0].meta}</p>
+                      {ingredientHighlights[0].description ? (
+                        <p className="mt-3 max-w-[58ch] text-sm leading-7 text-[#5F5A57]">
+                          {ingredientHighlights[0].description}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-7 text-[#5F5A57]">
+                      Ingredient details are not listed in the current catalog entry for this product.
+                    </p>
                   )}
-                </div>
+                </section>
 
-                <details className="border-t border-ink/10 pt-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-ink">
-                    <span>Full Ingredient List</span>
-                    <span className="text-ink/35">+</span>
+                <details className="group border-t border-[#E6E0DA] pt-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-[#1F1F1F]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Full Ingredient List</span>
+                    <span className="text-lg leading-none text-[#8A8581] transition-transform group-open:rotate-45">+</span>
                   </summary>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-ink/60">{product.ingredients || "Full INCI ingredient list is not available in the current product data."}</p>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[#5F5A57]">
+                    {product.ingredients || "Full INCI ingredient list is not available in the current product data."}
+                  </p>
                 </details>
               </div>
             )}
 
             {activeTab === "shipping" && (
-              <div className="grid gap-10 lg:grid-cols-[1fr_1fr]">
-                <section className="space-y-6">
+              <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
+                <section className="space-y-5">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">Delivery</p>
-                    <div className="mt-4 space-y-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Delivery</p>
+                    <div className="mt-4 rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5">
                       {shippingNotes.delivery.map((item) => (
-                        <div key={item.label} className="flex items-center justify-between border-t border-ink/10 pt-3">
-                          <span className="text-sm text-ink/60">{item.label}</span>
-                          <span className="text-sm font-medium text-ink">{item.value}</span>
+                        <div key={item.label} className="flex items-center justify-between gap-6 border-t border-[#EEE7E0] py-4 first:border-t-0">
+                          <span className="text-sm text-[#5F5A57]">{item.label}</span>
+                          <span className="text-right text-sm font-medium text-[#1F1F1F]">{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -1034,13 +935,15 @@ export default function ProductPage() {
 
                 <section className="space-y-6">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">Returns</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-ink/60">{shippingNotes.returns}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Returns</p>
+                    <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.returns}</p>
                   </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">Authenticity</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-ink/60">{shippingNotes.authenticity}</p>
-                  </div>
+                  {product.source ? (
+                    <div className="border-t border-[#E6E0DA] pt-6">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Authenticity Guarantee</p>
+                      <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.authenticity}</p>
+                    </div>
+                  ) : null}
                 </section>
               </div>
             )}
@@ -1118,13 +1021,19 @@ export default function ProductPage() {
             <X className="h-6 w-6" />
           </button>
           <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
-            <Image
-              src={images[selectedImage]}
-              alt={product.name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 48rem"
-            />
+            {selectedImageSrc ? (
+              <Image
+                src={selectedImageSrc}
+                alt={product.name}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 48rem"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-white/40">
+                <ImageIcon className="h-16 w-16" />
+              </div>
+            )}
           </div>
         </div>
       )}
