@@ -37,8 +37,9 @@ const PRICE_RANGES = [
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 function paramOrNull(value: string | null): string | null {
-  if (!value || value === "all" || value === "") return null;
-  return value;
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === "all") return null;
+  return trimmed;
 }
 
 function normalizeSort(value: string | null): string {
@@ -92,7 +93,7 @@ function ShopContent() {
   const selectedSkinType = searchParams.get("skinType") || "all";
   const selectedConcern = searchParams.get("concern") || "all";
   const activeSort = normalizeSort(searchParams.get("sort"));
-  const searchQuery = searchParams.get("search") || "";
+  const searchQuery = paramOrNull(searchParams.get("search")) || "";
   const activeMinPrice = searchParams.get("minPrice") || "";
   const activeMaxPrice = searchParams.get("maxPrice") || "";
 
@@ -124,7 +125,12 @@ function ShopContent() {
   const apiParams = useMemo(() => buildApiParams(searchParams), [searchParams]);
 
   // ── Data fetching ──
-  const { data: products, isLoading, isError, error } = useProducts(apiParams);
+  const {
+    data: products,
+    isLoading,
+    isError,
+    refetch,
+  } = useProducts(apiParams);
 
   // ── Scroll listener ──
   useEffect(() => {
@@ -179,6 +185,7 @@ function ShopContent() {
   const pageTitle = searchLabel
     ? `Search results for "${searchLabel}"`
     : "Shop All Products";
+  const isSearchPage = Boolean(searchLabel);
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 sm:py-10">
@@ -445,13 +452,15 @@ function ShopContent() {
                 <Filter className="h-7 w-7 text-rose-400" />
               </div>
               <h2 className="text-lg font-semibold text-ink">
-                Unable to load products
+                {isSearchPage
+                  ? "Couldn\u2019t load search results."
+                  : "Unable to load products"}
               </h2>
               <p className="mt-1 mb-6 max-w-sm text-sm text-ink/50">
-                {error instanceof Error ? error.message : "Please try again in a moment."}
+                Please try again in a moment.
               </p>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => void refetch()}
                 className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
               >
                 Retry

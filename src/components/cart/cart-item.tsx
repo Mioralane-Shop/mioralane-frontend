@@ -13,42 +13,82 @@ interface CartItemProps {
 }
 
 export function CartItemRow({ item }: CartItemProps) {
-  const { updateQuantity, removeItem } = useCartStore();
-  const { product, quantity } = item;
+  const { updateQuantity, removeItem, isSyncingCatalog } = useCartStore();
+  const { product, quantity, catalogStatus } = item;
   const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
   const itemHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
-  const canIncrease = product.stock > 0 && quantity < product.stock;
-  const isOutOfStock = product.stock <= 0;
+  const isVerified = catalogStatus === "verified";
+  const isUnavailable = catalogStatus === "missing" || catalogStatus === "error";
+  const isOutOfStock = isVerified && product.stock <= 0;
+  const canIncrease = isVerified && product.stock > 0 && quantity < product.stock;
+  const statusLabel = isUnavailable
+    ? catalogStatus === "missing"
+      ? "No longer available"
+      : "Availability could not be verified"
+    : isOutOfStock
+      ? "Out of stock"
+      : null;
+  const showPrice = isVerified || isOutOfStock;
+  const canNavigate = !isUnavailable;
 
   return (
     <div className="flex gap-4 py-4">
-      <Link
-        href={itemHref}
-        className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50"
-      >
-        <ProductImage
-          src={product.images[0]}
-          alt={product.name}
-          fallbackId={product.id}
-          fill
-          className="object-cover"
-          sizes="96px"
-        />
-      </Link>
+      {canNavigate ? (
+        <Link
+          href={itemHref}
+          className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50"
+        >
+          <ProductImage
+            src={product.images[0]}
+            alt={product.name}
+            fallbackId={product.id}
+            fill
+            className="object-cover"
+            sizes="96px"
+          />
+        </Link>
+      ) : (
+        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50">
+          <ProductImage
+            src={product.images[0]}
+            alt={product.name}
+            fallbackId={product.id}
+            fill
+            className="object-cover"
+            sizes="96px"
+          />
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col justify-between">
         <div>
-          <Link href={itemHref}>
-            <h4 className="text-sm font-medium text-neutral-800 hover:text-rose-500 transition-colors line-clamp-1">
+          {canNavigate ? (
+            <Link href={itemHref}>
+              <h4 className="text-sm font-medium text-neutral-800 transition-colors line-clamp-1 hover:text-rose-500">
+                {product.name}
+              </h4>
+            </Link>
+          ) : (
+            <h4 className="text-sm font-medium text-neutral-800 line-clamp-1">
               {product.name}
             </h4>
-          </Link>
+          )}
           <p className="mt-0.5 text-sm font-semibold text-rose-600">
-            {formatPrice(product.price)}
+            {showPrice ? formatPrice(product.price) : "Price unavailable"}
           </p>
-          {isOutOfStock && (
-            <p className="mt-1 text-xs font-medium text-red-500">
-              Out of stock
+          {statusLabel && (
+            <p
+              className={cn(
+                "mt-1 text-xs font-medium",
+                isUnavailable ? "text-amber-600" : "text-red-500",
+              )}
+            >
+              {statusLabel}
+            </p>
+          )}
+          {isSyncingCatalog && !catalogStatus && (
+            <p className="mt-1 text-xs font-medium text-neutral-400">
+              Refreshing availability
             </p>
           )}
         </div>
