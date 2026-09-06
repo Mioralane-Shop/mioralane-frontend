@@ -15,16 +15,35 @@ import { ShoppingBag, MessageCircle } from "lucide-react";
 import { SITE_WHATSAPP } from "@/constants/site";
 
 export function CartDrawer() {
-  const { items, isOpen, closeCart, totalPrice } = useCartStore();
+  const {
+    items,
+    isOpen,
+    closeCart,
+    totalPrice,
+    isSyncingCatalog,
+    catalogSyncError,
+    canCheckout,
+    getCheckoutBlockMessage,
+  } = useCartStore();
 
-  const orderText = `Hello Mioralane! ðŸ‘‹ I'd like to place an order:\n${items
+  const purchasableItems = items.filter(
+    (item) =>
+      item.catalogStatus === "verified" &&
+      item.product.stock > 0 &&
+      item.quantity <= item.product.stock,
+  );
+
+  const orderText = `Hello Mioralane! I'd like to place an order:\n${purchasableItems
     .map(
-      (i) =>
-        `â€¢ ${i.product.name} Ã— ${i.quantity} â€” ${formatPrice(i.product.price * i.quantity)}`,
+      (item) =>
+        `- ${item.product.name} x ${item.quantity} - ${formatPrice(
+          item.product.price * item.quantity,
+        )}`,
     )
     .join("\n")}\n\nTotal: ${formatPrice(totalPrice())}`;
 
   const waLink = `https://wa.me/${SITE_WHATSAPP}?text=${encodeURIComponent(orderText)}`;
+  const blockMessage = getCheckoutBlockMessage();
 
   return (
     <Sheet open={isOpen} onOpenChange={closeCart}>
@@ -59,6 +78,22 @@ export function CartDrawer() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-6">
+              {(isSyncingCatalog || catalogSyncError || blockMessage) && (
+                <div className="mb-4 rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3 text-sm text-neutral-600">
+                  <p className="font-medium text-neutral-800">
+                    {isSyncingCatalog
+                      ? "Refreshing cart availability"
+                      : catalogSyncError
+                        ? "One or more items could not be verified"
+                        : "Some cart items need attention"}
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    {blockMessage ??
+                      "We are checking current product and bundle data before checkout."}
+                  </p>
+                </div>
+              )}
+
               {items.map((item) => (
                 <CartItemRow key={item.product.id} item={item} />
               ))}
@@ -73,14 +108,30 @@ export function CartDrawer() {
                   {formatPrice(totalPrice())}
                 </span>
               </div>
+
+              {!isSyncingCatalog && purchasableItems.length !== items.length && (
+                <p className="mb-4 text-xs text-neutral-400">
+                  Unavailable items are excluded from the subtotal until they
+                  are resolved.
+                </p>
+              )}
+
               <p className="mb-4 text-xs text-neutral-400">
                 Shipping and taxes calculated at checkout
               </p>
-              <Link href="/checkout" onClick={closeCart}>
-                <Button className="w-full" size="lg">
-                  Checkout
+
+              {canCheckout() ? (
+                <Link href="/checkout" onClick={closeCart}>
+                  <Button className="w-full" size="lg">
+                    Checkout
+                  </Button>
+                </Link>
+              ) : (
+                <Button className="w-full" size="lg" disabled>
+                  Checkout unavailable
                 </Button>
-              </Link>
+              )}
+
               <a
                 href={waLink}
                 target="_blank"

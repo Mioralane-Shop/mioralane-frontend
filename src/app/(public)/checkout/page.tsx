@@ -34,12 +34,21 @@ export default function CheckoutPage() {
 function CheckoutContent() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { items, clearCart } = useCartStore();
+  const {
+    items,
+    clearCart,
+    totalPrice,
+    canCheckout,
+    getCheckoutBlockMessage,
+    isSyncingCatalog,
+  } = useCartStore();
   const addToast = useToastStore((state) => state.addToast);
   const createOrder = useCreateOrder();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
+  const checkoutBlockMessage = getCheckoutBlockMessage();
+  const canProceedToCheckout = canCheckout();
 
   const {
     register,
@@ -65,15 +74,9 @@ function CheckoutContent() {
   }, [setValue, user?.username]);
 
   const deliveryZone = watch("deliveryZone");
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const subtotal = totalPrice();
   const shippingFee = SHIPPING_FEES[deliveryZone];
   const totalAmount = subtotal + shippingFee;
-  const hasUnavailableItem = items.some(
-    (item) => item.product.stock <= 0 || item.quantity > item.product.stock
-  );
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (submitLockRef.current || createOrder.isPending) {
@@ -82,9 +85,10 @@ function CheckoutContent() {
 
     setServerError(null);
 
-    if (hasUnavailableItem) {
+    if (!canProceedToCheckout) {
       setServerError(
-        "One or more items in your cart are out of stock. Please update the cart before placing the order."
+        checkoutBlockMessage ??
+          "One or more items in your cart cannot be verified. Please update the cart before placing the order.",
       );
       return;
     }
@@ -321,7 +325,11 @@ function CheckoutContent() {
                         </p>
                       </div>
                       <span className="shrink-0 font-medium text-neutral-800">
-                        {formatPrice(item.product.price * item.quantity)}
+                        {item.catalogStatus === "verified" &&
+                        item.product.stock > 0 &&
+                        item.quantity <= item.product.stock
+                          ? formatPrice(item.product.price * item.quantity)
+                          : "Unavailable"}
                       </span>
                     </div>
                   ))}
@@ -344,6 +352,12 @@ function CheckoutContent() {
                   </div>
                 </div>
 
+                {isSyncingCatalog && (
+                  <p className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-neutral-600">
+                    Refreshing cart prices and stock. Please wait before placing the order.
+                  </p>
+                )}
+
                 <div className="mt-5 rounded-2xl bg-rose-50/50 p-4 text-sm text-neutral-600">
                   <div className="flex items-center gap-2 font-medium text-neutral-800">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -355,10 +369,9 @@ function CheckoutContent() {
                   </p>
                 </div>
 
-                {hasUnavailableItem && (
+                {checkoutBlockMessage && !isSyncingCatalog && (
                   <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                    One or more cart items are currently out of stock. Remove
-                    them or reduce the quantity before checkout.
+                    {checkoutBlockMessage}
                   </p>
                 )}
 
@@ -372,7 +385,7 @@ function CheckoutContent() {
                   type="submit"
                   size="lg"
                   className="mt-6 w-full"
-                  disabled={createOrder.isPending || isSubmitting || hasUnavailableItem}
+                  disabled={createOrder.isPending || isSubmitting || !canProceedToCheckout}
                 >
                   {createOrder.isPending || isSubmitting ? (
                     <>

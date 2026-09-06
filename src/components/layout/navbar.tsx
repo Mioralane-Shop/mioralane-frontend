@@ -12,9 +12,8 @@ import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
 import { getComboMeta, getComboProducts } from "@/constants/combo";
 import { BRANDS } from "@/constants/site";
-import { productService } from "@/services/product.service";
+import { useProductSearch } from "@/hooks/use-product-search";
 import { formatPrice } from "@/lib/utils";
-import type { Product } from "@/types/product";
 
 const BOTTOM_NAV = [
   { label: "Skin Care", href: "/shop" },
@@ -471,9 +470,14 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [searchingResults, setSearchingResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const {
+    data: searchResults = [],
+    isLoading: searchingResults,
+    isError: searchError,
+    isSettling: searchSettling,
+    refetch: refetchSearch,
+  } = useProductSearch(searchQuery, { enabled: searchFocused, limit: 5 });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -484,40 +488,6 @@ export function Navbar() {
       setSearchFocused(false);
     }
   };
-
-  useEffect(() => {
-    const query = searchQuery.trim();
-    if (!searchFocused || query.length < 2) {
-      setSearchResults([]);
-      setSearchingResults(false);
-      return;
-    }
-
-    let cancelled = false;
-    setSearchingResults(true);
-
-    const timer = window.setTimeout(async () => {
-      try {
-        const res = await productService.getAll({ search: query, limit: "5" });
-        if (!cancelled) {
-          setSearchResults(res.products ?? []);
-        }
-      } catch {
-        if (!cancelled) {
-          setSearchResults([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setSearchingResults(false);
-        }
-      }
-    }, 250);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [searchFocused, searchQuery]);
 
   useEffect(() => {
     let ticking = false;
@@ -608,9 +578,25 @@ export function Navbar() {
               {/* Live Suggestions */}
               {searchFocused && searchQuery.trim().length >= 2 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl shadow-lg border border-border-light overflow-hidden z-[80]">
-                  {searchingResults ? (
+                  {searchingResults || searchSettling ? (
                     <div className="p-4 text-center text-sm text-ink/40">
                       Searching...
+                    </div>
+                  ) : searchError ? (
+                    <div className="p-4 text-center">
+                      <p className="text-sm font-medium text-ink">
+                        Couldn&apos;t load search results.
+                      </p>
+                      <p className="mt-1 text-xs text-ink/50">
+                        Please try again in a moment.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => refetchSearch()}
+                        className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-dark"
+                      >
+                        Retry
+                      </button>
                     </div>
                   ) : searchResults.length > 0 ? (
                     <div className="p-2">

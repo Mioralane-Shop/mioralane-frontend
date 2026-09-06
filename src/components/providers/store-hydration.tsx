@@ -14,7 +14,10 @@ export function StoreHydration() {
   const { isAuthenticated, _ready } = useAuthStore();
 
   useEffect(() => {
-    useCartStore.persist.rehydrate();
+    void Promise.resolve(useCartStore.persist.rehydrate())
+      .finally(() => {
+        void useCartStore.getState().syncCatalog();
+      });
     useWishlistStore.persist.rehydrate();
   }, []);
 
