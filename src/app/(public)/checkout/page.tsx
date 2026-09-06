@@ -99,8 +99,8 @@ function CheckoutContent() {
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({
-          itemId: item.product.id,
-          itemType: item.product.itemType ?? (item.product.category === "combo" ? "combo" : "product"),
+          itemId: item.itemId || item.product.id,
+          itemType: item.itemType ?? item.product.itemType ?? (item.product.category === "combo" ? "combo" : "product"),
           title: item.product.name,
           price: item.product.price,
           thumbnail: item.product.images?.[0] ?? "",
@@ -313,7 +313,7 @@ function CheckoutContent() {
                 <div className="mt-4 divide-y divide-rose-50">
                   {items.map((item) => (
                     <div
-                      key={item.product.id}
+                      key={`${item.itemType}:${item.itemId || item.product.id}`}
                       className="flex items-start justify-between gap-3 py-3 text-sm"
                     >
                       <div className="min-w-0">

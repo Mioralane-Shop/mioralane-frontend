@@ -30,6 +30,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "skynellebeauty.com",
       },
+      {
+        protocol: "https",
+        hostname: "lavishta.com",
+      },
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+      },
     ],
   },
 };

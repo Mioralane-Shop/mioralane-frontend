@@ -103,6 +103,7 @@ export function ComboSection() {
           key={product.id}
           product={product}
           combo={extractComboMeta(product)}
+          onNavigate={() => router.push(`/combo/${product.slug}`)}
         />
       ))}
     </div>

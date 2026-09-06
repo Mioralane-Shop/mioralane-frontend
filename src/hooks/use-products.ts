@@ -3,10 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { productService } from "@/services/product.service";
 import type { Product } from "@/types/product";
+import type { PaginatedProductsResponse } from "@/services/product.service";
 
-async function fetchProducts(filters?: Record<string, string>): Promise<Product[]> {
-  const res = await productService.getAll(filters);
-  return res.products;
+async function fetchProducts(
+  filters?: Record<string, string>
+): Promise<PaginatedProductsResponse> {
+  return productService.getAll(filters);
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product> {

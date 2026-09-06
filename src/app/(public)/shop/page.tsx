@@ -126,11 +126,15 @@ function ShopContent() {
 
   // ── Data fetching ──
   const {
-    data: products,
+    data: productsResponse,
     isLoading,
     isError,
     refetch,
   } = useProducts(apiParams);
+  const products = productsResponse?.products ?? [];
+  const currentPage = productsResponse?.page ?? 1;
+  const totalPages = productsResponse?.totalPages ?? 1;
+  const totalProducts = productsResponse?.count ?? products.length;
 
   // ── Scroll listener ──
   useEffect(() => {
@@ -150,6 +154,21 @@ function ShopContent() {
       }
       if (key !== "page") next.delete("page");
       router.push(`/shop?${next.toString()}`, { scroll: false });
+    },
+    [searchParams, router],
+  );
+
+  const setPage = useCallback(
+    (page: number) => {
+      const next = new URLSearchParams(searchParams.toString());
+      if (page <= 1) {
+        next.delete("page");
+      } else {
+        next.set("page", String(page));
+      }
+
+      const query = next.toString();
+      router.push(query ? `/shop?${query}` : "/shop", { scroll: false });
     },
     [searchParams, router],
   );
@@ -180,12 +199,26 @@ function ShopContent() {
     !!activeMaxPrice ||
     !!searchQuery;
 
-  const productCount = products?.length ?? 0;
   const searchLabel = searchQuery.trim();
+  const currentPageLabel = Math.max(1, currentPage);
   const pageTitle = searchLabel
     ? `Search results for "${searchLabel}"`
     : "Shop All Products";
   const isSearchPage = Boolean(searchLabel);
+
+  useEffect(() => {
+    if (isLoading || !productsResponse) return;
+
+    const requestedPage = Number(searchParams.get("page") || 1);
+    if (requestedPage < 1) {
+      setPage(1);
+      return;
+    }
+
+    if (productsResponse.totalPages > 0 && requestedPage > productsResponse.totalPages) {
+      setPage(productsResponse.totalPages);
+    }
+  }, [isLoading, productsResponse, searchParams, setPage]);
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 sm:py-10">
@@ -241,7 +274,7 @@ function ShopContent() {
 
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-ink/50 whitespace-nowrap">
-            {productCount} product{productCount !== 1 ? "s" : ""}
+            {totalProducts} product{totalProducts !== 1 ? "s" : ""}
           </span>
           <select
             value={activeSort}
@@ -497,11 +530,37 @@ function ShopContent() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product: Product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map((product: Product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPage(currentPageLabel - 1)}
+                    disabled={currentPageLabel <= 1}
+                    className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/20 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm font-medium text-ink/50">
+                    Page {currentPageLabel} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage(currentPageLabel + 1)}
+                    disabled={currentPageLabel >= totalPages}
+                    className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/20 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

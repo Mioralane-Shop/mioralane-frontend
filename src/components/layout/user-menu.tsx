@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { User, Package, LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
-import { useWishlistStore } from "@/store/wishlist.store";
-import { authService } from "@/services/auth.service";
+import { useAccountLogout } from "@/hooks/use-account-logout";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -17,20 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function UserMenu() {
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const clearWishlist = useWishlistStore((s) => s.clearWishlist);
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    try {
-      await authService.logout();
-    } catch {
-      // Ignore — local session is cleared regardless
-    }
-    logout();
-    clearWishlist();
-    router.push("/");
-  };
+  const { user, isAuthenticated } = useAuthStore();
+  const handleSignOut = useAccountLogout();
 
   if (!isAuthenticated || !user) return null;
 
@@ -88,7 +74,9 @@ export function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={handleSignOut}
+          onSelect={() => {
+            void handleSignOut();
+          }}
           className="flex items-center gap-3 text-red-500 focus:text-red-600 cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
@@ -98,5 +86,3 @@ export function UserMenu() {
     </DropdownMenu>
   );
 }
-
-

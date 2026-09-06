@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product/product-card";
 import { useProducts } from "@/hooks/use-products";
@@ -31,32 +31,40 @@ export function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState<TabId>("all");
 
   const {
-    data: products,
+    data: response,
     isLoading,
     isError,
     error,
     refetch,
     isFetching,
   } = useProducts(getFilters(activeTab));
+  const products = response?.products ?? [];
+  const singleProducts = products.filter((product) => {
+    const itemType =
+      product.itemType ?? (product.category === "combo" ? "combo" : "product");
+    return itemType !== "combo" && product.category !== "combo";
+  });
 
   const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
   const isNotFoundError = statusCode === 404;
 
   return (
-    <section className="bg-surface py-12 md:py-16">
-      <div className="container mx-auto px-4">
-        <div className="mb-10 flex flex-col items-center gap-4 text-center">
-          <SectionHeading title="FEATURED PRODUCTS" />
+    <section className="home-section bg-surface">
+      <div className="mx-auto max-w-[1440px] px-4">
+        <div className="home-section-heading flex flex-col items-center gap-4 text-center">
+          <SectionHeading
+            title="Discover Your Next Favorite"
+            titleClassName="text-[22px] md:text-[25px] lg:text-[29px]"
+          />
           <div className="mt-2 flex gap-2">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? "border-[#2D2A26] bg-[#2D2A26] text-white shadow-[0_10px_24px_rgba(45,42,38,0.18)]"
-                    : "border-neutral-200 bg-white text-[#2D2A26] shadow-sm hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
+                className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${activeTab === tab.id
+                  ? "border-[#2D2A26] bg-[#2D2A26] text-white shadow-[0_10px_24px_rgba(45,42,38,0.18)]"
+                  : "border-neutral-200 bg-white text-[#2D2A26] shadow-sm hover:border-neutral-300 hover:bg-neutral-50"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -100,25 +108,26 @@ export function FeaturedProducts() {
               </Button>
             </div>
           </div>
-        ) : !products || products.length === 0 ? (
+        ) : singleProducts.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-lg text-neutral-400">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {products.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {singleProducts.slice(0, 8).map((product) => (
+              <ProductCard key={product.id} product={product} compactImage />
             ))}
           </div>
         )}
 
-        <div className="mt-8 text-center">
+        <div className="mt-16 text-center md:mt-18">
           <Link href="/shop">
             <Button
               variant="outline"
-              className="rounded-full border-brand px-8 text-brand hover:bg-brand hover:text-white"
+              className="h-[48px] border-accent bg-transparent px-8 text-[16px] font-normal text-accent shadow-none transition-colors duration-200 hover:border-[#403832] hover:bg-[#403832] hover:text-white"
             >
               View All Products
+              <ArrowRight className="ml-3 h-4 w-4" />
             </Button>
           </Link>
         </div>

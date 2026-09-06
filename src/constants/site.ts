@@ -3,23 +3,29 @@ import { CATALOG_2026_PRODUCTS } from "./catalog-2026";
 
 export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =
-  "Authentic Korean skincare delivered to Bangladesh. COSRX, Beauty of Joseon, ANUA, Purito — batch-verified, beautifully packaged.";
+  "Curated Korean skincare and routine bundles for everyday care. COSRX, Beauty of Joseon, ANUA, Purito, and more.";
 export const SITE_URL = "https://mioralane.com";
 
 // WhatsApp order number (international format, digits only — replace with the real number)
 export const SITE_WHATSAPP = "8801700000000";
 
 export const ANNOUNCEMENT_TEXT =
-  "Free delivery on orders over ৳2,000 in Dhaka · Cash on Delivery available";
+  "Curated Korean skincare and routine bundles for everyday care";
+
+export type NavLinkConfig = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
 
 export const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/shop" },
   { label: "Combo", href: "/combo" },
-  { label: "Offers", href: "/shop?sort=offers" },
+  { label: "Offers", comingSoon: true },
   { label: "New Arrival", href: "/shop?sort=newest" },
-  { label: "Best Seller", href: "/shop?sort=best-seller" },
-];
+  { label: "Best Seller", href: "/shop?bestSeller=true" },
+] as const satisfies readonly NavLinkConfig[];
 
 export const BRANDS = [
   "3W Clinic",
@@ -83,8 +89,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["hydration", "repair"],
     concerns: ["Hydration", "Repair"],
     tag: "best",
-    rating: 4.8,
-    reviewCount: 124,
+    rating: 0,
+    reviewCount: 0,
     stock: 50,
     skinType: "All skin types",
     volume: "100ml",
@@ -121,8 +127,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["pores", "sensitive"],
     concerns: ["Pores", "Sensitive"],
     tag: "best",
-    rating: 4.7,
-    reviewCount: 98,
+    rating: 0,
+    reviewCount: 0,
     stock: 35,
     skinType: "All skin types",
     volume: "200ml",
@@ -159,8 +165,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["uv-protection", "brightening"],
     concerns: ["UV Protection", "Brightening"],
     tag: "best",
-    rating: 4.9,
-    reviewCount: 203,
+    rating: 0,
+    reviewCount: 0,
     stock: 60,
     skinType: "All skin types",
     volume: "50ml",
@@ -197,8 +203,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["moisture", "sensitive"],
     concerns: ["Moisture", "Sensitive"],
     tag: null,
-    rating: 4.6,
-    reviewCount: 67,
+    rating: 0,
+    reviewCount: 0,
     stock: 25,
     skinType: "Sensitive / Dry",
     volume: "50ml",
@@ -235,8 +241,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["anti-aging", "repair"],
     concerns: ["Anti-aging", "Repair"],
     tag: "new",
-    rating: 4.7,
-    reviewCount: 45,
+    rating: 0,
+    reviewCount: 0,
     stock: 30,
     skinType: "Mature / Dry",
     volume: "50ml",
@@ -273,8 +279,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["brightening", "acne"],
     concerns: ["Brightening", "Acne"],
     tag: null,
-    rating: 4.8,
-    reviewCount: 156,
+    rating: 0,
+    reviewCount: 0,
     stock: 45,
     skinType: "Oily / Combination",
     volume: "30ml",
@@ -311,8 +317,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["acne", "sensitive"],
     concerns: ["Acne", "Sensitive"],
     tag: null,
-    rating: 4.6,
-    reviewCount: 89,
+    rating: 0,
+    reviewCount: 0,
     stock: 55,
     skinType: "Oily / Acne-prone",
     volume: "150ml",
@@ -349,8 +355,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["sensitive", "hydration"],
     concerns: ["Sensitive", "Hydration"],
     tag: "new",
-    rating: 4.5,
-    reviewCount: 32,
+    rating: 0,
+    reviewCount: 0,
     stock: 40,
     skinType: "All skin types",
     volume: "4 × 20ml",
@@ -384,8 +390,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["complete-routine", "best-value"],
     concerns: ["Complete Routine", "Best Value"],
     tag: "best",
-    rating: 4.9,
-    reviewCount: 89,
+    rating: 0,
+    reviewCount: 0,
     stock: 20,
     skinType: "All skin types",
     volume: "5-piece set",
@@ -418,8 +424,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["travel-size", "try-before-buy"],
     concerns: ["Travel Size", "Try Before Buy"],
     tag: "new",
-    rating: 4.7,
-    reviewCount: 45,
+    rating: 0,
+    reviewCount: 0,
     stock: 30,
     skinType: "All skin types",
     volume: "4-piece mini set",
@@ -457,8 +463,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["acne", "oil-control"],
     concerns: ["Acne", "Oil Control"],
     tag: "best",
-    rating: 4.8,
-    reviewCount: 67,
+    rating: 0,
+    reviewCount: 0,
     stock: 25,
     skinType: "Oily / Acne-prone",
     volume: "3-piece set",
@@ -488,8 +494,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["soothing", "hydration"],
     concerns: ["Soothing", "Hydration"],
     tag: "best",
-    rating: 4.8,
-    reviewCount: 156,
+    rating: 0,
+    reviewCount: 0,
     stock: 40,
     skinType: "All skin types",
     volume: "250ml",
@@ -533,8 +539,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["barrier-repair", "moisture"],
     concerns: ["Barrier Repair", "Moisture"],
     tag: "best",
-    rating: 4.7,
-    reviewCount: 98,
+    rating: 0,
+    reviewCount: 0,
     stock: 35,
     skinType: "Dry / Sensitive",
     volume: "200ml",
@@ -578,8 +584,8 @@ export const DUMMY_PRODUCTS: Product[] = [
     tags: ["hydration", "quick-fix"],
     concerns: ["Hydration", "Quick Fix"],
     tag: "new",
-    rating: 4.6,
-    reviewCount: 203,
+    rating: 0,
+    reviewCount: 0,
     stock: 60,
     skinType: "All skin types",
     volume: "10 sheets",
@@ -627,3 +633,5 @@ export const SORT_OPTIONS = [
   { label: "Top Rated", value: "rating" },
   { label: "Most Popular", value: "popular" },
 ];
+
+

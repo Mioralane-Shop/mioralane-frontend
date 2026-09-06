@@ -6,6 +6,7 @@ import { Heart, Loader2, ShoppingBag, Trash2 } from "lucide-react";
 import { RequireAuth } from "@/components/common/require-auth";
 import { ProductImage } from "@/components/common/product-image";
 import { useWishlistStore } from "@/store/wishlist.store";
+import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { cn, formatPrice } from "@/lib/utils";
@@ -45,10 +46,7 @@ function WishlistProductCard({ product }: { product: Product }) {
 
   const handleRemove = async () => {
     try {
-      await removeFromWishlist(
-        product.id,
-        itemType
-      );
+      await removeFromWishlist(product.id, itemType);
       addToast("Removed from wishlist", "info");
     } catch {
       addToast("Could not remove item. Please try again.", "error");
@@ -68,6 +66,7 @@ function WishlistProductCard({ product }: { product: Product }) {
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          deliveryPreset="productCard"
         />
         <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm">
           <Heart className="h-4 w-4 fill-current" />
@@ -130,12 +129,17 @@ function WishlistProductCard({ product }: { product: Product }) {
 
 export default function WishlistPage() {
   const { products, isLoading, error, fetchWishlist } = useWishlistStore();
+  const { isAuthenticated, _ready } = useAuthStore();
 
   useEffect(() => {
+    if (!_ready || !isAuthenticated) {
+      return;
+    }
+
     fetchWishlist().catch(() => {
       // The page keeps the existing state and shows an empty/error-safe surface.
     });
-  }, [fetchWishlist]);
+  }, [fetchWishlist, isAuthenticated, _ready]);
 
   return (
     <RequireAuth>
