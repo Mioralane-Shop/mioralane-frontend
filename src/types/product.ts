@@ -51,7 +51,11 @@ export interface Category {
 export interface CartItem {
   product: Product;
   quantity: number;
+  catalogStatus?: CartCatalogStatus;
+  catalogMessage?: string;
 }
+
+export type CartCatalogStatus = "verified" | "missing" | "error";
 
 export interface OrderItem {
   itemType: "product" | "combo";

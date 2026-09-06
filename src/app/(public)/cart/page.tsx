@@ -8,7 +8,16 @@ import { useCartStore } from "@/store/cart.store";
 import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
-  const { items, totalPrice, clearCart } = useCartStore();
+  const {
+    items,
+    totalPrice,
+    clearCart,
+    isSyncingCatalog,
+    catalogSyncError,
+    canCheckout,
+    getCheckoutBlockMessage,
+  } = useCartStore();
+  const blockMessage = getCheckoutBlockMessage();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -53,6 +62,20 @@ export default function CartPage() {
                   </Button>
                 </div>
               </div>
+              {(isSyncingCatalog || catalogSyncError || blockMessage) && (
+                <div className="border-b border-rose-50 bg-rose-50/50 px-6 py-4">
+                  <p className="text-sm font-medium text-neutral-800">
+                    {isSyncingCatalog
+                      ? "Refreshing cart availability"
+                      : catalogSyncError
+                        ? "One or more items could not be verified"
+                        : "Some cart items need attention"}
+                  </p>
+                  <p className="mt-1 text-sm text-neutral-500">
+                    {blockMessage ?? "We are checking the current catalog before checkout."}
+                  </p>
+                </div>
+              )}
               <div className="divide-y divide-rose-50 px-6">
                 {items.map((item) => (
                   <CartItemRow key={item.product.id} item={item} />
@@ -93,11 +116,17 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
-              <Link href="/checkout">
-                <Button className="mt-6 w-full" size="lg">
+              {canCheckout() ? (
+                <Link href="/checkout">
+                  <Button className="mt-6 w-full" size="lg">
+                    Proceed to Checkout
+                  </Button>
+                </Link>
+              ) : (
+                <Button className="mt-6 w-full" size="lg" disabled>
                   Proceed to Checkout
                 </Button>
-              </Link>
+              )}
               <p className="mt-3 text-center text-xs text-neutral-400">
                 Secure checkout with SSL encryption
               </p>
