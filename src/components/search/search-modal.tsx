@@ -164,6 +164,7 @@ export function SearchModal({
                       fill
                       className="object-cover"
                       sizes="56px"
+                      deliveryPreset="thumbnail"
                     />
                   </div>
                   <div className="min-w-0 flex-1">

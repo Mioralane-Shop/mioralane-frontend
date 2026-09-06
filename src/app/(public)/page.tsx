@@ -3,9 +3,7 @@ import { HeroSection } from "@/components/common/hero-section";
 import { PromoCarousel } from "@/components/common/promo-carousel";
 import { FeaturedProducts } from "@/components/common/featured-products";
 import { BundlesCarousel } from "@/components/common/bundles-carousel";
-import { NewsletterSection } from "@/components/common/newsletter-section";
 import { NewToKBeautySection } from "@/components/common/new-to-kbeauty-section";
-import { LatestSkintalks } from "@/components/common/latest-skintalks";
 import { InstagramSection } from "@/components/common/instagram-section";
 import { Reveal } from "@/components/common/reveal";
 

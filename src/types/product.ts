@@ -8,6 +8,7 @@ export interface Product {
   compareAtPrice?: number;
   krw?: string;
   images: string[];
+  media?: ProductMedia[];
   hoverImage?: string;
   category: string;
   brand: string;
@@ -30,6 +31,21 @@ export interface Product {
   isBestSeller?: boolean;
   itemType?: "product" | "combo";
   createdAt: string;
+}
+
+export interface ProductMedia {
+  provider: "imagekit";
+  fileId: string;
+  name: string;
+  url: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
+  size?: number;
+  mimeType?: string;
+  alt?: string;
+  sortOrder?: number;
+  isPrimary?: boolean;
 }
 
 export interface SizeOption {

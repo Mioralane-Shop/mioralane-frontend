@@ -46,6 +46,7 @@ export function CartItemRow({ item }: CartItemProps) {
             fill
             className="object-cover"
             sizes="96px"
+            deliveryPreset="thumbnail"
           />
         </Link>
       ) : (
@@ -57,6 +58,7 @@ export function CartItemRow({ item }: CartItemProps) {
             fill
             className="object-cover"
             sizes="96px"
+            deliveryPreset="thumbnail"
           />
         </div>
       )}

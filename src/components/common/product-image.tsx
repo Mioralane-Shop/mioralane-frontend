@@ -3,6 +3,11 @@
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { useState } from "react";
+import {
+  createImageKitLoader,
+  isImageKitUrl,
+  type ImageKitImagePreset,
+} from "@/lib/imagekit-delivery";
 
 interface ProductImageProps {
   src: string;
@@ -13,7 +18,20 @@ interface ProductImageProps {
   sizes?: string;
   width?: number;
   height?: number;
+  deliveryPreset?: ImageKitImagePreset;
+  deliveryWidth?: number;
+  quality?: number;
+  priority?: boolean;
+  loading?: "eager" | "lazy";
 }
+
+const IMAGEKIT_LOADERS: Record<ImageKitImagePreset, ReturnType<typeof createImageKitLoader>> = {
+  thumbnail: createImageKitLoader({ preset: "thumbnail" }),
+  small: createImageKitLoader({ preset: "small" }),
+  productCard: createImageKitLoader({ preset: "productCard" }),
+  pdpMain: createImageKitLoader({ preset: "pdpMain" }),
+  pdpLarge: createImageKitLoader({ preset: "pdpLarge" }),
+};
 
 /**
  * next/image wrapper that shows a neutral placeholder when the source image
@@ -28,12 +46,22 @@ export function ProductImage({
   sizes,
   width,
   height,
+  deliveryPreset,
+  deliveryWidth,
+  quality,
+  priority,
+  loading,
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
+  const imageKitSource = isImageKitUrl(src);
+  const imageKitLoader =
+    imageKitSource && deliveryWidth
+      ? createImageKitLoader({ maxWidth: deliveryWidth, quality })
+      : imageKitSource && deliveryPreset
+        ? IMAGEKIT_LOADERS[deliveryPreset]
+        : undefined;
 
-  const effectiveSrc = src;
-
-  if (failed) {
+  if (failed || !src) {
     return (
       <div
         aria-label={alt}
@@ -48,7 +76,19 @@ export function ProductImage({
   }
 
   if (fill) {
-    return <Image alt={alt} className={className} sizes={sizes} onError={() => setFailed(true)} src={effectiveSrc} fill />;
+    return (
+      <Image
+        alt={alt}
+        className={className}
+        sizes={sizes}
+        onError={() => setFailed(true)}
+        src={src}
+        fill
+        loader={imageKitLoader}
+        priority={priority}
+        loading={loading}
+      />
+    );
   }
 
   return (
@@ -57,9 +97,12 @@ export function ProductImage({
       className={className}
       sizes={sizes}
       onError={() => setFailed(true)}
-      src={effectiveSrc}
+      src={src}
       width={width ?? 200}
       height={height ?? 200}
+      loader={imageKitLoader}
+      priority={priority}
+      loading={loading}
     />
   );
 }

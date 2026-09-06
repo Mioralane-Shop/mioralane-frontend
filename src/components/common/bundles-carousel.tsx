@@ -305,6 +305,7 @@ function BundleCard({
             sizes="(max-width: 1024px) 100vw, 48vw"
             className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.012]"
             fallbackId={combo.id}
+            deliveryPreset="pdpMain"
           />
         ) : null}
 

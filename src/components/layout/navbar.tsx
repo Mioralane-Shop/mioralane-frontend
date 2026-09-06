@@ -14,6 +14,7 @@ import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCombos } from "@/hooks/use-combos";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
@@ -137,7 +138,7 @@ function ComboNavItem() {
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={product.images?.[0]}
+                      src={getImageKitUrl(product.images?.[0], { preset: "thumbnail" })}
                       alt={product.name}
                       className="h-full w-full object-cover"
                     />

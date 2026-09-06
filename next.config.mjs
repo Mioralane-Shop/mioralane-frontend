@@ -34,6 +34,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "lavishta.com",
       },
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+      },
     ],
   },
 };

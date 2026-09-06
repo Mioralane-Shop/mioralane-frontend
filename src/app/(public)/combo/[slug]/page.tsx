@@ -241,6 +241,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
                     className="object-contain p-5"
                     sizes="(max-width: 768px) 100vw, 52rem"
                     fallbackId={displayCombo.id}
+                    deliveryPreset="pdpMain"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
@@ -268,6 +269,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
                         className="object-contain p-2"
                         sizes="96px"
                         fallbackId={`${displayCombo.id}-${index}`}
+                        deliveryPreset="thumbnail"
                       />
                     </button>
                   ))}

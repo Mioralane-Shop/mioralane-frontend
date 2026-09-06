@@ -66,6 +66,7 @@ function WishlistProductCard({ product }: { product: Product }) {
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          deliveryPreset="productCard"
         />
         <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm">
           <Heart className="h-4 w-4 fill-current" />

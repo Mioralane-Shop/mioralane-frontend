@@ -26,6 +26,7 @@ import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
+import { createImageKitLoader, getImageKitUrl, isImageKitUrl } from "@/lib/imagekit-delivery";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_NAME } from "@/constants/site";
@@ -41,6 +42,10 @@ const PRODUCT_TABS: Array<{ key: Exclude<ProductTab, "reviews">; label: string }
 ];
 
 const DESKTOP_THUMBNAIL_SLOTS = 4;
+
+const THUMBNAIL_IMAGEKIT_LOADER = createImageKitLoader({ preset: "thumbnail" });
+const PRODUCT_CARD_IMAGEKIT_LOADER = createImageKitLoader({ preset: "productCard" });
+const PDP_MAIN_IMAGEKIT_LOADER = createImageKitLoader({ preset: "pdpMain" });
 
 const TRUST_ITEMS = [
   {
@@ -387,6 +392,10 @@ export default function ProductPage() {
       ? [product.hoverImage]
       : [];
   const selectedImageSrc = images[selectedImage] ?? images[0];
+  const selectedImageIsImageKit = isImageKitUrl(selectedImageSrc);
+  const lightboxImageSrc = selectedImageIsImageKit
+    ? getImageKitUrl(selectedImageSrc, { preset: "pdpLarge" })
+    : selectedImageSrc;
   const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
   const benefitChips = getBenefitChips(product);
   const discountPercent =
@@ -467,6 +476,7 @@ export default function ProductPage() {
                         fill
                         className="object-contain p-2.5"
                         sizes="72px"
+                        loader={isImageKitUrl(image) ? THUMBNAIL_IMAGEKIT_LOADER : undefined}
                       />
                     </button>
                   ) : (
@@ -551,6 +561,7 @@ export default function ProductPage() {
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                     sizes="(max-width: 1024px) 100vw, 48vw"
                     priority
+                    loader={isImageKitUrl(selectedImageSrc) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-ink/25">
@@ -612,6 +623,7 @@ export default function ProductPage() {
                           className="object-cover"
                           sizes="100vw"
                           priority={index === 0}
+                          loader={isImageKitUrl(image) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
                         />
                         <button
                           type="button"
@@ -967,7 +979,7 @@ export default function ProductPage() {
             <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex flex-col">
-                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
+                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 640px) calc((100vw - 28px) / 2), (max-width: 1024px) 50vw, 320px" loader={isImageKitUrl(p.images[0]) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined} /></Link>
                   <div className="mt-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
                     <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
@@ -1023,11 +1035,12 @@ export default function ProductPage() {
           <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
             {selectedImageSrc ? (
               <Image
-                src={selectedImageSrc}
+                src={lightboxImageSrc}
                 alt={product.name}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 48rem"
+                unoptimized={selectedImageIsImageKit}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-white/40">

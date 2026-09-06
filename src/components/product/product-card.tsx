@@ -9,6 +9,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useAuthStore } from "@/store/auth.store";
+import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -62,6 +63,8 @@ const UI_COLORS = {
   bestBadge: "bg-[#E8D8B0] text-[#8A6A2B]",
 };
 
+const PRODUCT_CARD_IMAGEKIT_LOADER = createImageKitLoader({ preset: "productCard" });
+
 export function ProductCard({ product, onNavigate, combo, compactImage }: ProductCardProps) {
   const router = useRouter();
   const [mainImgSrc, setMainImgSrc] = useState<string>(product.images?.[0] ?? "");
@@ -91,6 +94,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
   const volumeLabel = formatVolumeLabel(product);
   const isOutOfStock = product.stock <= 0;
   const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
+  const productCardImageLoader = isImageKitUrl(mainImgSrc) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined;
 
   const handleClick = () => {
     if (onNavigate) {
@@ -209,8 +213,8 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               alt={product.name}
               fill
               referrerPolicy="no-referrer"
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 25vw"
+              loader={productCardImageLoader}
+              sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 320px"
               className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
               loading="lazy"
               onError={() => {
@@ -356,8 +360,8 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             alt={product.name}
             fill
             referrerPolicy="no-referrer"
-            unoptimized
-            sizes="(max-width: 768px) 100vw, 33vw"
+            loader={productCardImageLoader}
+            sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 420px"
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
             loading="lazy"
             onError={() => {
