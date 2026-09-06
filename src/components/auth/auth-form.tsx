@@ -136,12 +136,12 @@ export function AuthForm({
     setIsLoading(true);
     try {
       const payload = { username: username.trim(), password, email: email.trim() };
-      const { user, message, token } = isRegister
+      const { user, message } = isRegister
         ? await authService.register(payload.username, payload.email, payload.password)
         : await authService.login(payload.username, payload.password);
 
-      if (user && token) {
-        login(user, token);
+      if (user) {
+        login(user);
       }
 
       setSuccess(
@@ -179,12 +179,12 @@ export function AuthForm({
     setSuccess(null);
 
     try {
-      const { user, token, message } = await authService.googleLogin(
+      const { user, message } = await authService.googleLogin(
         response.credential
       );
 
-      if (user && token) {
-        login(user, token);
+      if (user) {
+        login(user);
       }
 
       setSuccess(message || "Signed in with Google successfully!");

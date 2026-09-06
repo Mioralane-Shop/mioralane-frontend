@@ -3,11 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
 
 interface ProductGalleryProps {
   images: string[];
   name: string;
 }
+
+const PDP_MAIN_IMAGEKIT_LOADER = createImageKitLoader({ preset: "pdpMain" });
+const THUMBNAIL_IMAGEKIT_LOADER = createImageKitLoader({ preset: "thumbnail" });
 
 export function ProductGallery({ images, name }: ProductGalleryProps) {
   const [selected, setSelected] = useState(0);
@@ -22,6 +26,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
+          loader={isImageKitUrl(images[selected]) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
         />
       </div>
 
@@ -44,6 +49,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
                 fill
                 className="object-cover"
                 sizes="80px"
+                loader={isImageKitUrl(image) ? THUMBNAIL_IMAGEKIT_LOADER : undefined}
               />
             </button>
           ))}

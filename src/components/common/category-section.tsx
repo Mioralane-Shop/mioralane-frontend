@@ -8,9 +8,7 @@ export function CategorySection() {
         <h2 className="text-3xl font-light tracking-tight text-neutral-800">
           Shop by Category
         </h2>
-        <p className="mt-2 text-neutral-400">
-          Find exactly what your skin needs
-        </p>
+        <p className="mt-2 text-neutral-400">Find exactly what your skin needs</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">

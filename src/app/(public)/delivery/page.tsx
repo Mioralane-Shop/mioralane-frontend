@@ -29,22 +29,25 @@ export default function DeliveryPage() {
         </ul>
       </PolicySection>
 
-      <PolicySection title="Cash on Delivery">
-        <p>
+        <PolicySection title="Cash on Delivery">
+          <p>
           Cash on Delivery (COD) is available nationwide. Please keep the exact
-          amount ready, or pay via bKash, Nagad or Rocket to our delivery
-          partner upon arrival.
-        </p>
-      </PolicySection>
+          amount ready for the delivery partner upon arrival.
+          </p>
+        </PolicySection>
 
       <PolicySection title="Tracking">
         <p>
-          Once your order ships, you&apos;ll receive a tracking link via SMS and
-          WhatsApp. You can also use our{" "}
+          Live public tracking is not available yet. For real order status,
+          logged-in customers can use{" "}
+          <a href="/orders" className="text-accent underline">
+            My Orders
+          </a>
+          . Our{" "}
           <a href="/track-order" className="text-accent underline">
             Track Order
           </a>{" "}
-          page with your order ID.
+          page remains the future tracking entry point.
         </p>
       </PolicySection>
     </PolicyLayout>

@@ -39,11 +39,12 @@ export default function ReturnsPage() {
       </PolicySection>
 
       <PolicySection title="Refunds">
-        <p>
-          Refunds are issued to your original payment method. For Cash on
-          Delivery orders, refunds are paid via bKash, Nagad or Rocket. Shipping
-          fees are non-refundable unless the return is due to our error.
-        </p>
+          <p>
+            Refunds are issued to your original payment method. For Cash on
+            Delivery orders, refunds are handled by our support team after the
+            return is approved. Shipping fees are non-refundable unless the
+            return is due to our error.
+          </p>
       </PolicySection>
     </PolicyLayout>
   );

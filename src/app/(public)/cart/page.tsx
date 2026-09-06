@@ -78,7 +78,10 @@ export default function CartPage() {
               )}
               <div className="divide-y divide-rose-50 px-6">
                 {items.map((item) => (
-                  <CartItemRow key={item.product.id} item={item} />
+                  <CartItemRow
+                    key={`${item.itemType}:${item.itemId || item.product.id}`}
+                    item={item}
+                  />
                 ))}
               </div>
               <div className="border-t border-rose-50 px-6 py-4">

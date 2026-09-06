@@ -1,74 +1,65 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/common/section-heading";
 
 const CARDS = [
   {
     title: "SKINCARE QUIZ",
-    cta: "TAKE QUIZ",
+    cta: "Take the Quiz",
     href: "/skincare-quiz",
     image: "/images/ig-kbeauty.jpg",
-    solid: false,
   },
   {
-    title: "ABOUT US",
-    cta: "LEARN MORE",
-    href: "/about",
-    image: null,
-    solid: true,
-  },
-  {
-    title: "WHY KOREAN SKINCARE",
-    cta: "READ NOW",
+    title: "Build Your Routine",
+    cta: "Explore Routines",
     href: "/blog/korean-skincare-routine-humid-climate",
-    image: "/images/blog-routine.jpg",
-    solid: false,
+    image: "/images/promo-routine.jpg",
+  },
+  {
+    title: "Why K-Beauty?",
+    cta: "Learn More",
+    href: "/about",
+    image: "/images/ig-flatlay.jpg",
   },
 ];
 
 export function NewToKBeautySection() {
   return (
     <section className="bg-surface py-12 md:py-16">
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="container mx-auto px-4">
         <SectionHeading title="NEW TO KOREAN SKINCARE?" />
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {CARDS.map((card) => (
-            <Link
-              key={card.title}
-              href={card.href}
-              className="group flex flex-col overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm transition-shadow hover:shadow-md"
-            >
-              {card.solid ? (
-                <div className="relative flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-[#FBDDE2] to-[#F5B8C4]">
-                  <span className="px-6 text-center font-serif text-2xl font-medium text-[#B84E64]">
+        <div className="mx-auto mt-10 max-w-[1200px]">
+          <div className="grid gap-6 md:grid-cols-3">
+            {CARDS.map((card) => (
+              <Link
+                key={card.title}
+                href={card.href}
+                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow"
+              >
+                <div className="relative h-46 overflow-hidden bg-surface-soft md:h-48">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+
+                <div className="flex flex-1 flex-col p-4 md:p-[18px]">
+                  <h3 className="min-h-[48px] text-lg font-bold uppercase tracking-tight text-ink">
                     {card.title}
+                  </h3>
+                  <span className="mt-3 inline-flex w-full items-start justify-between rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 group-hover:bg-accent md:mt-auto">
+                    {card.cta}
+                    <ArrowRight className="h-4 w-4 shrink-0" />
                   </span>
                 </div>
-              ) : (
-                card.image && (
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image
-                      src={card.image}
-                      alt={card.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
-                )
-              )}
-
-              <div className="flex flex-1 flex-col p-6">
-                <h3 className="text-lg font-bold uppercase tracking-tight text-ink">
-                  {card.title}
-                </h3>
-                <span className="mt-5 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-colors group-hover:bg-accent">
-                  {card.cta}
-                </span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>

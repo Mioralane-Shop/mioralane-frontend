@@ -33,10 +33,39 @@ export function getCartItemType(product: Product): CartItemType {
   return product.itemType ?? (product.category === "combo" ? "combo" : "product");
 }
 
-function getCartItemKey(item: CartItem): string {
-  const itemType = getCartItemType(item.product);
-  const sourceId = item.product.id || item.product.slug;
-  return `${itemType}:${sourceId}`;
+function getCartItemIdentity(product: Product): { itemId: string; itemType: CartItemType } {
+  return {
+    itemId: product.id || product.slug,
+    itemType: getCartItemType(product),
+  };
+}
+
+function getCartItemKey(item: Pick<CartItem, "itemId" | "itemType" | "product">): string {
+  const identity = {
+    itemId: item.itemId || item.product.id || item.product.slug,
+    itemType: item.itemType ?? getCartItemType(item.product),
+  };
+
+  return `${identity.itemType}:${identity.itemId}`;
+}
+
+function resolveCartItemIdentity(item: CartItem): { itemId: string; itemType: CartItemType } {
+  return {
+    itemId: item.itemId || item.product.id || item.product.slug,
+    itemType: item.itemType ?? getCartItemType(item.product),
+  };
+}
+
+function normalizeCartItem(item: CartItem): CartItem {
+  const identity = resolveCartItemIdentity(item);
+  return {
+    ...item,
+    ...identity,
+    product: {
+      ...item.product,
+      itemType: identity.itemType,
+    },
+  };
 }
 
 function getCartItemTypeLabel(itemType: CartItemType) {
@@ -79,7 +108,7 @@ function syncItemFromCatalog(
   item: CartItem,
   catalogProduct: Product,
 ): CartItem {
-  const itemType = getCartItemType(item.product);
+  const itemType = item.itemType ?? getCartItemType(item.product);
   const nextProduct = {
     ...catalogProduct,
     itemType,
@@ -91,6 +120,8 @@ function syncItemFromCatalog(
 
   return {
     ...item,
+    itemId: item.itemId || catalogProduct.id || catalogProduct.slug,
+    itemType,
     product: nextProduct,
     quantity: nextQuantity,
     catalogStatus: "verified",
@@ -104,9 +135,9 @@ interface CartState {
   isSyncingCatalog: boolean;
   catalogSyncError: string | null;
   addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  syncItemStock: (productId: string, stock: number) => void;
+  removeItem: (itemId: string, itemType?: CartItemType) => void;
+  updateQuantity: (itemId: string, quantity: number, itemType?: CartItemType) => void;
+  syncItemStock: (itemId: string, stock: number, itemType?: CartItemType) => void;
   syncCatalog: () => Promise<void>;
   clearCart: () => void;
   toggleCart: () => void;
@@ -130,16 +161,16 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
-        const itemType = getCartItemType(product);
+        const identity = getCartItemIdentity(product);
         const normalizedQuantity = clampQuantity(quantity, product.stock);
         const normalizedProduct: Product = {
           ...product,
-          itemType,
+          itemType: identity.itemType,
         };
 
         set((state) => {
           const existingIndex = state.items.findIndex(
-            (item) => getCartItemKey(item) === `${itemType}:${product.id || product.slug}`,
+            (item) => getCartItemKey(item) === `${identity.itemType}:${identity.itemId}`,
           );
 
           if (existingIndex >= 0) {
@@ -152,6 +183,8 @@ export const useCartStore = create<CartState>()(
             const nextItems = [...state.items];
             nextItems[existingIndex] = {
               ...existing,
+              itemId: identity.itemId,
+              itemType: identity.itemType,
               product: normalizedProduct,
               quantity: nextQuantity,
               catalogStatus: "verified",
@@ -168,6 +201,8 @@ export const useCartStore = create<CartState>()(
             items: [
               ...state.items,
               {
+                itemId: identity.itemId,
+                itemType: identity.itemType,
                 product: normalizedProduct,
                 quantity: normalizedQuantity,
                 catalogStatus: "verified",
@@ -179,14 +214,20 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      removeItem: (productId) => {
+      removeItem: (itemId, itemType) => {
         set((state) => ({
-          items: state.items.filter((item) => item.product.id !== productId),
+          items: state.items.filter((item) => {
+            const identity = resolveCartItemIdentity(item);
+            return !(identity.itemId === itemId && (!itemType || identity.itemType === itemType));
+          }),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
-        const item = get().items.find((entry) => entry.product.id === productId);
+      updateQuantity: (itemId, quantity, itemType) => {
+        const item = get().items.find((entry) => {
+          const identity = resolveCartItemIdentity(entry);
+          return identity.itemId === itemId && (!itemType || identity.itemType === itemType);
+        });
         if (!item) {
           return;
         }
@@ -194,18 +235,20 @@ export const useCartStore = create<CartState>()(
         const nextQuantity = clampQuantity(quantity, item.product.stock);
         set((state) => ({
           items: state.items.map((entry) =>
-            entry.product.id === productId
+            resolveCartItemIdentity(entry).itemId === itemId &&
+            (!itemType || resolveCartItemIdentity(entry).itemType === itemType)
               ? { ...entry, quantity: nextQuantity }
               : entry,
           ),
         }));
       },
 
-      syncItemStock: (productId, stock) => {
+      syncItemStock: (itemId, stock, itemType) => {
         set((state) => {
           let didChange = false;
           const items = state.items.map((item) => {
-            if (item.product.id !== productId) {
+            const identity = resolveCartItemIdentity(item);
+            if (identity.itemId !== itemId || (itemType && identity.itemType !== itemType)) {
               return item;
             }
 
@@ -301,18 +344,19 @@ export const useCartStore = create<CartState>()(
 
           set((state) => ({
             items: state.items.map((item) => {
+              const normalizedItem = normalizeCartItem(item);
               const result = resultMap.get(getCartItemKey(item));
 
               if (!result) {
-                return item;
+                return normalizedItem;
               }
 
               if (result.status === "verified") {
-                return syncItemFromCatalog(item, result.product);
+                return syncItemFromCatalog(normalizedItem, result.product);
               }
 
               return {
-                ...item,
+                ...normalizedItem,
                 catalogStatus: result.status,
                 catalogMessage: result.message,
               };
@@ -408,10 +452,26 @@ export const useCartStore = create<CartState>()(
       name: "mioralane-cart",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
+      version: 2,
+      migrate: (persistedState) => {
+        const state = persistedState as Partial<CartState> | undefined;
+        const items = Array.isArray(state?.items)
+          ? state!.items.map((item) => normalizeCartItem(item as CartItem))
+          : [];
+
+        return {
+          ...state,
+          items,
+        } as CartState;
+      },
       partialize: (state) => ({
         items: state.items.map((item) => ({
+          itemId: item.itemId,
+          itemType: item.itemType,
           product: item.product,
           quantity: item.quantity,
+          catalogStatus: item.catalogStatus,
+          catalogMessage: item.catalogMessage,
         })),
         isOpen: state.isOpen,
       }),

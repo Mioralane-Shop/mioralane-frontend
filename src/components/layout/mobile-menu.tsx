@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { Menu, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { NavigationItem } from "@/components/layout/navigation-item";
 import { BRANDS } from "@/constants/site";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -14,32 +15,29 @@ const SKINCARE_LINKS = [
   { label: "Cleansers", href: "/shop?category=cleansers" },
   { label: "Moisturizers", href: "/shop?category=moisturizers" },
   { label: "Toners", href: "/shop?category=toners" },
-  { label: "Treatments", href: "/shop?category=treatments" },
-  { label: "Exfoliators", href: "/shop?category=exfoliators" },
+  { label: "Treatments", comingSoon: true },
+  { label: "Exfoliators", comingSoon: true },
   { label: "Masks", href: "/shop?category=masks" },
-  { label: "Lip & Eye Care", href: "/shop?category=lip-eye-care" },
+  { label: "Lip & Eye Care", comingSoon: true },
   { label: "Sunscreens", href: "/shop?category=sun-care" },
 ];
 
 const CONCERN_LINKS = [
   { label: "Acne", href: "/shop?concern=acne" },
   { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
-  { label: "Dryness / Hydration", href: "/shop?concern=dryness-hydration" },
-  { label: "Fungal Acne Safe", href: "/shop?concern=fungal-acne-safe" },
-  { label: "Hyperpigmentation", href: "/shop?concern=hyperpigmentation" },
-  { label: "Redness", href: "/shop?concern=redness" },
-  { label: "Sensitivity", href: "/shop?concern=sensitivity" },
-  {
-    label: "Oil Control & Pore Care",
-    href: "/shop?concern=oil-control-pore-care",
-  },
+  { label: "Dryness / Hydration", href: "/shop?concern=hydration" },
+  { label: "Fungal Acne Safe", comingSoon: true },
+  { label: "Hyperpigmentation", comingSoon: true },
+  { label: "Redness", comingSoon: true },
+  { label: "Sensitivity", href: "/shop?concern=sensitive" },
+  { label: "Oil Control & Pore Care", comingSoon: true },
 ];
 
 const DISCOVER_LINKS = [
   { label: "See All Products", href: "/shop" },
-  { label: "Bestsellers", href: "/shop?sort=best-seller" },
+  { label: "Bestsellers", href: "/shop?bestSeller=true" },
   { label: "Shop By Collection", href: "/shop" },
-  { label: "Vegan Skincare", href: "/shop?tag=vegan" },
+  { label: "Vegan Skincare", comingSoon: true },
 ];
 
 const MENU_GROUPS = [
@@ -49,27 +47,6 @@ const MENU_GROUPS = [
 ];
 
 const SORTED_BRANDS = [...BRANDS].sort((a, b) => a.localeCompare(b));
-
-function MenuLink({
-  href,
-  onClick,
-  children,
-}: {
-  href: string;
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-    >
-      {children}
-      <ChevronRight className="h-4 w-4 text-neutral-400" />
-    </Link>
-  );
-}
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
@@ -83,9 +60,10 @@ export function MobileMenu() {
     { label: "Shopping Cart", href: "/cart" },
     { label: "Order History", href: "/orders" },
     { label: "Wishlist", href: "/wishlist" },
-    { label: "Mioralane Club", href: "#" },
+    { label: "Mioralane Club", comingSoon: true },
     { label: "Shipping & Returns", href: "/returns" },
-    { label: "Skincare Quiz", href: "#" },
+    { label: "Skincare Quiz", href: "/skincare-quiz" },
+    { label: "Gift Cards", comingSoon: true },
     { label: "About Us", href: "/about" },
     { label: "Contact Us", href: "/contact" },
     { label: "FAQ", href: "/faq" },
@@ -129,12 +107,24 @@ export function MobileMenu() {
             {/* MENU TAB */}
             {tab === "menu" && (
               <div className="flex flex-col">
-                <MenuLink href="/shop?sort=offers" onClick={close}>
+                <NavigationItem
+                  label="Sales"
+                  comingSoon
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   Sales
-                </MenuLink>
-                <MenuLink href="/shop?sort=newest" onClick={close}>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
+                <NavigationItem
+                  label="New"
+                  href="/shop?sort=newest"
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   New
-                </MenuLink>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
 
                 {MENU_GROUPS.map((group) => (
                   <div key={group.id} className="border-b border-rose-50">
@@ -153,14 +143,14 @@ export function MobileMenu() {
                     {expanded === group.id && (
                       <div className="mb-2 ml-2 border-l border-rose-100 pl-2">
                         {group.links.map((link) => (
-                          <Link
+                          <NavigationItem
                             key={link.label}
+                            label={link.label}
                             href={link.href}
+                            comingSoon={link.comingSoon}
                             onClick={close}
-                            className="block rounded-lg px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                          >
-                            {link.label}
-                          </Link>
+                            className="block rounded-lg px-3 py-2 text-left text-sm text-neutral-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                          />
                         ))}
                       </div>
                     )}
@@ -174,18 +164,42 @@ export function MobileMenu() {
                   Brands
                   <ChevronRight className="h-4 w-4 text-neutral-400" />
                 </button>
-                <MenuLink href="/combo" onClick={close}>
+                <NavigationItem
+                  label="Combo"
+                  href="/combo"
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   Combo
-                </MenuLink>
-                <MenuLink href="/gift-cards" onClick={close}>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
+                <NavigationItem
+                  label="Gift Cards"
+                  comingSoon
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   Gift Cards
-                </MenuLink>
-                <MenuLink href="/blog" onClick={close}>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
+                <NavigationItem
+                  label="Blog"
+                  href="/blog"
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   Blog
-                </MenuLink>
-                <MenuLink href="/blog" onClick={close}>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
+                <NavigationItem
+                  label="Win Review of the Month"
+                  comingSoon
+                  onClick={close}
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
                   Win Review of the Month
-                </MenuLink>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </NavigationItem>
               </div>
             )}
 
@@ -209,15 +223,16 @@ export function MobileMenu() {
             {tab === "support" && (
               <div className="flex flex-col">
                 {supportLinks.map((item) => (
-                  <Link
+                  <NavigationItem
                     key={item.label}
+                    label={item.label}
                     href={item.href}
+                    comingSoon={item.comingSoon}
                     onClick={close}
                     className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                   >
-                    {item.label}
                     <ChevronRight className="h-4 w-4 text-neutral-400" />
-                  </Link>
+                  </NavigationItem>
                 ))}
               </div>
             )}

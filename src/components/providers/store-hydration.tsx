@@ -7,19 +7,19 @@ import { useWishlistStore } from "@/store/wishlist.store";
 
 /**
  * Rehydrates persisted zustand stores after mount.
- * Cart store uses `skipHydration: true` — needs manual rehydrate.
- * Auth store auto-initializes via `onRehydrateStorage` callback — no manual call needed.
+ * Cart store uses `skipHydration: true` and needs manual rehydrate.
+ * Auth store restores the cookie-backed session on mount.
  */
 export function StoreHydration() {
-  const { isAuthenticated, _ready } = useAuthStore();
+  const { initializeAuth, isAuthenticated, _ready } = useAuthStore();
 
   useEffect(() => {
-    void Promise.resolve(useCartStore.persist.rehydrate())
-      .finally(() => {
-        void useCartStore.getState().syncCatalog();
-      });
+    void initializeAuth();
+    void Promise.resolve(useCartStore.persist.rehydrate()).finally(() => {
+      void useCartStore.getState().syncCatalog();
+    });
     useWishlistStore.persist.rehydrate();
-  }, []);
+  }, [initializeAuth]);
 
   useEffect(() => {
     if (!_ready) return;

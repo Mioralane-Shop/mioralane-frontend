@@ -3,10 +3,7 @@ import { HeroSection } from "@/components/common/hero-section";
 import { PromoCarousel } from "@/components/common/promo-carousel";
 import { FeaturedProducts } from "@/components/common/featured-products";
 import { BundlesCarousel } from "@/components/common/bundles-carousel";
-import { TestimonialsSection } from "@/components/common/testimonials-section";
-import { NewsletterSection } from "@/components/common/newsletter-section";
 import { NewToKBeautySection } from "@/components/common/new-to-kbeauty-section";
-import { LatestSkintalks } from "@/components/common/latest-skintalks";
 import { InstagramSection } from "@/components/common/instagram-section";
 import { Reveal } from "@/components/common/reveal";
 
@@ -32,18 +29,15 @@ export default function HomePage() {
       <Reveal>
         <NewToKBeautySection />
       </Reveal>
-      <Reveal>
-        <TestimonialsSection />
-      </Reveal>
-      <Reveal>
+      {/* <Reveal>
         <LatestSkintalks />
-      </Reveal>
+      </Reveal> */}
       <Reveal>
         <InstagramSection />
       </Reveal>
-      <Reveal>
+      {/* <Reveal>
         <NewsletterSection />
-      </Reveal>
+      </Reveal> */}
     </>
   );
 }
