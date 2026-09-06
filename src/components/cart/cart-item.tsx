@@ -14,8 +14,9 @@ interface CartItemProps {
 
 export function CartItemRow({ item }: CartItemProps) {
   const { updateQuantity, removeItem, isSyncingCatalog } = useCartStore();
-  const { product, quantity, catalogStatus } = item;
-  const itemType = product.itemType ?? (product.category === "combo" ? "combo" : "product");
+  const { product, quantity, catalogStatus, itemId, itemType: storedItemType } = item;
+  const itemType = storedItemType ?? product.itemType ?? (product.category === "combo" ? "combo" : "product");
+  const catalogItemId = itemId || product.id;
   const itemHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const isVerified = catalogStatus === "verified";
   const isUnavailable = catalogStatus === "missing" || catalogStatus === "error";
@@ -45,6 +46,7 @@ export function CartItemRow({ item }: CartItemProps) {
             fill
             className="object-cover"
             sizes="96px"
+            deliveryPreset="thumbnail"
           />
         </Link>
       ) : (
@@ -56,6 +58,7 @@ export function CartItemRow({ item }: CartItemProps) {
             fill
             className="object-cover"
             sizes="96px"
+            deliveryPreset="thumbnail"
           />
         </div>
       )}
@@ -99,7 +102,7 @@ export function CartItemRow({ item }: CartItemProps) {
               variant="outline"
               size="icon"
               className="h-7 w-7 rounded-lg"
-              onClick={() => updateQuantity(product.id, quantity - 1)}
+              onClick={() => updateQuantity(catalogItemId, quantity - 1, itemType)}
               disabled={quantity === 1}
             >
               <Minus className="h-3 w-3" />
@@ -114,7 +117,7 @@ export function CartItemRow({ item }: CartItemProps) {
                 "h-7 w-7 rounded-lg",
                 "disabled:cursor-not-allowed disabled:text-neutral-300",
               )}
-              onClick={() => updateQuantity(product.id, quantity + 1)}
+              onClick={() => updateQuantity(catalogItemId, quantity + 1, itemType)}
               disabled={!canIncrease}
             >
               <Plus className="h-3 w-3" />
@@ -125,7 +128,7 @@ export function CartItemRow({ item }: CartItemProps) {
             variant="ghost"
             size="icon"
             className="h-7 w-7 text-neutral-400 hover:text-red-500"
-            onClick={() => removeItem(product.id)}
+            onClick={() => removeItem(catalogItemId, itemType)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

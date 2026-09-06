@@ -95,7 +95,10 @@ export function CartDrawer() {
               )}
 
               {items.map((item) => (
-                <CartItemRow key={item.product.id} item={item} />
+                <CartItemRow
+                  key={`${item.itemType}:${item.itemId || item.product.id}`}
+                  item={item}
+                />
               ))}
             </div>
 

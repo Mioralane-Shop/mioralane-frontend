@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RequireAuth } from "@/components/common/require-auth";
 import { useOrder } from "@/hooks/use-orders";
+import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice, cn } from "@/lib/utils";
 import type { OrderStatus, PaymentStatus } from "@/types/order";
 
@@ -296,7 +297,7 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-rose-50">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.thumbnail}
+                          src={getImageKitUrl(item.thumbnail, { preset: "thumbnail" })}
                           alt={item.title}
                           className="h-full w-full object-cover"
                         />

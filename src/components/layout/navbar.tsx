@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, Search, User, Heart, X } from "lucide-react";
-import { useCartStore } from "@/store/cart.store";
-import { useAuthStore } from "@/store/auth.store";
-import { useWishlistStore } from "@/store/wishlist.store";
+import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { NavigationItem } from "@/components/layout/navigation-item";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SearchModal } from "@/components/search/search-modal";
-import { NavigationItem } from "@/components/layout/navigation-item";
-import { getComboMeta, getComboProducts } from "@/constants/combo";
 import { BRANDS } from "@/constants/site";
+import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/cart.store";
+import { useWishlistStore } from "@/store/wishlist.store";
+import { useCombos } from "@/hooks/use-combos";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
@@ -27,16 +28,22 @@ const BOTTOM_NAV = [
   { label: "Sales", comingSoon: true },
 ];
 
+const COMPACT_NAV_HYSTERESIS = 12;
+const COMPACT_NAV_TRANSITION =
+  "duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
+const COMPACT_NAV_FADE = "duration-[150ms] ease-out";
+
 function BrandsNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
+
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
@@ -50,7 +57,7 @@ function BrandsNavItem() {
     >
       <Link
         href="/shop"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
         Brands
       </Link>
@@ -79,18 +86,18 @@ function BrandsNavItem() {
 function ComboNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { data: combos = [] } = useCombos();
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
+
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
-
-  const combos = getComboProducts();
 
   return (
     <div
@@ -101,7 +108,7 @@ function ComboNavItem() {
     >
       <Link
         href="/combo"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
         Combo
       </Link>
@@ -117,50 +124,47 @@ function ComboNavItem() {
                 onClick={() => setOpen(false)}
                 className="text-xs font-semibold text-accent transition-colors hover:text-accent-dark"
               >
-                View all →
+                View all -&gt;
               </Link>
             </div>
             <div className="space-y-1.5">
-              {combos.map((product) => {
-                const meta = getComboMeta(product);
-                return (
-                  <Link
-                    key={product.id}
-                    href={`/product/${product.slug}`}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-ink/[0.04] no-underline"
-                  >
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={product.images?.[0]}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">
-                        {product.name}
+              {combos.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/combo/${product.slug}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors no-underline hover:bg-ink/[0.04]"
+                >
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getImageKitUrl(product.images?.[0], { preset: "thumbnail" })}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {product.name}
+                    </p>
+                    {product.includedItems?.length ? (
+                      <p className="truncate text-xs text-ink-muted">
+                        {product.includedItems.join(" | ")}
                       </p>
-                      {meta?.includedItems && (
-                        <p className="truncate text-xs text-ink-muted">
-                          {meta.includedItems.join(" • ")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm font-bold text-ink">
-                        {formatPrice(product.price)}
+                    ) : null}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-ink">
+                      {formatPrice(product.price)}
+                    </p>
+                    {product.savings ? (
+                      <p className="text-[11px] font-medium text-success">
+                        Save {formatPrice(product.savings)}
                       </p>
-                      {meta?.savings ? (
-                        <p className="text-[11px] font-medium text-success">
-                          Save {formatPrice(meta.savings)}
-                        </p>
-                      ) : null}
-                    </div>
-                  </Link>
-                );
-              })}
+                    ) : null}
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -302,7 +306,7 @@ const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
   },
 ];
 
-function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
+function SkinCareNavItem({ panelTop }: { panelTop: number }) {
   const [open, setOpen] = useState(false);
   const [activeCol, setActiveCol] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -313,9 +317,12 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
   const closeTimer = useRef<number | null>(null);
 
   const scheduleClose = () => {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+    }
     closeTimer.current = window.setTimeout(() => setOpen(false), 180);
   };
+
   const cancelClose = () => {
     if (closeTimer.current) {
       window.clearTimeout(closeTimer.current);
@@ -325,37 +332,46 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+
+    const onMouseDown = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        !containerRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
   }, [open]);
 
   const positionUnderline = (id: string) => {
     const header = headerRefs.current[id];
     const panel = panelRef.current;
     const underline = underlineRef.current;
+
     if (!header || !panel || !underline) return;
-    const hRect = header.getBoundingClientRect();
-    const pRect = panel.getBoundingClientRect();
-    const left = hRect.left - pRect.left;
-    const top = hRect.bottom - pRect.top + 4;
-    const width = hRect.width;
+
+    const headerRect = header.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const left = headerRect.left - panelRect.left;
+    const top = headerRect.bottom - panelRect.top + 4;
+    const width = headerRect.width;
+
     if (prevColRef.current === null) {
       underline.style.transition = "none";
       underline.style.left = `${left}px`;
@@ -364,6 +380,7 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
       void underline.offsetWidth;
       underline.style.transition = "";
     }
+
     prevColRef.current = id;
     underline.style.left = `${left}px`;
     underline.style.top = `${top}px`;
@@ -371,18 +388,11 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
     setActiveCol(id);
   };
 
-  const handleColumnEnter = (id: string) => {
-    cancelClose();
-    positionUnderline(id);
-  };
-
   const handlePanelLeave = () => {
     setActiveCol(null);
     prevColRef.current = null;
     scheduleClose();
   };
-
-  const panelTop = scrolled ? 56 : 172;
 
   return (
     <div
@@ -396,7 +406,7 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
     >
       <Link
         href="/shop"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 hover:text-ink transition-colors no-underline"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
         Skin Care
       </Link>
@@ -406,36 +416,36 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
           ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="fixed left-1/2 z-[60] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
           style={{ top: panelTop }}
         >
           <div className="grid grid-cols-5 gap-x-10 gap-y-12">
-            {MEGA_MENU_COLUMNS.map((col) => (
+            {MEGA_MENU_COLUMNS.map((column) => (
               <div
-                key={col.id}
-                onMouseEnter={() => handleColumnEnter(col.id)}
+                key={column.id}
+                onMouseEnter={() => positionUnderline(column.id)}
                 className="min-w-0"
               >
                 <div className="border-t border-[#C98A7D]/30 pt-4">
                   <NavigationItem
-                    label={col.label}
-                    href={col.href}
-                    comingSoon={col.comingSoon}
+                    label={column.label}
+                    href={column.href}
+                    comingSoon={column.comingSoon}
                     onClick={() => setOpen(false)}
                     className="block"
                   >
                     <span
-                      ref={(el) => {
-                        headerRefs.current[col.id] = el;
+                      ref={(element) => {
+                        headerRefs.current[column.id] = element;
                       }}
                       className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
                     >
-                      {col.label}
+                      {column.label}
                     </span>
                   </NavigationItem>
                 </div>
                 <ul className="mt-5 space-y-3.5">
-                  {col.links.map((link) => (
+                  {column.links.map((link) => (
                     <li key={link.label}>
                       <NavigationItem
                         label={link.label}
@@ -451,7 +461,6 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
             ))}
           </div>
 
-          {/* Cursor-aware animated underline */}
           <div
             ref={underlineRef}
             className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
@@ -466,15 +475,111 @@ function SkinCareNavItem({ scrolled }: { scrolled: boolean }) {
   );
 }
 
-export function Navbar() {
-  const router = useRouter();
+function DesktopNavLinks({ panelTop }: { panelTop: number }) {
+  return (
+    <>
+      {BOTTOM_NAV.map((link) => {
+        if (link.label === "Skin Care") {
+          return (
+            <SkinCareNavItem
+              key={link.href + link.label}
+              panelTop={panelTop}
+            />
+          );
+        }
+
+        if (link.label === "Brands") {
+          return <BrandsNavItem key={link.href + link.label} />;
+        }
+
+        if (link.label === "Combo") {
+          return <ComboNavItem key={link.href + link.label} />;
+        }
+
+        return (
+          <NavigationItem
+            key={link.label}
+            label={link.label}
+            href={link.href}
+            comingSoon={link.comingSoon}
+            className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function HeaderIcons({
+  compact = false,
+  showSearchButton = false,
+  onSearchClick,
+}: {
+  compact?: boolean;
+  showSearchButton?: boolean;
+  onSearchClick?: () => void;
+}) {
   const { toggleCart, totalItems } = useCartStore();
   const { isAuthenticated, _ready } = useAuthStore();
-  const wishlistCount = useWishlistStore((s) => s.count());
-  const [scrolled, setScrolled] = useState(false);
+  const wishlistCount = useWishlistStore((state) => state.count());
+  const iconClassName = compact
+    ? "rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+    : "rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink";
+  const badgeClassName = compact
+    ? "absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold text-white"
+    : "absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white";
+  const iconSize = compact ? "h-[18px] w-[18px]" : "h-5 w-5";
+
+  return (
+    <div className={`relative z-10 flex items-center ${compact ? "gap-0.5" : "gap-1"}`}>
+      {showSearchButton ? (
+        <button
+          onClick={onSearchClick}
+          className={iconClassName}
+          aria-label="Search"
+        >
+          <Search className={iconSize} />
+        </button>
+      ) : null}
+
+      {_ready && isAuthenticated ? (
+        <UserMenu />
+      ) : (
+        <Link href="/login" className={iconClassName} aria-label="Sign in">
+          <User className={iconSize} />
+        </Link>
+      )}
+
+      <Link href="/wishlist" className={`relative inline-flex ${iconClassName}`} aria-label="Wishlist">
+        <Heart className={iconSize} />
+        {wishlistCount > 0 ? (
+          <span className={`${badgeClassName} bg-rose-500`}>{wishlistCount}</span>
+        ) : null}
+      </Link>
+
+      <button onClick={toggleCart} className={`relative ${iconClassName}`} aria-label="Cart">
+        <ShoppingBag className={iconSize} />
+        {totalItems() > 0 ? (
+          <span className={`${badgeClassName} bg-ink`}>{totalItems()}</span>
+        ) : null}
+      </button>
+    </div>
+  );
+}
+
+export function Navbar() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [showCompactDesktopNav, setShowCompactDesktopNav] = useState(false);
+  const [defaultDesktopNavBottom, setDefaultDesktopNavBottom] = useState(164);
+  const [compactDesktopNavBottom, setCompactDesktopNavBottom] = useState(64);
+  const compactActiveRef = useRef(false);
+  const desktopHeaderRef = useRef<HTMLElement>(null);
+  const desktopMainHeaderRef = useRef<HTMLDivElement>(null);
+  const desktopDefaultNavRef = useRef<HTMLDivElement>(null);
+  const desktopCompactNavRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const {
     data: searchResults = [],
@@ -484,310 +589,287 @@ export function Navbar() {
     refetch: refetchSearch,
   } = useProductSearch(searchQuery, { enabled: searchFocused, limit: 5 });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
     const query = searchQuery.trim();
-    if (query) {
-      router.push(`/shop?search=${encodeURIComponent(query)}`);
-      setSearchQuery("");
-      setSearchFocused(false);
-    }
+
+    if (!query) return;
+
+    router.push(`/shop?search=${encodeURIComponent(query)}`);
+    setSearchQuery("");
+    setSearchFocused(false);
   };
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          setScrolled(window.scrollY > 50);
-          ticking = false;
-        });
-        ticking = true;
+    const updateMeasurements = () => {
+      if (desktopMainHeaderRef.current) {
+        const mainHeaderBottom =
+          desktopMainHeaderRef.current.getBoundingClientRect().bottom +
+          window.scrollY;
+        const shouldActivate =
+          !compactActiveRef.current &&
+          window.scrollY >= mainHeaderBottom + COMPACT_NAV_HYSTERESIS;
+        const shouldDeactivate =
+          compactActiveRef.current &&
+          window.scrollY <= mainHeaderBottom - COMPACT_NAV_HYSTERESIS;
+
+        if (shouldActivate || shouldDeactivate) {
+          compactActiveRef.current = shouldActivate;
+          setShowCompactDesktopNav(shouldActivate);
+        }
+      }
+
+      if (desktopDefaultNavRef.current) {
+        setDefaultDesktopNavBottom(
+          desktopDefaultNavRef.current.getBoundingClientRect().bottom,
+        );
+      }
+
+      if (desktopCompactNavRef.current) {
+        setCompactDesktopNavBottom(
+          desktopCompactNavRef.current.getBoundingClientRect().bottom,
+        );
       }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    const scheduleMeasurements = () => {
+      requestAnimationFrame(updateMeasurements);
+    };
+
+    updateMeasurements();
+    window.addEventListener("scroll", scheduleMeasurements, { passive: true });
+    window.addEventListener("resize", scheduleMeasurements);
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateMeasurements)
+        : null;
+
+    if (desktopHeaderRef.current && observer) {
+      observer.observe(desktopHeaderRef.current);
+    }
+
+    if (desktopCompactNavRef.current && observer) {
+      observer.observe(desktopCompactNavRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", scheduleMeasurements);
+      window.removeEventListener("resize", scheduleMeasurements);
+      observer?.disconnect();
+    };
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchFocused(false);
       }
     };
+
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (
     <>
-      {/* Spacer to prevent content jump — header is fixed below the 36px announcement bar (116px mobile = 36+80, 165px desktop = 36+80+49) */}
-      <div className="h-[100px] lg:h-[130px]" />
+      <header className="sticky top-0 z-[70] bg-white lg:hidden">
+        <div className="border-b border-border-light">
+          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+            <div className="relative z-10 flex items-center gap-1">
+              <MobileMenu />
+              <button
+                onClick={() => setSearchModalOpen(true)}
+                className="rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </div>
 
-      {/* Top Row - slides up on scroll */}
-      <div
-        className={`fixed top-[36px] left-0 right-0 z-[60] bg-white transition-transform duration-300 ease-in-out ${scrolled ? "lg:-translate-y-full" : ""
-          }`}
-      >
-        <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
-          {/* Left: hamburger + search (below lg) — raised above centered logo */}
-          <div className="relative z-10 flex items-center gap-1 lg:hidden">
-            <MobileMenu />
-            <button
-              onClick={() => setSearchModalOpen(true)}
-              className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
-              aria-label="Search"
+            <Link
+              href="/"
+              className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
             >
-              <Search className="h-5 w-5" />
-            </button>
-          </div>
+              <span className="font-serif text-xl font-bold leading-none tracking-tight text-ink sm:text-2xl md:text-3xl">
+                Mioralane
+              </span>
+              <span className="mt-0.5 font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60">
+                skincare
+              </span>
+            </Link>
 
-          {/* Logo — centered on mobile/tablet, left-aligned on desktop */}
+            <HeaderIcons />
+          </div>
+        </div>
+      </header>
+
+      <header
+        ref={desktopHeaderRef}
+        className="hidden bg-white lg:block"
+      >
+        <div
+          ref={desktopMainHeaderRef}
+          className="border-b border-border-light"
+        >
+          <div className="mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+            <Link
+              href="/"
+              className="flex flex-col items-start text-left"
+            >
+              <span className="font-serif text-3xl font-bold leading-none tracking-tight text-ink">
+                Mioralane
+              </span>
+              <span className="mt-0.5 font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60">
+                skincare
+              </span>
+            </Link>
+
+            <div ref={searchRef} className="mx-8 flex max-w-[500px] flex-1">
+              <form onSubmit={handleSearch} className="relative w-full">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink/40" />
+                <input
+                  type="text"
+                  placeholder="Search entire store here..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  className="w-full rounded-full border-none bg-ink/[0.04] py-3 pl-12 pr-10 text-sm text-ink outline-none transition-all placeholder:text-ink/40 focus:bg-ink/[0.06]"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
+
+                {searchFocused && searchQuery.trim().length >= 2 ? (
+                  <div className="absolute left-0 right-0 top-full z-[80] mt-2 overflow-hidden rounded-2xl border border-border-light bg-surface shadow-lg">
+                    {searchingResults || searchSettling ? (
+                      <div className="p-4 text-center text-sm text-ink/40">
+                        Searching...
+                      </div>
+                    ) : searchError ? (
+                      <div className="p-4 text-center">
+                        <p className="text-sm font-medium text-ink">
+                          Couldn&apos;t load search results.
+                        </p>
+                        <p className="mt-1 text-xs text-ink/50">
+                          Please try again in a moment.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => refetchSearch()}
+                          className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-dark"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="p-2">
+                        {searchResults.map((product) => (
+                          <Link
+                            key={product.id}
+                            href={`/product/${product.slug}`}
+                            onClick={() => {
+                              setSearchQuery("");
+                              setSearchFocused(false);
+                            }}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors no-underline hover:bg-ink/[0.04]"
+                          >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink/[0.06] text-xs font-bold text-ink/40">
+                              {product.brand?.charAt(0)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-ink">
+                                {product.name}
+                              </p>
+                              <p className="text-xs text-ink/50">
+                                {product.brand} - {formatPrice(product.price)}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                        <button
+                          type="submit"
+                          className="mt-1 w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-accent transition-colors hover:bg-ink/[0.04]"
+                        >
+                          Search for &ldquo;{searchQuery}&rdquo; -&gt;
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-ink/40">
+                        No products found for &ldquo;{searchQuery.trim()}&rdquo;
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </form>
+            </div>
+
+            <HeaderIcons />
+          </div>
+        </div>
+
+        <div
+          ref={desktopDefaultNavRef}
+          className={`border-b border-border-light bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} ${
+            showCompactDesktopNav
+              ? "pointer-events-none -translate-y-1 opacity-0"
+              : "translate-y-0 opacity-100"
+          }`}
+        >
+          <div className="mx-auto max-w-[1400px] px-6">
+            <nav className="flex h-12 items-center justify-center gap-8">
+              <DesktopNavLinks panelTop={defaultDesktopNavBottom} />
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <div
+        ref={desktopCompactNavRef}
+        className={`fixed left-0 right-0 top-0 z-[80] hidden border-b border-border-light/90 bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} lg:block ${
+          showCompactDesktopNav
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-3 opacity-0"
+        }`}
+      >
+        <div className="mx-auto grid h-[60px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-8 px-6">
           <Link
             href="/"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 flex flex-col items-center lg:items-start text-center lg:text-left"
+            className={`font-serif text-lg font-bold tracking-tight text-ink no-underline transition-opacity ${COMPACT_NAV_FADE} ${
+              showCompactDesktopNav ? "opacity-100" : "opacity-0"
+            }`}
           >
-            <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold leading-none tracking-tight text-ink">
-              Mioralane
-            </span>
-            <span className="font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60 mt-0.5">
-              skincare
-            </span>
+            Mioralane
           </Link>
 
-          {/* Search Bar */}
+          <nav className="flex items-center justify-center gap-8">
+            <DesktopNavLinks panelTop={compactDesktopNavBottom} />
+          </nav>
+
           <div
-            className="hidden lg:flex flex-1 max-w-[500px] mx-8"
-            ref={searchRef}
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${
+              showCompactDesktopNav ? "opacity-100" : "opacity-0"
+            }`}
           >
-            <form onSubmit={handleSearch} className="relative w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-ink/40" />
-              <input
-                type="text"
-                placeholder="Search entire store here..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                className="w-full pl-12 pr-10 py-3 bg-ink/[0.04] border-none rounded-full text-sm text-ink placeholder:text-ink/40 outline-none focus:bg-ink/[0.06] transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-
-              {/* Live Suggestions */}
-              {searchFocused && searchQuery.trim().length >= 2 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-2xl shadow-lg border border-border-light overflow-hidden z-[80]">
-                  {searchingResults || searchSettling ? (
-                    <div className="p-4 text-center text-sm text-ink/40">
-                      Searching...
-                    </div>
-                  ) : searchError ? (
-                    <div className="p-4 text-center">
-                      <p className="text-sm font-medium text-ink">
-                        Couldn&apos;t load search results.
-                      </p>
-                      <p className="mt-1 text-xs text-ink/50">
-                        Please try again in a moment.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => refetchSearch()}
-                        className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-dark"
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  ) : searchResults.length > 0 ? (
-                    <div className="p-2">
-                      {searchResults.map((product) => (
-                        <Link
-                          key={product.id}
-                          href={`/product/${product.slug}`}
-                          onClick={() => {
-                            setSearchQuery("");
-                            setSearchFocused(false);
-                          }}
-                          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-ink/[0.04] transition-colors no-underline"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-ink/[0.06] flex items-center justify-center text-xs font-bold text-ink/40">
-                            {product.brand?.charAt(0)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-ink truncate">
-                              {product.name}
-                            </p>
-                            <p className="text-xs text-ink/50">
-                              {product.brand} · ৳
-                              {product.price.toLocaleString()}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
-                      <button
-                        type="submit"
-                        className="w-full mt-1 px-4 py-2.5 text-sm font-medium text-accent hover:bg-ink/[0.04] rounded-xl transition-colors text-left"
-                      >
-                        Search for &ldquo;{searchQuery}&rdquo; →
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-sm text-ink/40">
-                      No products found for &ldquo;{searchQuery.trim()}&rdquo;
-                    </div>
-                  )}
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* Icons — raised above centered logo */}
-          <div className="relative z-10 flex items-center gap-1">
-            {_ready && isAuthenticated ? (
-              <UserMenu />
-            ) : (
-              <Link
-                href="/login"
-                className="p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
-                aria-label="Sign in"
-              >
-                <User className="h-5 w-5" />
-              </Link>
-            )}
-            {/* Wishlist — desktop only (matches mobile reference) */}
-            <Link
-              href="/wishlist"
-              className="relative inline-flex p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
-              aria-label="Wishlist"
-            >
-              <Heart className="h-5 w-5" />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-            <button
-              onClick={toggleCart}
-              className="relative p-2.5 text-ink/70 transition-colors hover:text-ink rounded-full hover:bg-ink/[0.04]"
-              aria-label="Cart"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              {totalItems() > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">
-                  {totalItems()}
-                </span>
-              )}
-            </button>
+            <HeaderIcons
+              compact
+              showSearchButton
+              onSearchClick={() => setSearchModalOpen(true)}
+            />
           </div>
         </div>
       </div>
 
-      {/* Full-screen search modal */}
       <SearchModal
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
       />
-
-      {/* Bottom Row - desktop only (tablet & mobile use the hamburger menu instead) */}
-      <div
-        className={`hidden lg:block fixed left-0 right-0 z-50 bg-white border-b border-border-light transition-all duration-300 ${scrolled ? "top-0" : "top-[116px]"
-          }`}
-      >
-        <div className="mx-auto max-w-[1400px] px-6">
-          <nav
-            className={`flex items-center h-12 transition-all duration-300 ${scrolled ? "justify-between" : "justify-center gap-8"
-              }`}
-          >
-            <div className="flex items-center gap-8">
-              {scrolled && (
-                <Link
-                  href="/"
-                  className="font-serif text-lg font-bold text-ink mr-4 no-underline"
-                >
-                  Mioralane
-                </Link>
-              )}
-              {BOTTOM_NAV.map((link) => {
-                if (link.label === "Skin Care") {
-                  return (
-                    <SkinCareNavItem
-                      key={link.href + link.label}
-                      scrolled={scrolled}
-                    />
-                  );
-                }
-                if (link.label === "Brands") {
-                  return <BrandsNavItem key={link.href + link.label} />;
-                }
-                if (link.label === "Combo") {
-                  return <ComboNavItem key={link.href + link.label} />;
-                }
-                return (
-                  <NavigationItem
-                    key={link.label}
-                    label={link.label}
-                    href={link.href}
-                    comingSoon={link.comingSoon}
-                    className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
-                  />
-                );
-              })}
-            </div>
-
-            {scrolled && (
-              <div className="flex items-center gap-4">
-                {_ready && isAuthenticated ? (
-                  <UserMenu />
-                ) : (
-                  <Link
-                    href="/login"
-                    className="text-sm font-medium text-ink/80 hover:text-ink transition-colors no-underline"
-                  >
-                    Sign In
-                  </Link>
-                )}
-                <button
-                  onClick={() => setSearchModalOpen(true)}
-                  className="text-ink/70 hover:text-ink transition-colors"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-                <Link
-                  href="/wishlist"
-                  className="relative inline-flex text-ink/70 hover:text-ink transition-colors"
-                  aria-label="Wishlist"
-                >
-                  <Heart className="h-5 w-5" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Link>
-                <button
-                  onClick={toggleCart}
-                  className="relative text-ink/70 hover:text-ink transition-colors"
-                  aria-label="Cart"
-                >
-                  <ShoppingBag className="h-5 w-5" />
-                  {totalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">
-                      {totalItems()}
-                    </span>
-                  )}
-                </button>
-              </div>
-            )}
-          </nav>
-        </div>
-      </div>
     </>
   );
 }

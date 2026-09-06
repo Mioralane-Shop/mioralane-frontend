@@ -6,6 +6,7 @@ import { CheckCircle2, CircleX, Clock3, Package, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Order, OrderStatus, PaymentStatus } from "@/types/order";
 
@@ -120,7 +121,7 @@ export function OrderHistory({
                     <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-rose-50">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={item.thumbnail}
+                        src={getImageKitUrl(item.thumbnail, { preset: "thumbnail" })}
                         alt={item.title}
                         className="h-full w-full object-cover"
                       />

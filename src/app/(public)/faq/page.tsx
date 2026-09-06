@@ -19,11 +19,11 @@ const FAQS: FaqItem[] = [
     answer:
       "Within Dhaka, delivery takes 1–2 business days. Outside Dhaka, it typically takes 2–4 business days via courier. You'll receive a tracking link once your order ships.",
   },
-  {
-    question: "Do you offer Cash on Delivery (COD)?",
-    answer:
-      "Yes, Cash on Delivery is available nationwide. We also accept bKash, Nagad, Rocket and card payments through SSLCommerz at checkout.",
-  },
+    {
+      question: "Do you offer Cash on Delivery (COD)?",
+      answer:
+      "Yes, Cash on Delivery is available nationwide at checkout.",
+    },
   {
     question: "What is your return policy?",
     answer:

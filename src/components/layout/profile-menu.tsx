@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,13 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
-import { authService } from "@/services/auth.service";
+import { useAccountLogout } from "@/hooks/use-account-logout";
 
 export function ProfileMenu() {
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const handleSignOut = useAccountLogout();
 
-  // Logged out: only the "Sign In" button → routes to /login
   if (!isAuthenticated) {
     return (
       <Button
@@ -33,18 +31,6 @@ export function ProfileMenu() {
   }
 
   const initial = (user?.username?.[0] ?? "U").toUpperCase();
-
-  const handleSignOut = async () => {
-    try {
-      // End the session server-side first.
-      await authService.logout();
-    } catch {
-      // Network/API errors shouldn't strand the user — still clear locally.
-    } finally {
-      logout();
-      router.push("/");
-    }
-  };
 
   return (
     <DropdownMenu>
@@ -75,7 +61,9 @@ export function ProfileMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={handleSignOut}
+          onSelect={() => {
+            void handleSignOut();
+          }}
           className="text-red-500 focus:bg-red-50 focus:text-red-600"
         >
           Sign Out

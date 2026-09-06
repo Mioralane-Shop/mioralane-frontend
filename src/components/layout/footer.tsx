@@ -6,10 +6,7 @@ const footerLinks = {
     title: "Shop",
     links: [
       { label: "All Products", href: "/shop" },
-      { label: "Cleansers", href: "/shop?category=cleansers" },
-      { label: "Toners & Essences", href: "/shop?category=toners" },
-      { label: "Serums & Ampoules", href: "/shop?category=serums" },
-      { label: "Sunscreen", href: "/shop?category=sun-care" },
+      { label: "New Arrivals", href: "/shop?sort=newest" },
       { label: "Bundles", href: "/combo" },
     ],
   },
@@ -17,7 +14,6 @@ const footerLinks = {
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Blog", href: "/blog" },
       { label: "Contact", href: "/contact" },
       { label: "Authenticity Policy", href: "/authenticity" },
     ],
@@ -35,29 +31,27 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-ink text-white/55 py-16 px-6">
+    <footer className="bg-ink px-6 py-10 text-white/55 md:py-12">
       <div className="mx-auto max-w-[1200px]">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        <div className="mb-7 grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-10">
           <div>
-            <div className="font-serif italic text-2xl font-medium text-white mb-4">
+            <div className="mb-3 font-serif text-2xl font-medium italic text-white">
               {SITE_NAME.slice(0, 3)}
-              <span className="text-accent font-normal">
+              <span className="font-normal text-accent">
                 {SITE_NAME.slice(3)}
               </span>
             </div>
-            <p className="text-sm leading-relaxed font-light max-w-[300px]">
-              Authentic Korean skincare, sourced with care, delivered with
-              trust. Building Bangladesh&apos;s most trusted destination for
-              K-beauty.
+            <p className="max-w-[220px] text-sm font-light leading-[1.55]">
+              Curated Korean skincare, sourced with care.
             </p>
           </div>
 
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-5">
+              <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/30">
                 {section.title}
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -73,15 +67,13 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-white/7 pt-6 flex flex-wrap justify-between items-center gap-3">
-          <p className="text-xs text-white/25">
-            &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
-          </p>
-          <div className="flex gap-2.5">
-            {["bKash", "Nagad", "Rocket", "COD"].map((method) => (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/7 pt-4">
+          <p className="text-xs text-white/25">&copy; 2026 {SITE_NAME}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {["Cash on Delivery", "Nationwide Delivery", "Authentic Products"].map((method) => (
               <span
                 key={method}
-                className="px-3 py-1.5 rounded-md bg-white/6 text-[11px] font-semibold text-white/40"
+                className="rounded-md bg-white/6 px-3 py-1 text-[11px] font-semibold leading-5 text-white/40"
               >
                 {method}
               </span>
