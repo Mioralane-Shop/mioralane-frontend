@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { NavigationItem } from "@/components/layout/navigation-item";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ProductImage } from "@/components/common/product-image";
@@ -605,7 +606,10 @@ export function Navbar() {
 
   useEffect(() => {
     const updateMeasurements = () => {
-      if (desktopMainHeaderRef.current) {
+      const isDesktop =
+        window.matchMedia("(min-width: 1024px)").matches;
+
+      if (desktopMainHeaderRef.current && isDesktop) {
         const mainHeaderBottom =
           desktopMainHeaderRef.current.getBoundingClientRect().bottom +
           window.scrollY;
@@ -615,6 +619,17 @@ export function Navbar() {
         const shouldDeactivate =
           compactActiveRef.current &&
           window.scrollY <= mainHeaderBottom - COMPACT_NAV_HYSTERESIS;
+        if (shouldActivate || shouldDeactivate) {
+          compactActiveRef.current = shouldActivate;
+          setShowCompactDesktopNav(shouldActivate);
+        }
+      } else {
+        const shouldActivate =
+          !compactActiveRef.current &&
+          window.scrollY >= COMPACT_NAV_HYSTERESIS;
+        const shouldDeactivate =
+          compactActiveRef.current &&
+          window.scrollY <= COMPACT_NAV_HYSTERESIS;
 
         if (shouldActivate || shouldDeactivate) {
           compactActiveRef.current = shouldActivate;
@@ -690,17 +705,12 @@ export function Navbar() {
               </button>
             </div>
 
-            <Link
-              href="/"
-              className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
-            >
-              <span className="font-serif text-xl font-bold leading-none tracking-tight text-ink sm:text-2xl md:text-3xl">
-                Mioralane
-              </span>
-              <span className="mt-0.5 font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60">
-                skincare
-              </span>
-            </Link>
+            <BrandLogo
+              size="md"
+              variant={showCompactDesktopNav ? "icon" : "full"}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              priority
+            />
 
             <HeaderIcons />
           </div>
@@ -716,17 +726,12 @@ export function Navbar() {
           className="border-b border-border-light"
         >
           <div className="mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
-            <Link
-              href="/"
-              className="flex flex-col items-start text-left"
-            >
-              <span className="font-serif text-3xl font-bold leading-none tracking-tight text-ink">
-                Mioralane
-              </span>
-              <span className="mt-0.5 font-sans text-[10px] font-medium uppercase tracking-[0.3em] text-ink/60">
-                skincare
-              </span>
-            </Link>
+            <BrandLogo
+              size="lg"
+              variant="full"
+              className="flex-shrink-0"
+              priority
+            />
 
             <div ref={searchRef} className="mx-8 flex max-w-[500px] flex-1">
               <form onSubmit={handleSearch} className="relative w-full">
@@ -842,14 +847,14 @@ export function Navbar() {
         }`}
       >
         <div className="mx-auto grid h-[60px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-8 px-6">
-          <Link
-            href="/"
-            className={`font-serif text-lg font-bold tracking-tight text-ink no-underline transition-opacity ${COMPACT_NAV_FADE} ${
+          <BrandLogo
+            size="md"
+            variant="icon"
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${
               showCompactDesktopNav ? "opacity-100" : "opacity-0"
             }`}
-          >
-            Mioralane
-          </Link>
+            priority
+          />
 
           <nav className="flex items-center justify-center gap-8">
             <DesktopNavLinks panelTop={compactDesktopNavBottom} />
