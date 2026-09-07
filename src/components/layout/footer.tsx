@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { SITE_NAME } from "@/constants/site";
 
 const footerLinks = {
@@ -35,12 +36,10 @@ export function Footer() {
       <div className="mx-auto max-w-[1200px]">
         <div className="mb-7 grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-10">
           <div>
-            <div className="mb-3 font-serif text-2xl font-medium italic text-white">
-              {SITE_NAME.slice(0, 3)}
-              <span className="font-normal text-accent">
-                {SITE_NAME.slice(3)}
-              </span>
-            </div>
+            <BrandLogo
+              size="lg"
+              className="mb-3"
+            />
             <p className="max-w-[220px] text-sm font-light leading-[1.55]">
               Curated Korean skincare, sourced with care.
             </p>
