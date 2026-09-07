@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/layout/brand-logo";
 import type { ReactNode } from "react";
 
 export function PolicyLayout({
@@ -8,12 +9,10 @@ export function PolicyLayout({
   title: string;
   intro: string;
   children: ReactNode;
-}) {
+  }) {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <span className="text-xs font-bold uppercase tracking-widest text-accent">
-        Mioralane
-      </span>
+      <BrandLogo size="sm" className="mb-4" />
       <h1 className="mt-3 text-3xl font-serif font-medium text-ink">{title}</h1>
       <p className="mt-3 text-ink/50">{intro}</p>
       <div className="mt-10">{children}</div>

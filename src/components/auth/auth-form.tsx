@@ -14,7 +14,6 @@ import {
   Lock,
   Mail,
   ShieldCheck,
-  Sparkles,
   Truck,
   User as UserIcon,
   type LucideIcon,
@@ -22,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
@@ -222,14 +222,7 @@ export function AuthForm({
         />
 
         {/* Brand mark */}
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-300 to-brand-500 text-white shadow-md">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <span className="font-serif text-2xl tracking-wide text-ink">
-            Mioralane
-          </span>
-        </div>
+        <BrandLogo size="lg" className="relative" />
 
         {/* Heading */}
         <div className="relative mt-12 space-y-4">
