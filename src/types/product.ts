@@ -14,13 +14,15 @@ export interface Product {
   brand: string;
   tags: string[];
   concerns?: string[];
+  skinConcern?: string[];
   tag?: "best" | "new" | null;
   rating: number;
   reviewCount: number;
   stock: number;
   ingredients?: string;
   howToUse?: string;
-  skinType?: string;
+  keyIngredients?: ProductKeyIngredient[];
+  skinType?: string[];
   volume?: string;
   volumeOz?: string;
   size?: string;
@@ -28,9 +30,15 @@ export interface Product {
   source?: string;
   sku?: string;
   isNew?: boolean;
+  isNewArrival?: boolean;
   isBestSeller?: boolean;
   itemType?: "product" | "combo";
   createdAt: string;
+}
+
+export interface ProductKeyIngredient {
+  name: string;
+  benefit?: string;
 }
 
 export interface ProductMedia {

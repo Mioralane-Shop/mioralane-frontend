@@ -7,6 +7,7 @@ import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { NavigationItem } from "@/components/layout/navigation-item";
 import { UserMenu } from "@/components/layout/user-menu";
+import { ProductImage } from "@/components/common/product-image";
 import { SearchModal } from "@/components/search/search-modal";
 import { BRANDS } from "@/constants/site";
 import { useAuthStore } from "@/store/auth.store";
@@ -14,7 +15,6 @@ import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCombos } from "@/hooks/use-combos";
 import { useProductSearch } from "@/hooks/use-product-search";
-import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
@@ -135,12 +135,15 @@ function ComboNavItem() {
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors no-underline hover:bg-ink/[0.04]"
                 >
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={getImageKitUrl(product.images?.[0], { preset: "thumbnail" })}
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
+                    <ProductImage
+                      src={product.images?.[0] ?? ""}
                       alt={product.name}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      fallbackId={product.id}
+                      deliveryPreset="thumbnail"
                     />
                   </div>
                   <div className="min-w-0 flex-1">

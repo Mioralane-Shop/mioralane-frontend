@@ -6,7 +6,7 @@ import { CheckCircle2, CircleX, Clock3, Package, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getImageKitUrl } from "@/lib/imagekit-delivery";
+import { ProductImage } from "@/components/common/product-image";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Order, OrderStatus, PaymentStatus } from "@/types/order";
 
@@ -118,12 +118,15 @@ export function OrderHistory({
               <div className="mt-5 space-y-3">
                 {order.items.slice(0, 4).map((item) => (
                   <div key={`${order.id}-${item.sourceId}`} className="flex items-center gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-rose-50">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getImageKitUrl(item.thumbnail, { preset: "thumbnail" })}
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-rose-50">
+                      <ProductImage
+                        src={item.thumbnail ?? ""}
                         alt={item.title}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                        fallbackId={item.sourceId}
+                        deliveryPreset="thumbnail"
                       />
                     </div>
                     <div className="min-w-0 flex-1">

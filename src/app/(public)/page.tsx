@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HeroSection } from "@/components/common/hero-section";
 import { PromoCarousel } from "@/components/common/promo-carousel";
 import { FeaturedProducts } from "@/components/common/featured-products";
-import { BundlesCarousel } from "@/components/common/bundles-carousel";
+// import { BundlesCarousel } from "@/components/common/bundles-carousel";
 import { NewToKBeautySection } from "@/components/common/new-to-kbeauty-section";
 import { InstagramSection } from "@/components/common/instagram-section";
 import { Reveal } from "@/components/common/reveal";
@@ -23,9 +23,9 @@ export default function HomePage() {
       <Reveal>
         <FeaturedProducts />
       </Reveal>
-      <Reveal>
+      {/* <Reveal>
         <BundlesCarousel />
-      </Reveal>
+      </Reveal> */}
       <Reveal>
         <NewToKBeautySection />
       </Reveal>
