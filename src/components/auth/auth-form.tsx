@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, type FormEvent } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -18,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
@@ -209,17 +209,7 @@ export function AuthForm({
         </Link>
 
         <div className="mb-8">
-          <div className="mb-6 flex items-center gap-2">
-            <Image
-              src="/logo-m.svg"
-              alt="Mioralane logo"
-              width={34}
-              height={34}
-              className="h-8 w-8 rounded-md"
-              priority
-            />
-            <span className="text-base font-medium text-ink">Mioralane</span>
-          </div>
+          <BrandLogo size="md" priority className="mb-6" />
           <h1 className="font-serif text-[26px] text-ink">
             {isRegister ? "Create your account" : "Welcome back"}
           </h1>
