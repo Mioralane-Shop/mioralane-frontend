@@ -11,7 +11,7 @@ export default function RegisterPage({
   searchParams: { redirect?: string };
 }) {
   return (
-    <div className="flex min-h-[calc(100vh-180px)] items-center justify-center px-4 py-10">
+    <div className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-surface-warm px-4 py-10">
       <AuthForm initialMode="register" redirect={searchParams?.redirect} />
     </div>
   );
