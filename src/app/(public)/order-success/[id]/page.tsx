@@ -7,9 +7,9 @@ import { CheckCircle2, CircleX, Clock3, Package, Truck, Loader2 } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProductImage } from "@/components/common/product-image";
 import { RequireAuth } from "@/components/common/require-auth";
 import { useOrder } from "@/hooks/use-orders";
-import { getImageKitUrl } from "@/lib/imagekit-delivery";
 import { formatPrice, cn } from "@/lib/utils";
 import type { OrderStatus, PaymentStatus } from "@/types/order";
 
@@ -294,12 +294,15 @@ function OrderSuccessContent({ orderId }: { orderId: string }) {
                       key={`${order.id}-${item.sourceId}`}
                       className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white p-4"
                     >
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-rose-50">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={getImageKitUrl(item.thumbnail, { preset: "thumbnail" })}
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-rose-50">
+                        <ProductImage
+                          src={item.thumbnail ?? ""}
                           alt={item.title}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                          fallbackId={item.sourceId}
+                          deliveryPreset="thumbnail"
                         />
                       </div>
                       <div className="min-w-0 flex-1">
