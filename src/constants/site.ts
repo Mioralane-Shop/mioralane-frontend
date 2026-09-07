@@ -92,7 +92,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 50,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "100ml",
     size: "100ml",
     sizeOptions: [
@@ -130,7 +130,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 35,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "200ml",
     size: "200ml",
     sizeOptions: [
@@ -168,7 +168,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 60,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "50ml",
     size: "50ml",
     sizeOptions: [
@@ -206,7 +206,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 25,
-    skinType: "Sensitive / Dry",
+    skinType: ["Sensitive", "Dry"],
     volume: "50ml",
     size: "50ml",
     sizeOptions: [
@@ -244,7 +244,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 30,
-    skinType: "Mature / Dry",
+    skinType: ["Mature", "Dry"],
     volume: "50ml",
     size: "50ml",
     sizeOptions: [
@@ -282,7 +282,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 45,
-    skinType: "Oily / Combination",
+    skinType: ["Oily", "Combination"],
     volume: "30ml",
     size: "30ml",
     sizeOptions: [
@@ -320,7 +320,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 55,
-    skinType: "Oily / Acne-prone",
+    skinType: ["Oily", "Acne-prone"],
     volume: "150ml",
     size: "150ml",
     sizeOptions: [
@@ -358,7 +358,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 40,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "4 × 20ml",
     size: "4 × 20ml",
     sizeOptions: [
@@ -393,7 +393,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 20,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "5-piece set",
     size: "5-piece set",
     sizeOptions: [
@@ -427,7 +427,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 30,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "4-piece mini set",
     size: "4-piece mini set",
     sizeOptions: [
@@ -466,7 +466,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 25,
-    skinType: "Oily / Acne-prone",
+    skinType: ["Oily", "Acne-prone"],
     volume: "3-piece set",
     size: "3-piece set",
     sizeOptions: [
@@ -497,7 +497,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 40,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "250ml",
     size: "250ml",
     sizeOptions: [
@@ -542,7 +542,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 35,
-    skinType: "Dry / Sensitive",
+    skinType: ["Dry", "Sensitive"],
     volume: "200ml",
     size: "200ml",
     sizeOptions: [
@@ -587,7 +587,7 @@ export const DUMMY_PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     stock: 60,
-    skinType: "All skin types",
+    skinType: ["All skin types"],
     volume: "10 sheets",
     size: "10 sheets",
     sizeOptions: [

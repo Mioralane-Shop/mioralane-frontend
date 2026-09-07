@@ -30,34 +30,32 @@ const CARD_TREATMENTS = [
   {
     background: "bg-[#FBF2F1]",
     backgroundColor: "#FBF2F1",
-    wash: "from-[#FBF2F1] via-[#FBF2F1]/95 to-[#FBF2F1]/15",
+    wash: "bg-[linear-gradient(90deg,rgba(251,242,241,0.99)_0%,rgba(251,242,241,0.98)_40%,rgba(251,242,241,0.84)_54%,rgba(251,242,241,0.42)_66%,rgba(251,242,241,0.08)_80%,rgba(251,242,241,0)_100%)]",
     badge: "bg-[#D4637A] text-white",
     savings: "bg-[#F4D8DD] text-[#B84E64]",
   },
   {
     background: "bg-[#F7F0E8]",
     backgroundColor: "#F7F0E8",
-    wash: "from-[#F7F0E8] via-[#F7F0E8]/95 to-[#F7F0E8]/20",
+    wash: "bg-[linear-gradient(90deg,rgba(247,240,232,0.99)_0%,rgba(247,240,232,0.98)_40%,rgba(247,240,232,0.84)_54%,rgba(247,240,232,0.42)_66%,rgba(247,240,232,0.08)_80%,rgba(247,240,232,0)_100%)]",
     badge: "bg-[#A88D70] text-white",
     savings: "bg-[#EBDAC8] text-[#8A6A4B]",
   },
   {
     background: "bg-[#F5F0EC]",
     backgroundColor: "#F5F0EC",
-    wash: "from-[#F5F0EC] via-[#F5F0EC]/95 to-[#F5F0EC]/20",
+    wash: "bg-[linear-gradient(90deg,rgba(245,240,236,0.99)_0%,rgba(245,240,236,0.98)_40%,rgba(245,240,236,0.84)_54%,rgba(245,240,236,0.42)_66%,rgba(245,240,236,0.08)_80%,rgba(245,240,236,0)_100%)]",
     badge: "bg-[#8B7355] text-white",
     savings: "bg-white/70 text-[#7D6651]",
   },
   {
     background: "bg-[#F8F6F1]",
     backgroundColor: "#F8F6F1",
-    wash: "from-[#F8F6F1] via-[#F8F6F1]/95 to-[#F8F6F1]/20",
+    wash: "bg-[linear-gradient(90deg,rgba(248,246,241,0.99)_0%,rgba(248,246,241,0.98)_40%,rgba(248,246,241,0.84)_54%,rgba(248,246,241,0.42)_66%,rgba(248,246,241,0.08)_80%,rgba(248,246,241,0)_100%)]",
     badge: "bg-[#A68B6B] text-white",
     savings: "bg-[#EEE7DA] text-[#79664B]",
   },
 ] as const;
-
-const TEMP_COMBO_IMAGE = "/temp-combo/skin-1004.png";
 
 function getSavings(combo: ComboProduct) {
   const compareAtPrice = combo.compareAtPrice ?? 0;
@@ -79,124 +77,16 @@ function getCompareAtPrice(combo: ComboProduct) {
 }
 
 function getComboName(combo: ComboProduct) {
-  return combo.name || (combo as ComboProduct & { title?: string }).title || "Bundle";
-}
-
-function getHeroTitleLayout(combo: ComboProduct) {
-  const comboName = getComboName(combo).trim();
-  const normalizedName = comboName.toLowerCase();
-  const sourceText = [
-    combo.brand,
-    combo.name,
-    combo.badge,
-    combo.description,
-    combo.routineTag,
-    combo.skinType,
-    ...(combo.tags ?? []),
-    ...(combo.concerns ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  if (sourceText.match(/skin\s*1004|centella/) && comboName.endsWith("Travel Kit")) {
-    const prefixedName = normalizedName.startsWith("skin1004")
-      ? comboName
-      : `SKIN1004 - ${comboName}`;
-
-    return {
-      mobile: prefixedName,
-      desktopFirstLine: prefixedName.replace(/\s+Travel Kit$/, ""),
-      desktopSecondLine: "Travel Kit",
-    };
-  }
-
-  return {
-    mobile: comboName,
-    desktopFirstLine: comboName,
-    desktopSecondLine: "",
-  };
+  const title = (combo as ComboProduct & { title?: string }).title?.trim() || "";
+  return title || combo.name?.trim() || "Bundle";
 }
 
 function getComboImage(combo: ComboProduct) {
-  const sourceText = [
-    combo.brand,
-    combo.name,
-    combo.badge,
-    combo.description,
-    combo.routineTag,
-    combo.skinType,
-    ...(combo.tags ?? []),
-    ...(combo.concerns ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  if (sourceText.match(/skin\s*1004|centella|travel|on-the-go|mini/)) {
-    return TEMP_COMBO_IMAGE;
-  }
-
-  return combo.images?.[0] ?? "";
+  return combo.media?.[0]?.url ?? combo.images?.[0] ?? "";
 }
 
-function getShortDescription(combo: ComboProduct) {
-  const sourceText = [
-    combo.name,
-    combo.badge,
-    combo.description,
-    combo.routineTag,
-    combo.skinType,
-    ...(combo.tags ?? []),
-    ...(combo.concerns ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  const includedCount = combo.includedItems?.filter(Boolean).length ?? 0;
-  const sizeCount = (combo.size ?? combo.volume ?? "").match(/\d+/)?.[0];
-  const stepCount = includedCount || (sizeCount ? Number(sizeCount) : 0);
-  const stepLabel = stepCount > 0 ? `${stepCount}-step` : "curated";
-  const travelReady = sourceText.match(/travel|on-the-go|mini|trial|kit/);
-
-  const skinType = combo.skinType
-    ? formatAttributeLabel(combo.skinType).toLowerCase()
-    : sourceText.match(/sensitive/)
-      ? "sensitive"
-      : sourceText.match(/acne|blemish/)
-        ? "blemish-prone"
-        : sourceText.match(/dry|dehydrated/)
-          ? "dry"
-          : sourceText.match(/oily|combination/)
-            ? "combination"
-            : "everyday";
-
-  const benefit = sourceText.match(/calm|centella|soothe|sensitive/)
-    ? "A calming"
-    : sourceText.match(/bright|glow|vitamin c|dark spot/)
-      ? "A brightening"
-      : sourceText.match(/acne|blemish|clarify/)
-        ? "A clarifying"
-        : sourceText.match(/hydrate|moist|barrier|repair/)
-          ? "A hydrating"
-          : "A curated";
-
-  const ending = travelReady
-    ? "travel-ready skin."
-    : skinType === "everyday"
-      ? "daily skin."
-      : `${skinType} skin.`;
-
-  const copy = `${benefit} ${stepLabel} routine for ${ending}`;
-  return copy.length > 78 ? `${copy.slice(0, 75).trim()}...` : copy;
-}
-
-function formatAttributeLabel(value: string) {
-  return value
-    .replace(/^for\s+/i, "")
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function getComboDescription(combo: ComboProduct) {
+  return combo.description?.trim() ?? "";
 }
 
 function getAttributeRows(combo: ComboProduct) {
@@ -204,40 +94,34 @@ function getAttributeRows(combo: ComboProduct) {
     icon: typeof Layers3;
     label: string;
   }> = [];
-  const includedCount = combo.includedItems?.filter(Boolean).length ?? 0;
-  const sizeCount = (combo.size ?? combo.volume ?? "").match(/\d+/)?.[0];
-  const productCount = includedCount || (sizeCount ? Number(sizeCount) : 0);
-  const sourceText = [
-    combo.name,
-    combo.badge,
-    combo.description,
-    combo.routineTag,
-    combo.skinType,
-    ...(combo.tags ?? []),
-    ...(combo.concerns ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
 
-  if (productCount > 0) {
+  const includedCount = combo.includedItems?.filter(Boolean).length ?? 0;
+
+  if (includedCount > 0) {
     rows.push({
       icon: Layers3,
-      label: `${productCount} Product${productCount === 1 ? "" : "s"}`,
+      label: `${includedCount} Products`,
     });
   }
 
-  if (sourceText.match(/travel|on-the-go|mini|trial|try-before-buy/)) {
-    rows.push({ icon: Plane, label: "Travel Friendly" });
+  const travelLabel = combo.badge?.trim().toLowerCase() === "travel kit" ? "Travel Friendly" : "";
+  if (travelLabel) {
+    rows.push({ icon: Plane, label: travelLabel });
   }
 
-  const skinType = combo.skinType ? formatAttributeLabel(combo.skinType) : "";
-  const routineTag = combo.routineTag ? formatAttributeLabel(combo.routineTag) : "";
-  const firstConcern = combo.concerns?.[0] ? formatAttributeLabel(combo.concerns[0]) : "";
-  const careLabel = skinType || routineTag || firstConcern;
+  const skinTypeSource = combo.skinType as unknown;
+  const skinType = Array.isArray(skinTypeSource)
+    ? skinTypeSource.filter(Boolean).join(", ").trim()
+    : typeof skinTypeSource === "string"
+      ? skinTypeSource.trim()
+      : "";
+  if (skinType) {
+    rows.push({ icon: Leaf, label: skinType });
+  }
 
-  if (careLabel) {
-    rows.push({ icon: Leaf, label: careLabel });
+  const routineTag = combo.routineTag?.trim() || "";
+  if (routineTag && rows.length < 3) {
+    rows.push({ icon: Package, label: routineTag });
   }
 
   return rows.slice(0, 3);
@@ -262,12 +146,11 @@ function BundleCard({
 }) {
   const treatment = CARD_TREATMENTS[index % CARD_TREATMENTS.length];
   const comboName = getComboName(combo);
-  const heroTitle = getHeroTitleLayout(combo);
   const image = getComboImage(combo);
   const savings = getSavings(combo);
   const compareAtPrice = getCompareAtPrice(combo);
-  const label = (combo.brand || combo.badge || "Bundle").toUpperCase();
-  const description = getShortDescription(combo);
+  const label = "MIORALANE BUNDLE";
+  const description = getComboDescription(combo);
   const attributes = getAttributeRows(combo);
   const hasAnimatedBundleBadge = label === "MIORALANE BUNDLE";
 
@@ -297,21 +180,19 @@ function BundleCard({
       }
     >
       <div className="relative min-h-[312px] overflow-hidden sm:min-h-[342px] lg:min-h-[292px]">
-        {image ? (
-          <ProductImage
-            src={image}
-            alt={comboName}
-            fill
-            sizes="(max-width: 1024px) 100vw, 48vw"
-            className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.012]"
-            fallbackId={combo.id}
-            deliveryPreset="pdpMain"
-          />
-        ) : null}
+        <ProductImage
+          src={image}
+          alt={comboName}
+          fill
+          sizes="(max-width: 1024px) 100vw, 48vw"
+          className="object-cover object-[72%_50%] transition-transform duration-500 ease-out group-hover:scale-[1.012] sm:object-[74%_50%] lg:object-[76%_50%]"
+          fallbackId={combo.id}
+          deliveryPreset="pdpMain"
+        />
 
         <div
           className={cn(
-            "absolute inset-0 bg-gradient-to-b via-[55%] to-transparent transition-opacity duration-300 group-hover:opacity-90 lg:bg-gradient-to-r",
+            "absolute inset-0 transition-opacity duration-300 group-hover:opacity-95",
             treatment.wash
           )}
         />
@@ -331,44 +212,25 @@ function BundleCard({
         >
           <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
         </button>
-        {/* 
-        {discountPercent > 0 ? (
-          <div
-            className="discount-running-border absolute right-4 top-[4.8rem] z-20 flex h-16 w-16 flex-col items-center justify-center rounded-full border text-center text-[#79664B] shadow-[0_14px_28px_rgba(143,100,32,0.18)] sm:h-20 sm:w-20"
-          >
-            <span className="text-[9px] font-bold uppercase leading-none tracking-[0.14em]">
-              Save
-            </span>
-            <span className="mt-1 text-xl font-bold leading-none sm:text-2xl">
-              {discountPercent}%
-            </span>
-          </div>
-        ) : null} */}
 
-        <div className="relative z-10 flex min-h-[312px] max-w-[20rem] flex-col justify-center p-4 pr-24 sm:min-h-[342px] sm:max-w-[21rem] sm:px-5.5 sm:py-5 sm:pr-28 lg:min-h-[292px] lg:w-[42%] lg:max-w-[22rem] lg:pr-3">
+        <div className="relative z-10 flex min-h-[312px] max-w-[19.5rem] flex-col justify-center p-4 pr-20 sm:min-h-[342px] sm:max-w-[22rem] sm:px-5.5 sm:py-5 sm:pr-24 lg:min-h-[292px] lg:w-[50%] lg:max-w-[23rem] lg:pr-8">
           <div>
             <span className="inline-flex max-w-full rounded-full bg-accent px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">
               <span className="truncate">{label}</span>
             </span>
 
-            <h3 className="mt-[15px] max-w-[14.5rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[16rem] sm:text-[1.65rem] lg:max-w-[17rem]">
-              <span className="sm:hidden">{heroTitle.mobile}</span>
-              <span className="hidden sm:block">
-                <span className="block whitespace-nowrap">{heroTitle.desktopFirstLine}</span>
-                {heroTitle.desktopSecondLine ? (
-                  <span className="block">{heroTitle.desktopSecondLine}</span>
-                ) : null}
-              </span>
+            <h3 className="mt-[15px] max-w-[15.25rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[17rem] sm:text-[1.65rem] lg:max-w-[19rem]">
+              {comboName}
             </h3>
 
             {description ? (
-              <p className="mt-[11px] line-clamp-2 max-w-[16rem] text-[13px] leading-[1.42] text-ink-muted sm:text-sm">
+              <p className="mt-[11px] line-clamp-2 max-w-[16rem] text-[13px] leading-[1.42] text-[#746D67] sm:max-w-[17rem] sm:text-sm">
                 {description}
               </p>
             ) : null}
 
             {attributes.length > 0 ? (
-              <div className="mt-5.5 space-y-[8px] text-[13px] text-ink-soft sm:text-sm">
+              <div className="mt-5.5 space-y-[8px] text-[13px] text-[#6F6862] sm:text-sm">
                 {attributes.map((attribute) => {
                   const Icon = attribute.icon;
 
@@ -416,7 +278,6 @@ function BundleCard({
               className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full border border-ink/10 bg-white/70 px-3.5 py-2 text-sm font-semibold text-ink transition-all hover:border-accent/35 hover:bg-white hover:text-accent sm:px-4"
             >
               <span>View Details</span>
-              {/* <ArrowRight className="h-4 w-4" /> */}
             </button>
 
             <button
@@ -544,6 +405,10 @@ export function BundlesCarousel() {
   };
 
   const handleAdd = (combo: ComboProduct) => {
+    if (combo.stock <= 0) {
+      return;
+    }
+
     addItem(
       {
         ...combo,
