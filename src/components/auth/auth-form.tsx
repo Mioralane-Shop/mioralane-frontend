@@ -1,23 +1,19 @@
 "use client";
 
 import { useState, useMemo, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowLeft,
-  BadgeCheck,
   CheckCircle2,
   Eye,
   EyeOff,
   Loader2,
   Lock,
   Mail,
-  ShieldCheck,
-  Sparkles,
-  Truck,
   User as UserIcon,
-  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,12 +40,6 @@ interface FieldErrors {
 
 const USERNAME_MIN = 3;
 const PASSWORD_MIN = 6;
-
-const TRUST_POINTS: { icon: LucideIcon; text: string }[] = [
-  { icon: BadgeCheck, text: "100% authentic K-beauty essentials" },
-  { icon: Truck, text: "Fast, tracked delivery across Bangladesh" },
-  { icon: ShieldCheck, text: "Secure, private & encrypted account" },
-];
 
 export function AuthForm({
   initialMode = "login",
@@ -205,74 +195,11 @@ export function AuthForm({
   return (
     <div
       className={cn(
-        "grid w-full max-w-5xl overflow-hidden rounded-3xl border border-brand-100 bg-white shadow-lg lg:grid-cols-[1fr_1.05fr]",
+        "w-full max-w-[440px]",
         className
       )}
     >
-      {/* ============ Branding panel (desktop) ============ */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-50 via-brand-100/70 to-peach/20 p-10 lg:flex">
-        {/* Decorative soft blobs */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-peach/25 blur-3xl"
-        />
-
-        {/* Brand mark */}
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-300 to-brand-500 text-white shadow-md">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <span className="font-serif text-2xl tracking-wide text-ink">
-            Mioralane
-          </span>
-        </div>
-
-        {/* Heading */}
-        <div className="relative mt-12 space-y-4">
-          <h2 className="font-serif text-4xl leading-tight text-ink">
-            Your skin,
-            <br />
-            <span className="text-brand-500">your glow.</span>
-          </h2>
-          <p className="max-w-sm text-sm leading-relaxed text-ink-soft">
-            Discover clean, effective K-beauty curated for your ritual —
-            simple, gentle, radiant.
-          </p>
-        </div>
-
-        {/* Trust points */}
-        <ul className="relative mt-12 space-y-3">
-          {TRUST_POINTS.map(({ icon: Icon, text }) => (
-            <li
-              key={text}
-              className="flex items-center gap-3 text-sm text-ink-soft"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 text-brand-500 shadow-sm">
-                <Icon className="h-4 w-4" />
-              </span>
-              {text}
-            </li>
-          ))}
-        </ul>
-
-        {/* Social proof */}
-        <figure className="relative mt-12 rounded-2xl border border-white/60 bg-white/60 p-5 backdrop-blur">
-          <blockquote className="font-serif text-sm italic leading-relaxed text-ink">
-            “Mioralane made my routine feel like self-care again. The glow-up
-            is real.”
-          </blockquote>
-          <figcaption className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Nusrat · Verified customer
-          </figcaption>
-        </figure>
-      </aside>
-
-      {/* ============ Form panel ============ */}
-      <section className="flex flex-col justify-center bg-surface-warm px-6 py-10 sm:px-12 lg:py-16">
+      <section className="rounded-xl border border-border bg-white/90 px-6 py-7 shadow-lg shadow-brand-100/30 backdrop-blur sm:px-10 sm:py-10">
         <Link
           href="/"
           className="mb-6 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-brand-500"
@@ -281,52 +208,22 @@ export function AuthForm({
           Back to shop
         </Link>
 
-        {/* Mode toggle */}
-        <div
-          role="tablist"
-          aria-label="Authentication mode"
-          className="mb-8 grid grid-cols-2 gap-1 rounded-full bg-brand-100/60 p-1"
-        >
-          <button
-            type="button"
-            role="tab"
-            id="tab-login"
-            aria-selected={!isRegister}
-            aria-controls="panel-auth"
-            onClick={() => switchMode("login")}
-            className={cn(
-              "rounded-full px-4 py-2.5 text-sm font-medium transition-all",
-              !isRegister
-                ? "bg-white text-brand-600 shadow-sm"
-                : "text-ink/60 hover:text-ink"
-            )}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="tab-register"
-            aria-selected={isRegister}
-            aria-controls="panel-auth"
-            onClick={() => switchMode("register")}
-            className={cn(
-              "rounded-full px-4 py-2.5 text-sm font-medium transition-all",
-              isRegister
-                ? "bg-white text-brand-600 shadow-sm"
-                : "text-ink/60 hover:text-ink"
-            )}
-          >
-            Create Account
-          </button>
-        </div>
-
-        {/* Heading */}
         <div className="mb-8">
-          <h1 className="font-serif text-3xl text-ink">
+          <div className="mb-6 flex items-center gap-2">
+            <Image
+              src="/logo-m.svg"
+              alt="Mioralane logo"
+              width={34}
+              height={34}
+              className="h-8 w-8 rounded-md"
+              priority
+            />
+            <span className="text-base font-medium text-ink">Mioralane</span>
+          </div>
+          <h1 className="font-serif text-[26px] text-ink">
             {isRegister ? "Create your account" : "Welcome back"}
           </h1>
-          <p className="mt-2 text-sm text-ink-muted">
+          <p className="mt-2 text-sm leading-6 text-ink-soft">
             {isRegister
               ? "Join the Glow Club and start your K-beauty ritual."
               : "Sign in to continue your skincare journey."}
@@ -339,7 +236,7 @@ export function AuthForm({
             {serverError && (
               <div
                 role="alert"
-                className="flex items-start gap-2.5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+                className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
               >
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{serverError}</span>
@@ -348,7 +245,7 @@ export function AuthForm({
             {success && (
               <div
                 role="status"
-                className="flex items-start gap-2.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{success}</span>
@@ -359,15 +256,15 @@ export function AuthForm({
 
         <form
           id="panel-auth"
-          role="tabpanel"
-          aria-labelledby={isRegister ? "tab-register" : "tab-login"}
           onSubmit={handleSubmit}
           noValidate
-          className="space-y-5"
+          className="space-y-4"
         >
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-[13px] text-ink">
+              Username
+            </Label>
             <div className="relative">
               <UserIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
               <Input
@@ -381,7 +278,7 @@ export function AuthForm({
                 aria-invalid={Boolean(errors.username)}
                 aria-describedby={errors.username ? "username-error" : undefined}
                 className={cn(
-                  "h-12 rounded-2xl pl-10",
+                  "h-11 rounded-lg border-border bg-surface-warm pl-10 focus-visible:ring-brand-200",
                   errors.username && "border-red-300"
                 )}
               />
@@ -401,7 +298,9 @@ export function AuthForm({
           {/* Email (register only) */}
           {isRegister && (
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-[13px] text-ink">
+                Email
+              </Label>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                 <Input
@@ -413,7 +312,7 @@ export function AuthForm({
                   placeholder="e.g. you@example.com"
                   autoComplete="email"
                   disabled={isLoading}
-                  className="h-12 rounded-2xl pl-10"
+                  className="h-11 rounded-lg border-border bg-surface-warm pl-10 focus-visible:ring-brand-200"
                 />
               </div>
             </div>
@@ -422,13 +321,15 @@ export function AuthForm({
           {/* Password */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-[13px] text-ink">
+                Password
+              </Label>
               {!isRegister && (
                 <button
                   type="button"
-                  className="text-xs font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
+                  className="text-[13px] font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
                 >
-                  Forgot password?
+                  Forgot?
                 </button>
               )}
             </div>
@@ -446,7 +347,7 @@ export function AuthForm({
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? "password-error" : undefined}
                 className={cn(
-                  "h-12 rounded-2xl pl-10 pr-11",
+                  "h-11 rounded-lg border-border bg-surface-warm pl-10 pr-11 focus-visible:ring-brand-200",
                   errors.password && "border-red-300"
                 )}
               />
@@ -456,7 +357,7 @@ export function AuthForm({
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 aria-pressed={showPassword}
                 disabled={isLoading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -480,7 +381,9 @@ export function AuthForm({
           {/* Confirm password (register only) */}
           {isRegister && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-[13px] text-ink">
+                Confirm Password
+              </Label>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                 <Input
@@ -497,7 +400,7 @@ export function AuthForm({
                     errors.confirmPassword ? "confirm-password-error" : undefined
                   }
                   className={cn(
-                    "h-12 rounded-2xl pl-10 pr-11",
+                    "h-11 rounded-lg border-border bg-surface-warm pl-10 pr-11 focus-visible:ring-brand-200",
                     errors.confirmPassword && "border-red-300"
                   )}
                 />
@@ -507,7 +410,7 @@ export function AuthForm({
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
                   disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -534,7 +437,7 @@ export function AuthForm({
             size="lg"
             disabled={isLoading}
             aria-busy={isLoading}
-            className="h-12 w-full rounded-2xl bg-gradient-to-r from-brand-400 to-brand-500 shadow-md hover:from-brand-500 hover:to-brand-600"
+            className="mt-2 h-11 w-full rounded-full bg-brand-500 text-sm shadow-sm hover:bg-brand-600"
           >
             {isLoading ? (
               <>
@@ -549,10 +452,13 @@ export function AuthForm({
           </Button>
 
           {/* Google Sign-In */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-brand-100" />
-            <span className="text-xs text-ink-muted">or</span>
-            <div className="h-px flex-1 bg-brand-100" />
+          <div className="relative py-2">
+            <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+            <div className="relative flex justify-center">
+              <span className="bg-white px-2 text-[13px] text-ink-muted">
+                or continue with
+              </span>
+            </div>
           </div>
           <div className="flex justify-center">
             <GoogleLogin
@@ -564,12 +470,24 @@ export function AuthForm({
               text="signin_with"
               shape="pill"
               theme="outline"
+              width="360"
             />
           </div>
 
           <p className="text-center text-xs leading-relaxed text-ink-muted">
             By continuing, you agree to Mioralane&apos;s Terms of Service &
             Privacy Policy.
+          </p>
+
+          <p className="text-center text-[13px] text-ink-soft">
+            {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button
+              type="button"
+              onClick={() => switchMode(isRegister ? "login" : "register")}
+              className="font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
+            >
+              {isRegister ? "Sign in" : "Create one"}
+            </button>
           </p>
         </form>
       </section>
