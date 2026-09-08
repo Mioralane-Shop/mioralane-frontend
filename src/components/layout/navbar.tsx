@@ -19,10 +19,7 @@ import { useProductSearch } from "@/hooks/use-product-search";
 import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
-  { label: "Skin Care", href: "/shop" },
-  { label: "Collections", href: "/shop" },
-  { label: "Combo", href: "/combo" },
-  { label: "New", href: "/shop?sort=newest" },
+  { label: "Shop", href: "/shop" },
   { label: "Brands", href: "/shop" },
   { label: "Support", comingSoon: true },
   { label: "Blog", href: "/blog" },
@@ -193,119 +190,30 @@ type MegaMenuColumn = {
 
 const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
   {
-    id: "cleansers",
-    label: "Cleansers",
-    href: "/shop?category=cleansers",
-    links: [
-      { label: "Oil Cleansers", comingSoon: true },
-      { label: "Water Based Cleansers", comingSoon: true },
-      { label: "Cleansing Balms", comingSoon: true },
-      { label: "Make-Up Removers", comingSoon: true },
-      { label: "Micellar Waters", comingSoon: true },
-    ],
-  },
-  {
-    id: "toners",
-    label: "Toners",
-    href: "/shop?category=toners",
-    links: [
-      { label: "Hydrating Toners", comingSoon: true },
-      { label: "Calming Toners", comingSoon: true },
-      { label: "Mist Toners", comingSoon: true },
-      { label: "Exfoliating Toners", comingSoon: true },
-      { label: "Toner Pads", comingSoon: true },
-    ],
-  },
-  {
-    id: "treatments",
-    label: "Treatments",
-    comingSoon: true,
-    links: [
-      { label: "Serums", comingSoon: true },
-      { label: "Ampoules", comingSoon: true },
-      { label: "Essences", comingSoon: true },
-      { label: "Spot Treatments", comingSoon: true },
-    ],
-  },
-  {
-    id: "exfoliators",
-    label: "Exfoliators",
-    comingSoon: true,
-    links: [
-      { label: "Physical Exfoliators", comingSoon: true },
-      { label: "Chemical Exfoliators", comingSoon: true },
-    ],
-  },
-  {
-    id: "concerns",
-    label: "Skin Concerns",
+    id: "product-type",
+    label: "Product Type",
     href: "/shop",
     links: [
-      { label: "Acne", href: "/shop?concern=acne" },
-      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
-      { label: "Dry Skin", comingSoon: true },
-      { label: "Fungal Acne Safe", comingSoon: true },
-      { label: "Hyperpigmentation", comingSoon: true },
-      { label: "Skin Redness", comingSoon: true },
-      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
-      { label: "Oily Skin", comingSoon: true },
+      { label: "Cleansers", href: "/shop?category=cleansers" },
+      { label: "Toners", href: "/shop?category=toners" },
+      { label: "Serums & Treatments", href: "/shop?category=serums" },
+      { label: "Exfoliators", comingSoon: true },
+      { label: "Moisturizers", href: "/shop?category=moisturizers" },
+      { label: "Masks", href: "/shop?category=masks" },
+      { label: "Lip & Eye Care", comingSoon: true },
+      { label: "Sunscreen", href: "/shop?category=sun-care" },
     ],
   },
   {
-    id: "moisturizers",
-    label: "Moisturizers",
-    href: "/shop?category=moisturizers",
+    id: "curated-sets",
+    label: "Curated Sets",
+    href: "/combo",
     links: [
-      { label: "Face Creams", comingSoon: true },
-      { label: "Gel Moisturizers", comingSoon: true },
-      { label: "Facial Oils", comingSoon: true },
-      { label: "Emulsions", comingSoon: true },
-    ],
-  },
-  {
-    id: "masks",
-    label: "Masks",
-    href: "/shop?category=masks",
-    links: [
-      { label: "Peeling Masks", comingSoon: true },
-      { label: "Sheet Masks", comingSoon: true },
-      { label: "Sleeping Masks", comingSoon: true },
-      { label: "Wash-Off Masks", comingSoon: true },
-    ],
-  },
-  {
-    id: "lip-eye",
-    label: "Lip & Eye Care",
-    comingSoon: true,
-    links: [
-      { label: "Eye Creams", comingSoon: true },
-      { label: "Eye Patches", comingSoon: true },
-      { label: "Lip Care", comingSoon: true },
-    ],
-  },
-  {
-    id: "sunscreens",
-    label: "Sunscreens",
-    href: "/shop?category=sun-care",
-    links: [
-      { label: "SPF 50+", comingSoon: true },
-      { label: "SPF 30", comingSoon: true },
-      { label: "Sun Sticks", comingSoon: true },
-      { label: "After Sun Care", comingSoon: true },
-    ],
-  },
-  {
-    id: "ingredients",
-    label: "Shop By Ingredients",
-    comingSoon: true,
-    links: [
-      { label: "AHA BHA PHA", comingSoon: true },
-      { label: "Centella", comingSoon: true },
-      { label: "Hyaluronic Acid", comingSoon: true },
-      { label: "Peptides", comingSoon: true },
-      { label: "Propolis", comingSoon: true },
-      { label: "Snail Mucin", comingSoon: true },
-      { label: "Vitamin C", comingSoon: true },
+      { label: "Starter Routines", href: "/combo" },
+      { label: "Travel Kits", href: "/combo" },
+      { label: "Bundles", href: "/combo" },
+      { label: "New Arrivals", href: "/shop?sort=newest" },
+      { label: "Best Sellers", href: "/shop?bestSeller=true" },
     ],
   },
 ];
@@ -412,7 +320,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
         href="/shop"
         className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
-        Skin Care
+        Shop
       </Link>
 
       {open && (
@@ -420,17 +328,17 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
           ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          className="fixed left-1/2 z-[90] w-full max-w-[600px] -translate-x-1/2 rounded-lg border border-border-light bg-white px-8 py-8 shadow-lg"
           style={{ top: panelTop }}
         >
-          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
+          <div className="grid grid-cols-2 gap-x-12">
             {MEGA_MENU_COLUMNS.map((column) => (
               <div
                 key={column.id}
                 onMouseEnter={() => positionUnderline(column.id)}
                 className="min-w-0"
               >
-                <div className="border-t border-[#C98A7D]/30 pt-4">
+                <div>
                   <NavigationItem
                     label={column.label}
                     href={column.href}
@@ -442,13 +350,13 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
                       ref={(element) => {
                         headerRefs.current[column.id] = element;
                       }}
-                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
+                      className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted"
                     >
                       {column.label}
                     </span>
                   </NavigationItem>
                 </div>
-                <ul className="mt-5 space-y-3.5">
+                <ul className="mt-5 space-y-3">
                   {column.links.map((link) => (
                     <li key={link.label}>
                       <NavigationItem
@@ -456,7 +364,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
                         href={link.href}
                         comingSoon={link.comingSoon}
                         onClick={() => setOpen(false)}
-                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                        className="text-sm text-ink-soft transition-colors hover:text-ink hover:underline hover:decoration-brand-500 hover:decoration-2 hover:underline-offset-4"
                       />
                     </li>
                   ))}
@@ -467,7 +375,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
 
           <div
             ref={underlineRef}
-            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            className="pointer-events-none absolute h-[2px] bg-brand-500 transition-all duration-200"
             style={{
               opacity: activeCol ? 1 : 0,
               transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
@@ -483,7 +391,7 @@ function DesktopNavLinks({ panelTop }: { panelTop: number }) {
   return (
     <>
       {BOTTOM_NAV.map((link) => {
-        if (link.label === "Skin Care") {
+        if (link.label === "Shop") {
           return (
             <SkinCareNavItem
               key={link.href + link.label}

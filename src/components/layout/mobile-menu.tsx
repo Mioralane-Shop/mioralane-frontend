@@ -11,7 +11,13 @@ import { useAuthStore } from "@/store/auth.store";
 
 type Tab = "menu" | "brands" | "support";
 
-const SKINCARE_LINKS = [
+type MobileMenuLink = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
+
+const SKINCARE_LINKS: MobileMenuLink[] = [
   { label: "Cleansers", href: "/shop?category=cleansers" },
   { label: "Moisturizers", href: "/shop?category=moisturizers" },
   { label: "Toners", href: "/shop?category=toners" },
@@ -22,7 +28,7 @@ const SKINCARE_LINKS = [
   { label: "Sunscreens", href: "/shop?category=sun-care" },
 ];
 
-const CONCERN_LINKS = [
+const CONCERN_LINKS: MobileMenuLink[] = [
   { label: "Acne", href: "/shop?concern=acne" },
   { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
   { label: "Dryness / Hydration", href: "/shop?concern=hydration" },
@@ -33,17 +39,19 @@ const CONCERN_LINKS = [
   { label: "Oil Control & Pore Care", comingSoon: true },
 ];
 
-const DISCOVER_LINKS = [
+const DISCOVER_LINKS: MobileMenuLink[] = [
   { label: "See All Products", href: "/shop" },
+  { label: "New Arrivals", href: "/shop?sort=newest" },
   { label: "Bestsellers", href: "/shop?bestSeller=true" },
-  { label: "Shop By Collection", href: "/shop" },
-  { label: "Vegan Skincare", comingSoon: true },
+  { label: "Starter Routines", href: "/combo" },
+  { label: "Travel Kits", href: "/combo" },
+  { label: "Bundles", href: "/combo" },
 ];
 
 const MENU_GROUPS = [
-  { id: "skincare", label: "Skincare", links: SKINCARE_LINKS },
+  { id: "skincare", label: "Shop", links: SKINCARE_LINKS },
   { id: "concerns", label: "Skin Concerns", links: CONCERN_LINKS },
-  { id: "discover", label: "Discover", links: DISCOVER_LINKS },
+  { id: "discover", label: "Curated Sets", links: DISCOVER_LINKS },
 ];
 
 const SORTED_BRANDS = [...BRANDS].sort((a, b) => a.localeCompare(b));
@@ -107,25 +115,6 @@ export function MobileMenu() {
             {/* MENU TAB */}
             {tab === "menu" && (
               <div className="flex flex-col">
-                <NavigationItem
-                  label="Sales"
-                  comingSoon
-                  onClick={close}
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                >
-                  Sales
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
-                </NavigationItem>
-                <NavigationItem
-                  label="New"
-                  href="/shop?sort=newest"
-                  onClick={close}
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                >
-                  New
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
-                </NavigationItem>
-
                 {MENU_GROUPS.map((group) => (
                   <div key={group.id} className="border-b border-rose-50">
                     <button
@@ -165,24 +154,6 @@ export function MobileMenu() {
                   <ChevronRight className="h-4 w-4 text-neutral-400" />
                 </button>
                 <NavigationItem
-                  label="Combo"
-                  href="/combo"
-                  onClick={close}
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                >
-                  Combo
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
-                </NavigationItem>
-                <NavigationItem
-                  label="Gift Cards"
-                  comingSoon
-                  onClick={close}
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                >
-                  Gift Cards
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
-                </NavigationItem>
-                <NavigationItem
                   label="Blog"
                   href="/blog"
                   onClick={close}
@@ -192,12 +163,12 @@ export function MobileMenu() {
                   <ChevronRight className="h-4 w-4 text-neutral-400" />
                 </NavigationItem>
                 <NavigationItem
-                  label="Win Review of the Month"
+                  label="Sales"
                   comingSoon
                   onClick={close}
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-sm font-medium text-neutral-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
                 >
-                  Win Review of the Month
+                  Sales
                   <ChevronRight className="h-4 w-4 text-neutral-400" />
                 </NavigationItem>
               </div>
