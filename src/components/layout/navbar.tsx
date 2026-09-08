@@ -19,7 +19,7 @@ import { useProductSearch } from "@/hooks/use-product-search";
 import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
-  { label: "Shop", href: "/shop" },
+  { label: "Skin Care", href: "/shop" },
   { label: "Brands", href: "/shop" },
   { label: "Support", comingSoon: true },
   { label: "Blog", href: "/blog" },
@@ -60,7 +60,7 @@ function BrandsNavItem() {
         Brands
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+        <div className="absolute left-1/2 top-full z-[130] -translate-x-1/2 pt-2">
           <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
               {BRANDS.map((brand) => (
@@ -320,7 +320,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
         href="/shop"
         className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
-        Shop
+        Skin Care
       </Link>
 
       {open && (
@@ -328,7 +328,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
           ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="fixed left-1/2 z-[90] w-full max-w-[600px] -translate-x-1/2 rounded-lg border border-border-light bg-white px-8 py-8 shadow-lg"
+          className="fixed left-1/2 z-[130] w-full max-w-[600px] -translate-x-1/2 rounded-lg border border-border-light bg-white px-8 py-8 shadow-lg"
           style={{ top: panelTop }}
         >
           <div className="grid grid-cols-2 gap-x-12">
@@ -391,7 +391,7 @@ function DesktopNavLinks({ panelTop }: { panelTop: number }) {
   return (
     <>
       {BOTTOM_NAV.map((link) => {
-        if (link.label === "Shop") {
+        if (link.label === "Skin Care") {
           return (
             <SkinCareNavItem
               key={link.href + link.label}
@@ -627,7 +627,7 @@ export function Navbar() {
 
       <header
         ref={desktopHeaderRef}
-        className="hidden bg-white lg:block"
+        className="relative z-[120] hidden bg-white lg:block"
       >
         <div
           ref={desktopMainHeaderRef}
