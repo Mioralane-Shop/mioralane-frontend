@@ -22,6 +22,7 @@ const footerLinks = {
   help: {
     title: "Help",
     links: [
+      { label: "Support Center", href: "/contact" },
       { label: "Delivery Policy", href: "/delivery" },
       { label: "Return & Refund", href: "/returns" },
       { label: "Track Order", href: "/track-order" },
