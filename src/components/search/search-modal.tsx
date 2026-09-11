@@ -77,7 +77,7 @@ export function SearchModal({
       <div className="border-b border-ink/10">
         <form
           onSubmit={submit}
-          className="mx-auto flex w-full max-w-3xl items-center gap-3 px-6 py-5"
+          className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-5 sm:px-6"
         >
           <Search className="h-5 w-5 flex-shrink-0 text-ink/40" />
           <input
@@ -99,7 +99,7 @@ export function SearchModal({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl px-6 py-6">
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
           {q.length < 2 ? (
             <div>
               <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink/40">

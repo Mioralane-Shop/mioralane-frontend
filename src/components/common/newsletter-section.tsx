@@ -14,7 +14,7 @@ export function NewsletterSection() {
         </div>
         <form
           onSubmit={(e) => e.preventDefault()}
-          className="mx-auto mt-8 flex max-w-md gap-2"
+          className="mx-auto mt-8 flex max-w-md flex-col gap-2 min-[380px]:flex-row"
         >
           <div className="relative flex-1">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />

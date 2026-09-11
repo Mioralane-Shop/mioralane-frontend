@@ -350,7 +350,7 @@ function SortControl({ activeSort, compact = false, onChange }: SortControlProps
       )}
     >
       <span className={cn("whitespace-nowrap", compact && "sr-only")}>Sort by</span>
-      <span className={cn("relative", compact && "min-w-[128px]")}>
+      <span className={cn("relative", compact && "min-w-0 flex-1 sm:min-w-[128px]")}>
         <select
           value={activeSort}
           onChange={(event) => onChange(event.target.value)}
@@ -728,11 +728,11 @@ function ShopContent() {
           <SortControl activeSort={activeSort} onChange={(value) => updateParam("sort", value)} />
         </div>
 
-        <div className="flex items-center justify-between gap-3 lg:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 min-[380px]:flex-nowrap lg:hidden">
           <button
             type="button"
             onClick={() => setMobileFiltersOpen(true)}
-            className="inline-flex h-11 min-w-[132px] items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm"
+            className="inline-flex h-11 min-w-[132px] shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filters ({activeFilterCount})
@@ -775,7 +775,7 @@ function ShopContent() {
 
         <div className="min-w-0 flex-1">
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="space-y-3">
                   <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />
@@ -846,7 +846,7 @@ function ShopContent() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map((product: Product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -930,7 +930,7 @@ export default function ShopPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
-          <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="space-y-3">
                 <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />

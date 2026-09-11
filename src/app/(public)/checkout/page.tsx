@@ -165,7 +165,7 @@ function CheckoutContent() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
           <div className="space-y-8">
             <Card className="border-brand-100">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="mb-4">
                   <h2 className="text-lg font-medium text-neutral-800">
                     Shipping Information
@@ -208,7 +208,7 @@ function CheckoutContent() {
 
                   <div>
                     <Label>Delivery Location</Label>
-                    <div className="mt-1 grid grid-cols-2 gap-2">
+                    <div className="mt-1 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                       {[
                         { value: "inside_dhaka", label: "Inside Dhaka" },
                         { value: "outside_dhaka", label: "Outside Dhaka" },
@@ -275,7 +275,7 @@ function CheckoutContent() {
             </Card>
 
             <Card className="border-brand-100">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="mb-4 flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-brand-500" />
                   <h2 className="text-lg font-medium text-neutral-800">
@@ -305,7 +305,7 @@ function CheckoutContent() {
 
           <div className="lg:sticky lg:top-24 lg:self-start">
             <Card className="border-brand-100">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-neutral-800">
                   Order Summary
                 </h3>
@@ -314,10 +314,10 @@ function CheckoutContent() {
                   {items.map((item) => (
                     <div
                       key={`${item.itemType}:${item.itemId || item.product.id}`}
-                      className="flex items-start justify-between gap-3 py-3 text-sm"
+                      className="flex flex-wrap items-start justify-between gap-3 py-3 text-sm min-[380px]:flex-nowrap"
                     >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-neutral-700">
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 font-medium text-neutral-700">
                           {item.product.name}
                         </p>
                         <p className="text-xs text-neutral-400">

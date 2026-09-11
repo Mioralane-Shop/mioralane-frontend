@@ -59,16 +59,16 @@ function ProfileContent() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
         <Card className="border-brand-100">
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-100">
                 <User className="h-8 w-8 text-brand-500" />
               </div>
               <div className="min-w-0">
                 <h2 className="truncate text-lg font-medium text-neutral-800">
                   {user.username}
                 </h2>
-                <p className="text-sm text-neutral-400">
+                <p className="break-words text-sm text-neutral-400">
                   {user.email ?? "No email available"}
                 </p>
               </div>
@@ -114,8 +114,8 @@ function ProfileContent() {
         </Card>
 
         <Card className="border-brand-100">
-          <CardContent className="p-8">
-            <div className="mb-5 flex items-center justify-between gap-4">
+          <CardContent className="p-4 sm:p-8">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-medium text-neutral-800">
                   Recent Orders
@@ -171,7 +171,7 @@ function ProfileRow({
         <span className="mt-0.5 text-brand-400">{icon}</span>
         <span className="text-sm font-medium text-neutral-500">{label}</span>
       </div>
-      <span className="max-w-[65%] truncate text-right text-sm font-medium text-neutral-800">
+      <span className="min-w-0 max-w-[65%] break-words text-right text-sm font-medium text-neutral-800">
         {value}
       </span>
     </div>

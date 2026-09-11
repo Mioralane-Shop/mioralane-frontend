@@ -31,7 +31,7 @@ export default function CartPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-brand-100 bg-white px-6 py-16 text-center shadow-sm">
+        <div className="rounded-2xl border border-brand-100 bg-white px-4 py-16 text-center shadow-sm sm:px-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
             <ShoppingBag className="h-8 w-8 text-brand-300" />
           </div>
@@ -49,8 +49,8 @@ export default function CartPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="rounded-2xl border border-brand-100 bg-white">
-              <div className="border-b border-brand-50 px-6 py-4">
-                <div className="flex items-center justify-between">
+              <div className="border-b border-brand-50 px-4 py-4 sm:px-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 className="font-medium text-neutral-700">Cart Items</h2>
                   <Button
                     variant="ghost"
@@ -63,7 +63,7 @@ export default function CartPage() {
                 </div>
               </div>
               {(isSyncingCatalog || catalogSyncError || blockMessage) && (
-                <div className="border-b border-brand-50 bg-brand-50/50 px-6 py-4">
+                <div className="border-b border-brand-50 bg-brand-50/50 px-4 py-4 sm:px-6">
                   <p className="text-sm font-medium text-neutral-800">
                     {isSyncingCatalog
                       ? "Refreshing cart availability"
@@ -76,7 +76,7 @@ export default function CartPage() {
                   </p>
                 </div>
               )}
-              <div className="divide-y divide-brand-50 px-6">
+              <div className="divide-y divide-brand-50 px-4 sm:px-6">
                 {items.map((item) => (
                   <CartItemRow
                     key={`${item.itemType}:${item.itemId || item.product.id}`}
@@ -84,7 +84,7 @@ export default function CartPage() {
                   />
                 ))}
               </div>
-              <div className="border-t border-brand-50 px-6 py-4">
+              <div className="border-t border-brand-50 px-4 py-4 sm:px-6">
                 <Link
                   href="/shop"
                   className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline"
@@ -97,7 +97,7 @@ export default function CartPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="rounded-2xl border border-brand-100 bg-white p-6">
+            <div className="rounded-2xl border border-brand-100 bg-white p-4 sm:p-6">
               <h3 className="text-lg font-medium text-neutral-800">
                 Order Summary
               </h3>

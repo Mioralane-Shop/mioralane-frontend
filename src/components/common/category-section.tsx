@@ -11,7 +11,7 @@ export function CategorySection() {
         <p className="mt-2 text-neutral-400">Find exactly what your skin needs</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         {CATEGORIES.map((category) => (
           <Link
             key={category.id}

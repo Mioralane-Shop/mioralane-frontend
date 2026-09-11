@@ -40,7 +40,7 @@ export function ComboSection() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
@@ -97,7 +97,7 @@ export function ComboSection() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
       {combos.map((product) => (
         <ProductCard
           key={product.id}

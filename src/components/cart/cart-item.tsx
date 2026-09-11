@@ -33,11 +33,11 @@ export function CartItemRow({ item }: CartItemProps) {
   const canNavigate = !isUnavailable;
 
   return (
-    <div className="flex gap-4 py-4">
+    <div className="flex min-w-0 gap-3 py-4 sm:gap-4">
       {canNavigate ? (
         <Link
           href={itemHref}
-          className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50"
+          className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24"
         >
           <ProductImage
             src={product.images[0]}
@@ -50,7 +50,7 @@ export function CartItemRow({ item }: CartItemProps) {
           />
         </Link>
       ) : (
-        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50">
+        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24">
           <ProductImage
             src={product.images[0]}
             alt={product.name}
@@ -63,16 +63,16 @@ export function CartItemRow({ item }: CartItemProps) {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col justify-between">
+      <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div>
           {canNavigate ? (
             <Link href={itemHref}>
-              <h4 className="text-sm font-medium text-neutral-800 transition-colors line-clamp-1 hover:text-brand-500">
+              <h4 className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
                 {product.name}
               </h4>
             </Link>
           ) : (
-            <h4 className="text-sm font-medium text-neutral-800 line-clamp-1">
+            <h4 className="line-clamp-2 text-sm font-medium text-neutral-800">
               {product.name}
             </h4>
           )}
@@ -96,7 +96,7 @@ export function CartItemRow({ item }: CartItemProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1">
             <Button
               variant="outline"

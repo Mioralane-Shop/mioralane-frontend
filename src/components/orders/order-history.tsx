@@ -83,7 +83,7 @@ export function OrderHistory({
 
         return (
           <Card key={order.id} className="border-brand-100">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +130,7 @@ export function OrderHistory({
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">
+                      <p className="line-clamp-2 text-sm font-medium text-ink">
                         {item.title}
                       </p>
                       <p className="text-xs text-ink-muted">Qty {item.quantity}</p>

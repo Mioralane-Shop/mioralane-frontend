@@ -84,16 +84,16 @@ export function MobileMenu() {
       </Button>
       <SheetContent
         side="left"
-        className="w-[80%] p-0 [&>button.absolute]:text-white"
+        className="w-[min(92vw,360px)] p-0 [&>button.absolute]:text-white"
       >
         <div className="flex h-full flex-col">
           {/* Black top bar: three section names on the left, close X on the right */}
-          <div className="flex h-12 items-center gap-1 bg-ink px-4">
+          <div className="flex min-h-12 items-center gap-1 overflow-x-auto bg-ink px-3 sm:px-4">
             {(["menu", "brands", "support"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${tab === t
+                className={`shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors sm:px-3.5 ${tab === t
                     ? "bg-white text-ink shadow-sm"
                     : "text-white/60 hover:text-white"
                   }`}
