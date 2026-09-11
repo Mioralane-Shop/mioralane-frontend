@@ -233,18 +233,13 @@ h4 {
 }
 
 /* Scrollbar */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #fecdd6;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #fda4b3;
+  display: none;
 }
 
 /* Tap highlight */

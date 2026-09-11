@@ -20,11 +20,7 @@ import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
   { label: "Skin Care", href: "/shop" },
-  { label: "Collections", href: "/shop" },
-  { label: "Combo", href: "/combo" },
-  { label: "New", href: "/shop?sort=newest" },
   { label: "Brands", href: "/shop" },
-  { label: "Support", comingSoon: true },
   { label: "Blog", href: "/blog" },
   { label: "Sales", comingSoon: true },
 ];
