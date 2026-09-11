@@ -16,16 +16,16 @@ export function CategorySection() {
           <Link
             key={category.id}
             href={`/shop?category=${category.slug}`}
-            className="group relative overflow-hidden rounded-2xl bg-rose-50 p-4 text-center transition-all hover:bg-rose-100"
+            className="group relative overflow-hidden rounded-2xl bg-brand-50 p-4 text-center transition-all hover:bg-brand-100"
           >
             <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-105">
               <span className="text-2xl">
-                {category.slug === "cleansers" && "🧴"}
-                {category.slug === "serums" && "✨"}
-                {category.slug === "moisturizers" && "💧"}
-                {category.slug === "masks" && "🎭"}
-                {category.slug === "sun-care" && "☀️"}
-                {category.slug === "sets" && "🎁"}
+                {category.slug === "cleansers" && "ðŸ§´"}
+                {category.slug === "serums" && "âœ¨"}
+                {category.slug === "moisturizers" && "ðŸ’§"}
+                {category.slug === "masks" && "ðŸŽ­"}
+                {category.slug === "sun-care" && "â˜€ï¸"}
+                {category.slug === "sets" && "ðŸŽ"}
               </span>
             </div>
             <h3 className="text-sm font-medium text-neutral-700">

@@ -68,7 +68,7 @@ function WishlistProductCard({ product }: { product: Product }) {
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           deliveryPreset="productCard"
         />
-        <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm">
+        <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-500 shadow-sm">
           <Heart className="h-4 w-4 fill-current" />
         </span>
       </Link>
@@ -112,7 +112,7 @@ function WishlistProductCard({ product }: { product: Product }) {
           <button
             onClick={handleRemove}
             disabled={isRemoving}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 text-ink/50 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500 disabled:cursor-wait disabled:opacity-60"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 text-ink/50 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-500 disabled:cursor-wait disabled:opacity-60"
             aria-label={`Remove ${product.name} from wishlist`}
           >
             {isRemoving ? (
@@ -145,8 +145,8 @@ export default function WishlistPage() {
     <RequireAuth>
       <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-50">
-            <Heart className="h-5 w-5 fill-rose-500 text-rose-500" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50">
+            <Heart className="h-5 w-5 fill-brand-500 text-brand-500" />
           </div>
           <div>
             <h1 className="font-serif text-2xl font-medium text-ink">
@@ -164,8 +164,8 @@ export default function WishlistPage() {
           </div>
         ) : error ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-border-light bg-white px-6 py-16 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
-              <Heart className="h-7 w-7 text-rose-300" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
+              <Heart className="h-7 w-7 text-brand-300" />
             </div>
             <h2 className="text-lg font-semibold text-ink">
               Could not load your wishlist
@@ -183,8 +183,8 @@ export default function WishlistPage() {
           </div>
         ) : products.length === 0 ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-border-light bg-white px-6 py-16 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
-              <Heart className="h-7 w-7 text-rose-300" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
+              <Heart className="h-7 w-7 text-brand-300" />
             </div>
             <h2 className="text-lg font-semibold text-ink">
               Your wishlist is empty

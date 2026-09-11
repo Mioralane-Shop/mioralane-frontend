@@ -49,11 +49,11 @@ function OrdersContent() {
 
       {isInitialLoading ? (
         <div className="flex min-h-[50vh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
         </div>
       ) : hasError ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
-          <AlertCircle className="h-16 w-16 text-rose-300" />
+          <AlertCircle className="h-16 w-16 text-brand-300" />
           <h2 className="mt-4 text-xl font-medium text-neutral-700">
             {isNotFoundError ? "Orders not found" : "Could not load orders"}
           </h2>

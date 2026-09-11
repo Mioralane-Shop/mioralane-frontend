@@ -124,8 +124,8 @@ export function SearchModal({
               Searching...
             </div>
           ) : isError ? (
-            <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-8 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-rose-500">
+            <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-500">
                 <AlertCircle className="h-5 w-5" />
               </div>
               <p className="text-sm font-medium text-ink">
@@ -172,7 +172,7 @@ export function SearchModal({
                       {p.name}
                     </p>
                     <p className="text-xs text-ink/50">
-                      {p.brand} · ৳{p.price.toLocaleString()}
+                      {p.brand} Â· à§³{p.price.toLocaleString()}
                     </p>
                   </div>
                 </Link>

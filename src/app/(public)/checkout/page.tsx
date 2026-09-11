@@ -146,7 +146,7 @@ function CheckoutContent() {
     <div className="container mx-auto px-4 py-8">
       <Link
         href="/cart"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-rose-500 hover:underline"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-brand-500 hover:underline"
       >
         <ArrowLeft className="h-3 w-3" />
         Back to Cart
@@ -164,14 +164,14 @@ function CheckoutContent() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
           <div className="space-y-8">
-            <Card className="border-rose-100">
+            <Card className="border-brand-100">
               <CardContent className="p-6">
                 <div className="mb-4">
                   <h2 className="text-lg font-medium text-neutral-800">
                     Shipping Information
                   </h2>
                   <p className="mt-1 text-sm text-neutral-400">
-                    We deliver inside Dhaka for ৳80 and outside Dhaka for ৳150.
+                    We deliver inside Dhaka for à§³80 and outside Dhaka for à§³150.
                   </p>
                 </div>
 
@@ -226,8 +226,8 @@ function CheckoutContent() {
                           className={cn(
                             "rounded-2xl border px-4 py-3 text-sm font-medium transition-colors",
                             deliveryZone === option.value
-                              ? "border-rose-300 bg-rose-50 text-rose-700"
-                              : "border-rose-100 bg-white text-neutral-600 hover:bg-rose-50/60"
+                              ? "border-brand-300 bg-brand-50 text-brand-700"
+                              : "border-brand-100 bg-white text-neutral-600 hover:bg-brand-50/60"
                           )}
                         >
                           {option.label}
@@ -274,21 +274,21 @@ function CheckoutContent() {
               </CardContent>
             </Card>
 
-            <Card className="border-rose-100">
+            <Card className="border-brand-100">
               <CardContent className="p-6">
                 <div className="mb-4 flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-rose-500" />
+                  <CreditCard className="h-5 w-5 text-brand-500" />
                   <h2 className="text-lg font-medium text-neutral-800">
                     Payment Method
                   </h2>
                 </div>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-brand-100 bg-brand-50/40 p-4">
                   <input
                     type="radio"
                     checked
                     readOnly
-                    className="mt-1 h-4 w-4 border-rose-300 text-rose-500 focus:ring-rose-300"
+                    className="mt-1 h-4 w-4 border-brand-300 text-brand-500 focus:ring-brand-300"
                   />
                   <div>
                     <p className="font-medium text-neutral-800">
@@ -304,13 +304,13 @@ function CheckoutContent() {
           </div>
 
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <Card className="border-rose-100">
+            <Card className="border-brand-100">
               <CardContent className="p-6">
                 <h3 className="text-lg font-medium text-neutral-800">
                   Order Summary
                 </h3>
 
-                <div className="mt-4 divide-y divide-rose-50">
+                <div className="mt-4 divide-y divide-brand-50">
                   {items.map((item) => (
                     <div
                       key={`${item.itemType}:${item.itemId || item.product.id}`}
@@ -335,7 +335,7 @@ function CheckoutContent() {
                   ))}
                 </div>
 
-                <div className="mt-4 space-y-2 border-t border-rose-100 pt-4">
+                <div className="mt-4 space-y-2 border-t border-brand-100 pt-4">
                   <div className="flex justify-between text-sm text-neutral-600">
                     <span>Subtotal</span>
                     <span>{formatPrice(subtotal)}</span>
@@ -344,21 +344,21 @@ function CheckoutContent() {
                     <span>Shipping</span>
                     <span>{formatPrice(shippingFee)}</span>
                   </div>
-                  <div className="flex justify-between border-t border-rose-100 pt-3 font-medium text-neutral-800">
+                  <div className="flex justify-between border-t border-brand-100 pt-3 font-medium text-neutral-800">
                     <span>Total</span>
-                    <span className="text-lg text-rose-600">
+                    <span className="text-lg text-brand-600">
                       {formatPrice(totalAmount)}
                     </span>
                   </div>
                 </div>
 
                 {isSyncingCatalog && (
-                  <p className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-neutral-600">
+                  <p className="mt-4 rounded-2xl bg-brand-50 px-4 py-3 text-sm text-neutral-600">
                     Refreshing cart prices and stock. Please wait before placing the order.
                   </p>
                 )}
 
-                <div className="mt-5 rounded-2xl bg-rose-50/50 p-4 text-sm text-neutral-600">
+                <div className="mt-5 rounded-2xl bg-brand-50/50 p-4 text-sm text-neutral-600">
                   <div className="flex items-center gap-2 font-medium text-neutral-800">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     Delivery timeline

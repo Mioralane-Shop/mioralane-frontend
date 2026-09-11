@@ -7,7 +7,7 @@ import { SectionHeading } from "@/components/common/section-heading";
 
 export function NewsletterSection() {
   return (
-    <section className="bg-gradient-to-r from-rose-50 to-rose-100/50">
+    <section className="bg-gradient-to-r from-brand-50 to-brand-100/50">
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="text-center">
           <SectionHeading title="JOIN THE GLOW CLUB" />

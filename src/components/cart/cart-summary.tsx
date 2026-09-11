@@ -51,17 +51,17 @@ export function CartDrawer() {
         side="right"
         className="flex w-full flex-col p-0 sm:max-w-md"
       >
-        <SheetHeader className="flex flex-row items-center justify-between border-b border-rose-100 px-6 py-4">
+        <SheetHeader className="flex flex-row items-center justify-between border-b border-brand-100 px-6 py-4">
           <SheetTitle className="flex items-center gap-2 text-lg font-medium">
-            <ShoppingBag className="h-5 w-5 text-rose-500" />
+            <ShoppingBag className="h-5 w-5 text-brand-500" />
             Cart ({items.length})
           </SheetTitle>
         </SheetHeader>
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50">
-              <ShoppingBag className="h-7 w-7 text-rose-300" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
+              <ShoppingBag className="h-7 w-7 text-brand-300" />
             </div>
             <p className="text-base font-medium text-neutral-700">
               Your cart is empty
@@ -79,7 +79,7 @@ export function CartDrawer() {
           <>
             <div className="flex-1 overflow-y-auto px-6">
               {(isSyncingCatalog || catalogSyncError || blockMessage) && (
-                <div className="mb-4 rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3 text-sm text-neutral-600">
+                <div className="mb-4 rounded-2xl border border-brand-100 bg-brand-50/70 px-4 py-3 text-sm text-neutral-600">
                   <p className="font-medium text-neutral-800">
                     {isSyncingCatalog
                       ? "Refreshing cart availability"
@@ -102,12 +102,12 @@ export function CartDrawer() {
               ))}
             </div>
 
-            <div className="border-t border-rose-100 px-6 py-4">
+            <div className="border-t border-brand-100 px-6 py-4">
               <div className="mb-4 flex items-center justify-between">
                 <span className="text-sm font-medium text-neutral-600">
                   Subtotal
                 </span>
-                <span className="text-lg font-semibold text-rose-600">
+                <span className="text-lg font-semibold text-brand-600">
                   {formatPrice(totalPrice())}
                 </span>
               </div>
@@ -147,7 +147,7 @@ export function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={closeCart}
-                className="mt-2 block text-center text-sm text-rose-500 hover:underline"
+                className="mt-2 block text-center text-sm text-brand-500 hover:underline"
               >
                 View Full Cart
               </Link>

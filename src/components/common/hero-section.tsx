@@ -63,7 +63,7 @@ export function HeroSection() {
 
               <Link
                 href={slide.href}
-                className="hero-cta-glow absolute bottom-[18%] left-[8%] z-40 inline-flex h-9 items-center justify-center rounded-full bg-accent px-5 text-xs font-semibold text-white no-underline shadow-[0_12px_28px_rgba(212,99,122,0.24)] transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-accent-dark sm:h-10 sm:px-6 sm:text-sm md:h-11 md:px-7"
+                className="hero-cta-glow absolute bottom-[18%] left-[8%] z-40 inline-flex h-9 items-center justify-center rounded-full bg-accent px-5 text-xs font-semibold text-white no-underline shadow-[0_12px_28px_rgba(255,102,117,0.24)] transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-accent-dark sm:h-10 sm:px-6 sm:text-sm md:h-11 md:px-7"
               >
                 Shop Now
                 <ArrowRight className="ml-2 h-4 w-4" />

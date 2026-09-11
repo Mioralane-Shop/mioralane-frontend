@@ -557,7 +557,7 @@ function HeaderIcons({
       <Link href="/wishlist" className={`relative inline-flex ${iconClassName}`} aria-label="Wishlist">
         <Heart className={iconSize} />
         {wishlistCount > 0 ? (
-          <span className={`${badgeClassName} bg-rose-500`}>{wishlistCount}</span>
+          <span className={`${badgeClassName} bg-brand-500`}>{wishlistCount}</span>
         ) : null}
       </Link>
 

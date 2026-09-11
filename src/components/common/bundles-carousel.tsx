@@ -31,8 +31,8 @@ const CARD_TREATMENTS = [
     background: "bg-[#FBF2F1]",
     backgroundColor: "#FBF2F1",
     wash: "bg-[linear-gradient(90deg,rgba(251,242,241,0.99)_0%,rgba(251,242,241,0.98)_40%,rgba(251,242,241,0.84)_54%,rgba(251,242,241,0.42)_66%,rgba(251,242,241,0.08)_80%,rgba(251,242,241,0)_100%)]",
-    badge: "bg-[#D4637A] text-white",
-    savings: "bg-[#F4D8DD] text-[#B84E64]",
+    badge: "bg-brand-500 text-white",
+    savings: "bg-brand-100 text-brand-600",
   },
   {
     background: "bg-[#F7F0E8]",
@@ -466,7 +466,7 @@ export function BundlesCarousel() {
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
-            <AlertCircle className="h-16 w-16 text-rose-300" />
+            <AlertCircle className="h-16 w-16 text-brand-300" />
             <h3 className="mt-4 text-lg font-semibold text-ink">
               {isNotFoundError ? "Bundles not found" : "Could not load bundles"}
             </h3>

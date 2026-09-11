@@ -26,7 +26,7 @@ function extractComboMeta(p: Product | ComboProduct): ComboCardMeta | undefined 
   };
 }
 
-/** Bundle card grid for the Combo page â€” fetches live data from the API. */
+/** Bundle card grid for the Combo page Ã¢â‚¬â€ fetches live data from the API. */
 export function ComboSection() {
   const router = useRouter();
   const {
@@ -54,7 +54,7 @@ export function ComboSection() {
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
-        <AlertCircle className="h-16 w-16 text-rose-300" />
+        <AlertCircle className="h-16 w-16 text-brand-300" />
         <h3 className="mt-4 text-lg font-semibold text-ink">
           Could not load bundles
         </h3>

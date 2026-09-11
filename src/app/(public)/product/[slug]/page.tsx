@@ -1,949 +1,82 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import {
-  AlertCircle,
-  ChevronDown,
-  ChevronRight,
-  ChevronLeft,
-  Heart,
-  ImageIcon,
-  Minus,
-  Plus,
-  RotateCcw,
-  Shield,
-  ShoppingBag,
-  Truck,
-  Loader2,
-  Maximize2,
-  X,
-} from "lucide-react";
-import { useProduct, useRelatedProducts } from "@/hooks/use-products";
-import { useCartStore } from "@/store/cart.store";
-import { useToastStore } from "@/store/toast.store";
-import { useWishlistStore } from "@/store/wishlist.store";
-import { useAuthStore } from "@/store/auth.store";
+import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
+import { MobileMenu } from "@/components/layout/mobile-menu";
+import { BrandLogo } from "@/components/layout/brand-logo";
+import { NavigationItem } from "@/components/layout/navigation-item";
+import { UserMenu } from "@/components/layout/user-menu";
 import { ProductImage } from "@/components/common/product-image";
-import { createImageKitLoader, getImageKitUrl, isImageKitUrl } from "@/lib/imagekit-delivery";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SITE_NAME } from "@/constants/site";
-import { cn, formatPrice } from "@/lib/utils";
-import type { Product } from "@/types/product";
+import { SearchModal } from "@/components/search/search-modal";
+import { BRANDS } from "@/constants/site";
+import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/cart.store";
+import { useWishlistStore } from "@/store/wishlist.store";
+import { useCombos } from "@/hooks/use-combos";
+import { useProductSearch } from "@/hooks/use-product-search";
+import { formatPrice } from "@/lib/utils";
 
-type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
-
-const DESKTOP_THUMBNAIL_SLOTS = 4;
-
-const THUMBNAIL_IMAGEKIT_LOADER = createImageKitLoader({ preset: "thumbnail" });
-const PDP_MAIN_IMAGEKIT_LOADER = createImageKitLoader({ preset: "pdpMain" });
-
-const TRUST_ITEMS = [
-  {
-    title: "100% Authentic",
-    text: "Verified Korean products",
-    icon: Shield,
-  },
-  {
-    title: "Fast Delivery",
-    text: "Free over BDT 2,000 in Dhaka",
-    icon: Truck,
-  },
-  {
-    title: "Easy Returns",
-    text: "Within 7 days",
-    icon: RotateCcw,
-  },
+const BOTTOM_NAV = [
+  { label: "Skin Care", href: "/shop" },
+  { label: "Collections", href: "/shop" },
+  { label: "Combo", href: "/combo" },
+  { label: "New", href: "/shop?sort=newest" },
+  { label: "Brands", href: "/shop" },
+  { label: "Support", comingSoon: true },
+  { label: "Blog", href: "/blog" },
+  { label: "Sales", comingSoon: true },
 ];
 
-function formatCategory(category: string) {
-  return category
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+const COMPACT_NAV_HYSTERESIS = 12;
+const COMPACT_NAV_TRANSITION =
+  "duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
+const COMPACT_NAV_FADE = "duration-[150ms] ease-out";
 
-function getSkinChips(product: Product) {
-  const chips = [...(product.skinType ?? []), ...(product.skinConcern ?? product.concerns ?? [])]
-    .map((item) => formatCategory(item))
-    .filter(Boolean);
-  return Array.from(new Set(chips)).slice(0, 6);
-}
-
-function getBestForChips(product: Product) {
-  const tokens = [...(product.skinType ?? []), ...(product.skinConcern ?? product.concerns ?? [])]
-    .map((value) => formatCategory(value))
-    .filter(Boolean);
-  return Array.from(new Set(tokens)).slice(0, 6);
-}
-
-function getShippingNotes() {
-  return {
-    delivery: [
-      { label: "Inside Dhaka", value: "1-2 Business Days" },
-      { label: "Outside Dhaka", value: "2-4 Business Days" },
-      { label: "Free Delivery", value: "Orders over ৳2,000" },
-    ],
-    returns:
-      "Unused and unopened products may be returned within 7 days of delivery, subject to the store's return review.",
-    authenticity: "Sourced through verified suppliers and trusted distribution channels.",
-  };
-}
-
-function clampQuantityToStock(quantity: number, stock: number) {
-  if (stock <= 0) {
-    return 1;
-  }
-
-  return Math.max(1, Math.min(quantity, stock));
-}
-
-function getErrorStatus(error: unknown) {
-  return (error as { response?: { status?: number } } | undefined)?.response?.status;
-}
-
-export default function ProductPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
-  const {
-    data: product,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useProduct(slug);
-  const { addItem } = useCartStore();
-  const addToast = useToastStore((s) => s.addToast);
-  const isWishlisted = useWishlistStore((s) =>
-    product ? s.isWishlisted(product.id) : false,
-  );
-  const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
-  const isTogglingWishlist = useWishlistStore((s) =>
-    product ? s.isToggling === product.id : false,
-  );
-  const { isAuthenticated, _ready } = useAuthStore();
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [thumbnailStart, setThumbnailStart] = useState(0);
-  const [activeTab, setActiveTab] = useState<ProductTab>("overview");
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const mobileGalleryRef = useRef<HTMLDivElement>(null);
-  const syncItemStock = useCartStore((s) => s.syncItemStock);
-  const { data: relatedProducts = [] } = useRelatedProducts(
-    product?.category ?? "",
-    product?.id ?? ""
-  );
+function BrandsNavItem() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLightboxOpen(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [lightboxOpen]);
 
-  const displayPrice = product?.price ?? 0;
-  const compareAtPrice = product?.compareAtPrice;
-  const effectiveStock = product?.stock ?? 0;
-  const productItemType = product?.itemType ?? (product?.category === "combo" ? "combo" : "product");
-  const hasSkincareContent = Boolean(
-    product?.ingredients?.trim() ||
-      product?.howToUse?.trim() ||
-      (product?.keyIngredients?.length ?? 0) > 0,
-  );
-  const volumeLabel = product?.volume?.trim() ?? "";
-  const productTabs: Array<{ key: ProductTab; label: string }> = [
-    { key: "overview", label: "Overview" },
-    ...(hasSkincareContent ? [{ key: "ingredients" as const, label: "Ingredients" }] : []),
-    { key: "shipping", label: "Shipping & Returns" },
-  ];
-
-  useEffect(() => {
-    if (activeTab === "ingredients" && !hasSkincareContent) {
-      setActiveTab("overview");
-    }
-  }, [activeTab, hasSkincareContent]);
-
-  useEffect(() => {
-    if (!product) return;
-
-    setQuantity((current) => clampQuantityToStock(current, effectiveStock));
-    syncItemStock(product.id, effectiveStock, productItemType);
-  }, [effectiveStock, product, productItemType, syncItemStock]);
-
-  const addToCart = (qty: number = quantity) => {
-    if (!product || effectiveStock <= 0) return;
-
-    const quantityToAdd = clampQuantityToStock(qty, effectiveStock);
-    addItem(
-      {
-        ...product,
-        price: displayPrice,
-        compareAtPrice,
-        itemType: productItemType,
-      },
-      quantityToAdd,
-    );
-    addToast(`${product.name} added to cart`);
-    setQuantity(1);
-  };
-
-  const handleWishlist = async () => {
-    if (!product || !_ready || isTogglingWishlist) return;
-
-    if (!isAuthenticated) {
-      addToast("Please sign in to use your wishlist", "info");
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
-    try {
-      const nextState = await toggleWishlist(
-        product.id,
-        product.category === "combo" ? "combo" : "product",
-      );
-      addToast(
-        nextState ? `${product.name} added to wishlist` : "Removed from wishlist",
-        "info",
-      );
-    } catch {
-      addToast("Could not update wishlist. Please try again.", "error");
-    }
-  };
-
-  const statusCode = getErrorStatus(error);
-  const isNotFound = statusCode === 404 || statusCode === 400 || !slug;
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-[1400px] px-5 py-8 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <Skeleton className="aspect-square w-full rounded-[2rem] bg-ink/[0.04]" />
-          <div className="space-y-4">
-            <Skeleton className="h-5 w-24 bg-ink/[0.04]" />
-            <Skeleton className="h-10 w-3/4 bg-ink/[0.04]" />
-            <Skeleton className="h-6 w-1/3 bg-ink/[0.04]" />
-            <Skeleton className="h-28 w-full bg-ink/[0.04]" />
-            <Skeleton className="h-12 w-full bg-ink/[0.04]" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError && isNotFound) {
-    return (
-      <div className="mx-auto max-w-[1400px] px-6 py-20 text-center">
-        <h1 className="text-2xl font-serif text-ink">Product Not Found</h1>
-        <p className="mt-2 text-ink/50">
-          The product you&apos;re looking for doesn&apos;t exist.
-        </p>
-        <Link
-          href="/shop"
-          className="mt-4 inline-block text-sm font-medium text-accent hover:underline"
-        >
-          Back to Shop
-        </Link>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="mx-auto max-w-2xl px-6 py-20 text-center">
-        <AlertCircle className="mx-auto h-16 w-16 text-rose-300" />
-        <h1 className="mt-4 text-3xl font-light tracking-tight text-neutral-800">
-          Could not load product
-        </h1>
-        <p className="mt-3 text-neutral-400">
-          We could not load this product right now. Please try again.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Button onClick={() => refetch()} disabled={isFetching}>
-            {isFetching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Retrying...
-              </>
-            ) : (
-              "Retry"
-            )}
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/shop">View Shop</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return null;
-  }
-
-  const images = product.images?.filter(Boolean).length
-    ? product.images.filter(Boolean)
-    : product.hoverImage
-      ? [product.hoverImage]
-      : [];
-  const selectedImageSrc = images[selectedImage] ?? images[0];
-  const selectedImageIsImageKit = isImageKitUrl(selectedImageSrc);
-  const lightboxImageSrc = selectedImageIsImageKit
-    ? getImageKitUrl(selectedImageSrc, { preset: "pdpLarge" })
-    : selectedImageSrc;
-  const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
-  const skinChips = getSkinChips(product);
-  const discountPercent =
-    compareAtPrice && compareAtPrice > displayPrice
-      ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
-      : 0;
-  const goToImage = (offset: number) => {
-    if (images.length === 0) return;
-    setSelectedImage((current) => {
-      const next = (current + offset + images.length) % images.length;
-      setThumbnailStart((start) => {
-        if (next < start) return next;
-        if (next >= start + DESKTOP_THUMBNAIL_SLOTS) {
-          return Math.min(next - DESKTOP_THUMBNAIL_SLOTS + 1, Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS));
-        }
-        return start;
-      });
-      return next;
-    });
-  };
-  const bestForChips = getBestForChips(product);
-  const shippingNotes = getShippingNotes();
-  const maxThumbnailStart = Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS);
-  const visibleThumbnailStart = Math.min(thumbnailStart, maxThumbnailStart);
-  const thumbnailSlots = Array.from({ length: DESKTOP_THUMBNAIL_SLOTS }, (_, index) => {
-    const actualIndex = visibleThumbnailStart + index;
-    return {
-      actualIndex,
-      image: images[actualIndex],
-    };
-  });
-  const reviewTabLabel = `Reviews (${product.reviewCount ?? 0})`;
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
-    <div className="bg-white pb-28 md:pb-0">
-      <div className="mx-auto max-w-[1400px] px-5 py-6 sm:px-6 lg:py-8">
-        <nav className="mb-6 flex items-center gap-2 text-[11px] text-ink/45">
-          <Link href="/" className="transition-colors hover:text-ink">
-            Home
-          </Link>
-          <ChevronRight className="h-3 w-3" />
-          <Link href="/shop" className="transition-colors hover:text-ink">
-            Shop
-          </Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="line-clamp-1 normal-case tracking-normal text-ink/60">
-            {product.name}
-          </span>
-        </nav>
-
-        <section className="grid gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10">
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <div className="hidden md:flex md:items-start md:gap-4">
-              <div className="flex w-[72px] shrink-0 flex-col items-center gap-3">
-                {thumbnailSlots.map(({ image, actualIndex }) => (
-                  image ? (
-                    <button
-                      key={image + actualIndex}
-                      onClick={() => setSelectedImage(actualIndex)}
-                      className={cn(
-                        "relative aspect-square w-full overflow-hidden rounded-2xl border bg-[#F8F6F2] transition-all",
-                        selectedImage === actualIndex
-                          ? "border-accent bg-white"
-                          : "border-border hover:border-ink/20",
-                      )}
-                      aria-label={`View image ${actualIndex + 1}`}
-                    >
-                      <Image
-                        src={image}
-                        alt={`${product.name} thumbnail ${actualIndex + 1}`}
-                        fill
-                        className="object-contain p-2.5"
-                        sizes="72px"
-                        loader={isImageKitUrl(image) ? THUMBNAIL_IMAGEKIT_LOADER : undefined}
-                      />
-                    </button>
-                  ) : (
-                    <div
-                      key={`placeholder-${actualIndex}`}
-                      className="flex aspect-square w-full items-center justify-center rounded-2xl border border-border bg-[#F8F6F2] text-ink/25"
-                      aria-hidden="true"
-                    >
-                      <ImageIcon className="h-5 w-5" />
-                    </div>
-                  )
-                ))}
-                {images.length > DESKTOP_THUMBNAIL_SLOTS && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setThumbnailStart((current) => {
-                        const next = current >= maxThumbnailStart ? 0 : Math.min(current + 1, maxThumbnailStart);
-                        if (selectedImage < next || selectedImage >= next + DESKTOP_THUMBNAIL_SLOTS) {
-                          setSelectedImage(next);
-                        }
-                        return next;
-                      });
-                    }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-ink/55 transition-colors hover:border-ink/20 hover:text-ink"
-                    aria-label="View more product thumbnails"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => setLightboxOpen(true)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setLightboxOpen(true);
-                  }
-                }}
-                className="group relative aspect-square flex-1 overflow-hidden rounded-[28px]"
-                aria-label="Zoom product image"
-              >
-                {(product.isBestSeller || product.tag === "best" || product.isNewArrival || product.isNew || product.tag === "new") && (
-                  <span className="absolute left-5 top-5 z-10 rounded-full border border-border bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/70">
-                    {product.isNewArrival || product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
-                  </span>
-                )}
-                {images.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        goToImage(-1);
-                      }}
-                      className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink/60 transition-colors hover:text-ink"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        goToImage(1);
-                      }}
-                      className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink/60 transition-colors hover:text-ink"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </>
-                )}
-                {selectedImageSrc ? (
-                  <Image
-                    src={selectedImageSrc}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    sizes="(max-width: 1024px) 100vw, 48vw"
-                    priority
-                    loader={isImageKitUrl(selectedImageSrc) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-ink/25">
-                    <ImageIcon className="h-12 w-12" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setLightboxOpen(true);
-                  }}
-                  className="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-ink/65 transition-colors hover:text-ink"
-                  aria-label="Expand image"
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+      >
+        Brands
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+          <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+            <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
+              {BRANDS.map((brand) => (
+                <Link
+                  key={brand}
+                  href={`/shop?brand=${encodeURIComponent(brand)}`}
+                  onClick={() => setOpen(false)}
+                  className="truncate rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
                 >
-                  <Maximize2 className="h-4 w-4" />
-                </button>
-              </div>
+                  {brand}
+                </Link>
+              ))}
             </div>
-
-            <div className="md:hidden">
-              <div
-                ref={mobileGalleryRef}
-                onScroll={(event) => {
-                  if (mobileGalleryItems.length <= 1) return;
-                  const target = event.currentTarget;
-                  const itemWidth = target.scrollWidth / mobileGalleryItems.length;
-                  const index = Math.min(
-                    mobileGalleryItems.length - 1,
-                    Math.max(0, Math.round(target.scrollLeft / itemWidth)),
-                  );
-                  setSelectedImage(index);
-                }}
-                className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3"
-              >
-                {mobileGalleryItems.map((image, index) => (
-                  <button
-                    key={(image ?? "placeholder") + index}
-                    onClick={() => {
-                      if (image) setSelectedImage(index);
-                    }}
-                    className={cn(
-                      "relative aspect-square w-full min-w-full snap-center overflow-hidden rounded-[24px]",
-                      !image && "border border-border bg-[#F8F6F2]",
-                    )}
-                    aria-label={`Open image ${index + 1}`}
-                  >
-                    {(product.isBestSeller || product.tag === "best" || product.isNewArrival || product.isNew || product.tag === "new") && index === 0 && (
-                      <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/70">
-                        {product.isNewArrival || product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
-                      </span>
-                    )}
-                    {image ? (
-                      <>
-                        <Image
-                          src={image}
-                          alt={`${product.name} image ${index + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="100vw"
-                          priority={index === 0}
-                          loader={isImageKitUrl(image) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
-                        />
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setSelectedImage(index);
-                            setLightboxOpen(true);
-                          }}
-                          className="absolute bottom-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-ink/65"
-                          aria-label="Expand image"
-                        >
-                          <Maximize2 className="h-4 w-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-ink/25">
-                        <ImageIcon className="h-12 w-12" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {images.length > 1 && (
-                <div className="flex items-center justify-center gap-2 text-xs text-ink/45">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSelectedImage(index);
-                        const target = mobileGalleryRef.current;
-                        if (!target) return;
-                        target.scrollTo({
-                          left: (target.scrollWidth / images.length) * index,
-                          behavior: "smooth",
-                        });
-                      }}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all",
-                        selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
-                      )}
-                      aria-label={`Select image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-5 lg:pt-1">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
-                {SITE_NAME}
-              </p>
-              <h1 className="max-w-[12ch] text-[2.6rem] font-serif font-medium leading-[0.98] text-ink sm:text-[3.6rem]">
-                {product.name}
-              </h1>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                {compareAtPrice && compareAtPrice > displayPrice && (
-                  <span className="text-xl text-ink/35 line-through">
-                    {formatPrice(compareAtPrice)}
-                  </span>
-                )}
-                <span className="text-[2rem] font-semibold tracking-tight text-ink">
-                  {formatPrice(displayPrice)}
-                </span>
-                {discountPercent > 0 && (
-                  <span className="rounded-full bg-accent-pale px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-accent">
-                    {discountPercent}% Off
-                  </span>
-                )}
-              </div>
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]",
-                  effectiveStock > 0 ? "text-[#1F6B4E]" : "text-ink-muted",
-                )}
-              >
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    effectiveStock > 0 ? "animate-stock-radar bg-current" : "bg-current",
-                  )}
-                />
-                <span>{effectiveStock > 0 ? "In Stock" : "Out of Stock"}</span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {product.description?.trim() ? (
-                <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
-                  {product.description}
-                </p>
-              ) : null}
-              {skinChips.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {skinChips.map((chip) => (
-                    <span
-                      key={chip}
-                      className="rounded-full border border-border bg-white px-3.5 py-2 text-xs font-medium text-ink/65"
-                    >
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {volumeLabel ? (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-semibold text-ink">Volume:</span>
-                <span className="font-semibold text-ink/85">{volumeLabel}</span>
-              </div>
-            ) : null}
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-[132px] shrink-0 items-center rounded-full border border-border bg-white px-1 sm:w-[144px]">
-                  <button
-                    onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
-                    disabled={quantity <= 1}
-                    className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
-                    aria-label="Decrease quantity"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="flex-1 text-center text-sm font-semibold">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
-                    disabled={quantity >= effectiveStock || effectiveStock <= 0}
-                    className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-                <button
-                  onClick={() => addToCart()}
-                  disabled={effectiveStock === 0}
-                  className={cn(
-                    "flex h-12 min-w-0 flex-[1.65] items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition-colors",
-                    effectiveStock === 0
-                      ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
-                      : "bg-accent text-white hover:bg-accent-dark",
-                  )}
-                >
-                  Add to Cart
-                  {/* · {formatPrice(displayPrice)}
-                  <ChevronRight className="h-4 w-4" /> */}
-                </button>
-
-                <button
-                  onClick={handleWishlist}
-                  disabled={isTogglingWishlist}
-                  className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-all hover:border-accent/50 hover:text-accent",
-                    isWishlisted && "border-accent/25 bg-accent-pale text-accent",
-                    isTogglingWishlist && "cursor-wait opacity-70",
-                  )}
-                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                >
-                  <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </div>
-
-      <section className="border-t border-ink/10 bg-white">
-        <div className="border-b border-ink/10">
-          <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <div className="overflow-x-auto">
-              <div className="flex min-w-max gap-8">
-                {[...productTabs, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      "relative py-4 text-sm font-medium transition-colors",
-                      activeTab === tab.key ? "text-[#1F1F1F]" : "text-[#7A746F] hover:text-[#1F1F1F]",
-                    )}
-                  >
-                    {tab.label}
-                    {activeTab === tab.key && (
-                      <span className="absolute inset-x-0 bottom-0 h-px bg-accent" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-          <div className="py-8 sm:py-10 lg:py-12">
-            {activeTab === "overview" && (
-              <div className="space-y-8 lg:space-y-10">
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
-                  <section className="space-y-4 lg:pr-8">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      About This Product
-                    </p>
-                    <p className="max-w-[64ch] text-sm leading-7 text-[#5F5A57]">
-                      {product.description}
-                    </p>
-                  </section>
-
-                  <section className="space-y-4 lg:border-l lg:border-[#E6E0DA] lg:pl-8">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Best For
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {bestForChips.length > 0 ? bestForChips.map((chip) => (
-                        <span key={chip} className="rounded-full border border-[#E4DDD6] bg-[#FCFAF8] px-3.5 py-1.5 text-xs font-medium text-[#6A6561]">{chip}</span>
-                      )) : <span className="text-sm text-[#8A8581]">All skin types</span>}
-                    </div>
-                  </section>
-                </div>
-
-                <section className="border-t border-[#E6E0DA] pt-8">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                    The Mioralane Promise
-                  </p>
-                  <div className="mt-6 rounded-[20px] border border-[#F0DFDB] bg-[#FFF9F8] p-7 sm:p-8">
-                    <div className="grid gap-0 md:grid-cols-3">
-                    {TRUST_ITEMS.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div
-                          key={item.title}
-                          className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
-                        >
-                          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
-                            <Icon className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
-                            <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    </div>
-                  </div>
-                </section>
-              </div>
-            )}
-
-            {activeTab === "ingredients" && (
-              <div className="space-y-8">
-                {product.keyIngredients?.length ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Key Ingredients
-                    </p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {product.keyIngredients.map((ingredient) => (
-                        <div key={ingredient.name} className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
-                          <h3 className="text-lg font-semibold text-[#1F1F1F]">{ingredient.name}</h3>
-                          {ingredient.benefit ? (
-                            <p className="mt-2 text-sm leading-7 text-[#5F5A57]">{ingredient.benefit}</p>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ) : null}
-
-                {product.ingredients?.trim() ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Full Ingredient List
-                    </p>
-                    <p className="max-w-3xl whitespace-pre-line text-sm leading-7 text-[#5F5A57]">
-                      {product.ingredients}
-                    </p>
-                  </section>
-                ) : null}
-
-                {product.howToUse?.trim() ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      How To Use
-                    </p>
-                    <p className="max-w-3xl whitespace-pre-line text-sm leading-7 text-[#5F5A57]">
-                      {product.howToUse}
-                    </p>
-                  </section>
-                ) : null}
-              </div>
-            )}
-
-            {activeTab === "shipping" && (
-              <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
-                <section className="space-y-5">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Delivery</p>
-                    <div className="mt-4 rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5">
-                      {shippingNotes.delivery.map((item) => (
-                        <div key={item.label} className="flex items-center justify-between gap-6 border-t border-[#EEE7E0] py-4 first:border-t-0">
-                          <span className="text-sm text-[#5F5A57]">{item.label}</span>
-                          <span className="text-right text-sm font-medium text-[#1F1F1F]">{item.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-6">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Returns</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.returns}</p>
-                  </div>
-                  <div className="border-t border-[#E6E0DA] pt-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Authenticity Guarantee</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.authenticity}</p>
-                  </div>
-                </section>
-              </div>
-            )}
-
-            {activeTab === "reviews" && (
-              <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
-                <p className="text-sm font-semibold text-ink">No reviews yet</p>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-ink/60">
-                  Customer reviews will appear here once a real review system is introduced.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {relatedProducts.length > 0 && (
-        <section className="bg-white py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-              {relatedProducts.map((p) => {
-                const isOutOfStock = p.stock <= 0;
-
-                return (
-                  <div key={p.id} className="flex flex-col">
-                    <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]">
-                      <ProductImage
-                        src={p.images?.[0] ?? ""}
-                        alt={p.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) calc((100vw - 28px) / 2), (max-width: 1024px) 50vw, 320px"
-                        fallbackId={p.id}
-                        deliveryPreset="productCard"
-                      />
-                    </Link>
-                    <div className="mt-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                      <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                      <div className="mt-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { if (isOutOfStock) return; addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} disabled={isOutOfStock} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/[0.04] disabled:text-ink/35">{isOutOfStock ? "Out of Stock" : "Add to Cart"}</button></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-ink/10 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-        <div className="flex items-center rounded-full border border-ink/15">
-          <button
-            onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
-            disabled={quantity <= 1}
-            className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="h-4 w-4" />
-          </button>
-          <span className="w-7 text-center text-sm font-medium">{quantity}</span>
-          <button
-            onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
-            disabled={quantity >= effectiveStock || effectiveStock <= 0}
-            className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
-            aria-label="Increase quantity"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-        <button
-          onClick={() => addToCart()}
-          disabled={effectiveStock === 0}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
-        >
-          <ShoppingBag className="h-4 w-4" />
-          Add to Cart
-        </button>
-      </div>
-
-      {lightboxOpen && (
-        <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-black/95 p-4"
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button
-            onClick={() => setLightboxOpen(false)}
-            className="absolute right-5 top-5 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-            aria-label="Close zoom"
-          >
-            <X className="h-6 w-6" />
-          </button>
-          <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
-            {selectedImageSrc ? (
-              <Image
-                src={lightboxImageSrc}
-                alt={product.name}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 48rem"
-                unoptimized={selectedImageIsImageKit}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-white/40">
-                <ImageIcon className="h-16 w-16" />
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -951,4 +84,800 @@ export default function ProductPage() {
   );
 }
 
+function ComboNavItem() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { data: combos = [] } = useCombos();
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/combo"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+      >
+        Combo
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+          <div className="w-[680px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+            <div className="flex items-center justify-between px-2 pb-3">
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent-dark">
+                Curated Bundles
+              </span>
+              <Link
+                href="/combo"
+                onClick={() => setOpen(false)}
+                className="text-xs font-semibold text-accent transition-colors hover:text-accent-dark"
+              >
+                View all -&gt;
+              </Link>
+            </div>
+            <div className="space-y-1.5">
+              {combos.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/combo/${product.slug}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors no-underline hover:bg-ink/[0.04]"
+                >
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
+                    <ProductImage
+                      src={product.images?.[0] ?? ""}
+                      alt={product.name}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      fallbackId={product.id}
+                      deliveryPreset="thumbnail"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {product.name}
+                    </p>
+                    {product.includedItems?.length ? (
+                      <p className="truncate text-xs text-ink-muted">
+                        {product.includedItems.join(" | ")}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-ink">
+                      {formatPrice(product.price)}
+                    </p>
+                    {product.savings ? (
+                      <p className="text-[11px] font-medium text-success">
+                        Save {formatPrice(product.savings)}
+                      </p>
+                    ) : null}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type MegaMenuLink = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
+
+type MegaMenuColumn = {
+  id: string;
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+  links: MegaMenuLink[];
+};
+
+const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
+  {
+    id: "cleansers",
+    label: "Cleansers",
+    href: "/shop?category=cleansers",
+    links: [
+      { label: "Oil Cleansers", comingSoon: true },
+      { label: "Water Based Cleansers", comingSoon: true },
+      { label: "Cleansing Balms", comingSoon: true },
+      { label: "Make-Up Removers", comingSoon: true },
+      { label: "Micellar Waters", comingSoon: true },
+    ],
+  },
+  {
+    id: "toners",
+    label: "Toners",
+    href: "/shop?category=toners",
+    links: [
+      { label: "Hydrating Toners", comingSoon: true },
+      { label: "Calming Toners", comingSoon: true },
+      { label: "Mist Toners", comingSoon: true },
+      { label: "Exfoliating Toners", comingSoon: true },
+      { label: "Toner Pads", comingSoon: true },
+    ],
+  },
+  {
+    id: "treatments",
+    label: "Treatments",
+    comingSoon: true,
+    links: [
+      { label: "Serums", comingSoon: true },
+      { label: "Ampoules", comingSoon: true },
+      { label: "Essences", comingSoon: true },
+      { label: "Spot Treatments", comingSoon: true },
+    ],
+  },
+  {
+    id: "exfoliators",
+    label: "Exfoliators",
+    comingSoon: true,
+    links: [
+      { label: "Physical Exfoliators", comingSoon: true },
+      { label: "Chemical Exfoliators", comingSoon: true },
+    ],
+  },
+  {
+    id: "concerns",
+    label: "Skin Concerns",
+    href: "/shop",
+    links: [
+      { label: "Acne", href: "/shop?concern=acne" },
+      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
+      { label: "Dry Skin", comingSoon: true },
+      { label: "Fungal Acne Safe", comingSoon: true },
+      { label: "Hyperpigmentation", comingSoon: true },
+      { label: "Skin Redness", comingSoon: true },
+      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
+      { label: "Oily Skin", comingSoon: true },
+    ],
+  },
+  {
+    id: "moisturizers",
+    label: "Moisturizers",
+    href: "/shop?category=moisturizers",
+    links: [
+      { label: "Face Creams", comingSoon: true },
+      { label: "Gel Moisturizers", comingSoon: true },
+      { label: "Facial Oils", comingSoon: true },
+      { label: "Emulsions", comingSoon: true },
+    ],
+  },
+  {
+    id: "masks",
+    label: "Masks",
+    href: "/shop?category=masks",
+    links: [
+      { label: "Peeling Masks", comingSoon: true },
+      { label: "Sheet Masks", comingSoon: true },
+      { label: "Sleeping Masks", comingSoon: true },
+      { label: "Wash-Off Masks", comingSoon: true },
+    ],
+  },
+  {
+    id: "lip-eye",
+    label: "Lip & Eye Care",
+    comingSoon: true,
+    links: [
+      { label: "Eye Creams", comingSoon: true },
+      { label: "Eye Patches", comingSoon: true },
+      { label: "Lip Care", comingSoon: true },
+    ],
+  },
+  {
+    id: "sunscreens",
+    label: "Sunscreens",
+    href: "/shop?category=sun-care",
+    links: [
+      { label: "SPF 50+", comingSoon: true },
+      { label: "SPF 30", comingSoon: true },
+      { label: "Sun Sticks", comingSoon: true },
+      { label: "After Sun Care", comingSoon: true },
+    ],
+  },
+  {
+    id: "ingredients",
+    label: "Shop By Ingredients",
+    comingSoon: true,
+    links: [
+      { label: "AHA BHA PHA", comingSoon: true },
+      { label: "Centella", comingSoon: true },
+      { label: "Hyaluronic Acid", comingSoon: true },
+      { label: "Peptides", comingSoon: true },
+      { label: "Propolis", comingSoon: true },
+      { label: "Snail Mucin", comingSoon: true },
+      { label: "Vitamin C", comingSoon: true },
+    ],
+  },
+];
+
+function SkinCareNavItem({ panelTop }: { panelTop: number }) {
+  const [open, setOpen] = useState(false);
+  const [activeCol, setActiveCol] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const underlineRef = useRef<HTMLDivElement>(null);
+  const headerRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+  const prevColRef = useRef<string | null>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const scheduleClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+    }
+    closeTimer.current = window.setTimeout(() => setOpen(false), 180);
+  };
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onMouseDown = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [open]);
+
+  const positionUnderline = (id: string) => {
+    const header = headerRefs.current[id];
+    const panel = panelRef.current;
+    const underline = underlineRef.current;
+
+    if (!header || !panel || !underline) return;
+
+    const headerRect = header.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const left = headerRect.left - panelRect.left;
+    const top = headerRect.bottom - panelRect.top + 4;
+    const width = headerRect.width;
+
+    if (prevColRef.current === null) {
+      underline.style.transition = "none";
+      underline.style.left = `${left}px`;
+      underline.style.top = `${top}px`;
+      underline.style.width = `${width}px`;
+      void underline.offsetWidth;
+      underline.style.transition = "";
+    }
+
+    prevColRef.current = id;
+    underline.style.left = `${left}px`;
+    underline.style.top = `${top}px`;
+    underline.style.width = `${width}px`;
+    setActiveCol(id);
+  };
+
+  const handlePanelLeave = () => {
+    setActiveCol(null);
+    prevColRef.current = null;
+    scheduleClose();
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={() => {
+        setOpen(true);
+        cancelClose();
+      }}
+      onMouseLeave={scheduleClose}
+    >
+      <Link
+        href="/shop"
+        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+      >
+        Skin Care
+      </Link>
+
+      {open && (
+        <div
+          ref={panelRef}
+          onMouseEnter={cancelClose}
+          onMouseLeave={handlePanelLeave}
+          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          style={{ top: panelTop }}
+        >
+          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
+            {MEGA_MENU_COLUMNS.map((column) => (
+              <div
+                key={column.id}
+                onMouseEnter={() => positionUnderline(column.id)}
+                className="min-w-0"
+              >
+                <div className="border-t border-[#C98A7D]/30 pt-4">
+                  <NavigationItem
+                    label={column.label}
+                    href={column.href}
+                    comingSoon={column.comingSoon}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                  >
+                    <span
+                      ref={(element) => {
+                        headerRefs.current[column.id] = element;
+                      }}
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
+                    >
+                      {column.label}
+                    </span>
+                  </NavigationItem>
+                </div>
+                <ul className="mt-5 space-y-3.5">
+                  {column.links.map((link) => (
+                    <li key={link.label}>
+                      <NavigationItem
+                        label={link.label}
+                        href={link.href}
+                        comingSoon={link.comingSoon}
+                        onClick={() => setOpen(false)}
+                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div
+            ref={underlineRef}
+            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            style={{
+              opacity: activeCol ? 1 : 0,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DesktopNavLinks({ panelTop }: { panelTop: number }) {
+  return (
+    <>
+      {BOTTOM_NAV.map((link) => {
+        if (link.label === "Skin Care") {
+          return (
+            <SkinCareNavItem
+              key={link.href + link.label}
+              panelTop={panelTop}
+            />
+          );
+        }
+
+        if (link.label === "Brands") {
+          return <BrandsNavItem key={link.href + link.label} />;
+        }
+
+        if (link.label === "Combo") {
+          return <ComboNavItem key={link.href + link.label} />;
+        }
+
+        return (
+          <NavigationItem
+            key={link.label}
+            label={link.label}
+            href={link.href}
+            comingSoon={link.comingSoon}
+            className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function HeaderIcons({
+  compact = false,
+  showSearchButton = false,
+  onSearchClick,
+}: {
+  compact?: boolean;
+  showSearchButton?: boolean;
+  onSearchClick?: () => void;
+}) {
+  const { toggleCart, totalItems } = useCartStore();
+  const { isAuthenticated, _ready } = useAuthStore();
+  const wishlistCount = useWishlistStore((state) => state.count());
+  const iconClassName = compact
+    ? "rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+    : "rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink";
+  const badgeClassName = compact
+    ? "absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold text-white"
+    : "absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white";
+  const iconSize = compact ? "h-[18px] w-[18px]" : "h-5 w-5";
+
+  return (
+    <div className={`relative z-10 flex items-center ${compact ? "gap-0.5" : "gap-1"}`}>
+      {showSearchButton ? (
+        <button
+          onClick={onSearchClick}
+          className={iconClassName}
+          aria-label="Search"
+        >
+          <Search className={iconSize} />
+        </button>
+      ) : null}
+
+      {_ready && isAuthenticated ? (
+        <UserMenu />
+      ) : (
+        <Link href="/login" className={iconClassName} aria-label="Sign in">
+          <User className={iconSize} />
+        </Link>
+      )}
+
+      <Link href="/wishlist" className={`relative inline-flex ${iconClassName}`} aria-label="Wishlist">
+        <Heart className={iconSize} />
+        {wishlistCount > 0 ? (
+          <span className={`${badgeClassName} bg-brand-500`}>{wishlistCount}</span>
+        ) : null}
+      </Link>
+
+      <button onClick={toggleCart} className={`relative ${iconClassName}`} aria-label="Cart">
+        <ShoppingBag className={iconSize} />
+        {totalItems() > 0 ? (
+          <span className={`${badgeClassName} bg-ink`}>{totalItems()}</span>
+        ) : null}
+      </button>
+    </div>
+  );
+}
+
+export default function Navbar() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [showCompactDesktopNav, setShowCompactDesktopNav] = useState(false);
+  const [defaultDesktopNavBottom, setDefaultDesktopNavBottom] = useState(164);
+  const [compactDesktopNavBottom, setCompactDesktopNavBottom] = useState(64);
+  const compactActiveRef = useRef(false);
+  const desktopHeaderRef = useRef<HTMLElement>(null);
+  const desktopMainHeaderRef = useRef<HTMLDivElement>(null);
+  const desktopDefaultNavRef = useRef<HTMLDivElement>(null);
+  const desktopCompactNavRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const {
+    data: searchResults = [],
+    isLoading: searchingResults,
+    isError: searchError,
+    isSettling: searchSettling,
+    refetch: refetchSearch,
+  } = useProductSearch(searchQuery, { enabled: searchFocused, limit: 5 });
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+
+    if (!query) return;
+
+    router.push(`/shop?search=${encodeURIComponent(query)}`);
+    setSearchQuery("");
+    setSearchFocused(false);
+  };
+
+  useEffect(() => {
+    const updateMeasurements = () => {
+      const isDesktop =
+        window.matchMedia("(min-width: 1024px)").matches;
+
+      if (desktopMainHeaderRef.current && isDesktop) {
+        const mainHeaderBottom =
+          desktopMainHeaderRef.current.getBoundingClientRect().bottom +
+          window.scrollY;
+        const shouldActivate =
+          !compactActiveRef.current &&
+          window.scrollY >= mainHeaderBottom + COMPACT_NAV_HYSTERESIS;
+        const shouldDeactivate =
+          compactActiveRef.current &&
+          window.scrollY <= mainHeaderBottom - COMPACT_NAV_HYSTERESIS;
+        if (shouldActivate || shouldDeactivate) {
+          compactActiveRef.current = shouldActivate;
+          setShowCompactDesktopNav(shouldActivate);
+        }
+      } else {
+        const shouldActivate =
+          !compactActiveRef.current &&
+          window.scrollY >= COMPACT_NAV_HYSTERESIS;
+        const shouldDeactivate =
+          compactActiveRef.current &&
+          window.scrollY <= COMPACT_NAV_HYSTERESIS;
+
+        if (shouldActivate || shouldDeactivate) {
+          compactActiveRef.current = shouldActivate;
+          setShowCompactDesktopNav(shouldActivate);
+        }
+      }
+
+      if (desktopDefaultNavRef.current) {
+        setDefaultDesktopNavBottom(
+          desktopDefaultNavRef.current.getBoundingClientRect().bottom,
+        );
+      }
+
+      if (desktopCompactNavRef.current) {
+        setCompactDesktopNavBottom(
+          desktopCompactNavRef.current.getBoundingClientRect().bottom,
+        );
+      }
+    };
+
+    const scheduleMeasurements = () => {
+      requestAnimationFrame(updateMeasurements);
+    };
+
+    updateMeasurements();
+    window.addEventListener("scroll", scheduleMeasurements, { passive: true });
+    window.addEventListener("resize", scheduleMeasurements);
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateMeasurements)
+        : null;
+
+    if (desktopHeaderRef.current && observer) {
+      observer.observe(desktopHeaderRef.current);
+    }
+
+    if (desktopCompactNavRef.current && observer) {
+      observer.observe(desktopCompactNavRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", scheduleMeasurements);
+      window.removeEventListener("resize", scheduleMeasurements);
+      observer?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  return (
+    <>
+      <header className="sticky top-0 z-[70] bg-white lg:hidden">
+        <div className="border-b border-border-light">
+          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+            <div className="relative z-10 flex items-center gap-1">
+              <MobileMenu />
+              <button
+                onClick={() => setSearchModalOpen(true)}
+                className="rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </div>
+
+            <BrandLogo
+              size="md"
+              variant={showCompactDesktopNav ? "icon" : "full"}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              priority
+            />
+
+            <HeaderIcons />
+          </div>
+        </div>
+      </header>
+
+      <header
+        ref={desktopHeaderRef}
+        className="hidden bg-white lg:block"
+      >
+        <div
+          ref={desktopMainHeaderRef}
+          className="border-b border-border-light"
+        >
+          <div className="mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+            <BrandLogo
+              size="lg"
+              variant="full"
+              className="flex-shrink-0"
+              priority
+            />
+
+            <div ref={searchRef} className="mx-8 flex max-w-[500px] flex-1">
+              <form onSubmit={handleSearch} className="relative w-full">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink/40" />
+                <input
+                  type="text"
+                  placeholder="Search entire store here..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  className="w-full rounded-full border-none bg-ink/[0.04] py-3 pl-12 pr-10 text-sm text-ink outline-none transition-all placeholder:text-ink/40 focus:bg-ink/[0.06]"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
+
+                {searchFocused && searchQuery.trim().length >= 2 ? (
+                  <div className="absolute left-0 right-0 top-full z-[80] mt-2 overflow-hidden rounded-2xl border border-border-light bg-surface shadow-lg">
+                    {searchingResults || searchSettling ? (
+                      <div className="p-4 text-center text-sm text-ink/40">
+                        Searching...
+                      </div>
+                    ) : searchError ? (
+                      <div className="p-4 text-center">
+                        <p className="text-sm font-medium text-ink">
+                          Couldn&apos;t load search results.
+                        </p>
+                        <p className="mt-1 text-xs text-ink/50">
+                          Please try again in a moment.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => refetchSearch()}
+                          className="mt-3 rounded-full bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-dark"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="p-2">
+                        {searchResults.map((product) => (
+                          <Link
+                            key={product.id}
+                            href={`/product/${product.slug}`}
+                            onClick={() => {
+                              setSearchQuery("");
+                              setSearchFocused(false);
+                            }}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors no-underline hover:bg-ink/[0.04]"
+                          >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink/[0.06] text-xs font-bold text-ink/40">
+                              {product.brand?.charAt(0)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-ink">
+                                {product.name}
+                              </p>
+                              <p className="text-xs text-ink/50">
+                                {product.brand} - {formatPrice(product.price)}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                        <button
+                          type="submit"
+                          className="mt-1 w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-accent transition-colors hover:bg-ink/[0.04]"
+                        >
+                          Search for &ldquo;{searchQuery}&rdquo; -&gt;
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-ink/40">
+                        No products found for &ldquo;{searchQuery.trim()}&rdquo;
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </form>
+            </div>
+
+            <HeaderIcons />
+          </div>
+        </div>
+
+        <div
+          ref={desktopDefaultNavRef}
+          className={`border-b border-border-light bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} ${
+            showCompactDesktopNav
+              ? "pointer-events-none -translate-y-1 opacity-0"
+              : "translate-y-0 opacity-100"
+          }`}
+        >
+          <div className="mx-auto max-w-[1400px] px-6">
+            <nav className="flex h-12 items-center justify-center gap-8">
+              <DesktopNavLinks panelTop={defaultDesktopNavBottom} />
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <div
+        ref={desktopCompactNavRef}
+        className={`fixed left-0 right-0 top-0 z-[80] hidden border-b border-border-light/90 bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} lg:block ${
+          showCompactDesktopNav
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-3 opacity-0"
+        }`}
+      >
+        <div className="mx-auto grid h-[60px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-8 px-6">
+          <BrandLogo
+            size="md"
+            variant="icon"
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${
+              showCompactDesktopNav ? "opacity-100" : "opacity-0"
+            }`}
+            priority
+          />
+
+          <nav className="flex items-center justify-center gap-8">
+            <DesktopNavLinks panelTop={compactDesktopNavBottom} />
+          </nav>
+
+          <div
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${
+              showCompactDesktopNav ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <HeaderIcons
+              compact
+              showSearchButton
+              onSearchClick={() => setSearchModalOpen(true)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <SearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
+    </>
+  );
+}

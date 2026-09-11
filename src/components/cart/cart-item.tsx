@@ -37,7 +37,7 @@ export function CartItemRow({ item }: CartItemProps) {
       {canNavigate ? (
         <Link
           href={itemHref}
-          className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50"
+          className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50"
         >
           <ProductImage
             src={product.images[0]}
@@ -50,7 +50,7 @@ export function CartItemRow({ item }: CartItemProps) {
           />
         </Link>
       ) : (
-        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-rose-50">
+        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50">
           <ProductImage
             src={product.images[0]}
             alt={product.name}
@@ -67,7 +67,7 @@ export function CartItemRow({ item }: CartItemProps) {
         <div>
           {canNavigate ? (
             <Link href={itemHref}>
-              <h4 className="text-sm font-medium text-neutral-800 transition-colors line-clamp-1 hover:text-rose-500">
+              <h4 className="text-sm font-medium text-neutral-800 transition-colors line-clamp-1 hover:text-brand-500">
                 {product.name}
               </h4>
             </Link>
@@ -76,7 +76,7 @@ export function CartItemRow({ item }: CartItemProps) {
               {product.name}
             </h4>
           )}
-          <p className="mt-0.5 text-sm font-semibold text-rose-600">
+          <p className="mt-0.5 text-sm font-semibold text-brand-600">
             {showPrice ? formatPrice(product.price) : "Price unavailable"}
           </p>
           {statusLabel && (
