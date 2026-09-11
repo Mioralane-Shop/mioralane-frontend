@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,8 @@ import { useToastStore } from "@/store/toast.store";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { formatPrice, cn } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
+import { promotionService } from "@/services/promotion.service";
+import type { PromotionValidationResponse } from "@/types/promotion";
 
 const SHIPPING_FEES = {
   inside_dhaka: 80,
@@ -45,6 +48,11 @@ function CheckoutContent() {
   const addToast = useToastStore((state) => state.addToast);
   const createOrder = useCreateOrder();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [couponState, setCouponState] = useState<"idle" | "validating" | "applied" | "invalid">("idle");
+  const [validatedPromotion, setValidatedPromotion] = useState<PromotionValidationResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
   const checkoutBlockMessage = getCheckoutBlockMessage();
@@ -76,7 +84,80 @@ function CheckoutContent() {
   const deliveryZone = watch("deliveryZone");
   const subtotal = totalPrice();
   const shippingFee = SHIPPING_FEES[deliveryZone];
-  const totalAmount = subtotal + shippingFee;
+  const discountAmount = validatedPromotion?.totals.discountAmount ?? 0;
+  const displayedShippingFee = validatedPromotion?.totals.shippingFee ?? shippingFee;
+  const totalAmount = validatedPromotion?.totals.totalAmount ?? subtotal + shippingFee;
+
+  const validationItems = useMemo(
+    () =>
+      items.map((item) => ({
+        itemId: item.itemId || item.product.id,
+        itemType:
+          item.itemType ??
+          item.product.itemType ??
+          (item.product.category === "combo" ? ("combo" as const) : ("product" as const)),
+        quantity: item.quantity,
+      })),
+    [items],
+  );
+
+  const validatePromotion = useCallback(async (couponCode = appliedCoupon) => {
+    if (!canProceedToCheckout) return;
+    const response = await promotionService.validate({
+      items: validationItems,
+      deliveryZone,
+      couponCode: couponCode || undefined,
+    });
+    setValidatedPromotion(response);
+  }, [appliedCoupon, canProceedToCheckout, deliveryZone, validationItems]);
+
+  async function applyCoupon() {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponMessage("Enter a coupon code.");
+      setCouponState("invalid");
+      return;
+    }
+
+    setCouponState("validating");
+    setCouponMessage(null);
+    try {
+      const response = await promotionService.validate({
+        items: validationItems,
+        deliveryZone,
+        couponCode: code,
+      });
+      setValidatedPromotion(response);
+      setAppliedCoupon(response.coupon?.code ?? code.toUpperCase());
+      setCouponInput(response.coupon?.code ?? code.toUpperCase());
+      setCouponState("applied");
+      setCouponMessage("Coupon applied.");
+    } catch (requestError) {
+      const message = axios.isAxiosError(requestError)
+        ? (requestError.response?.data?.message as string | undefined) ?? "Coupon could not be applied."
+        : requestError instanceof Error
+          ? requestError.message
+          : "Coupon could not be applied.";
+      setValidatedPromotion(null);
+      setAppliedCoupon("");
+      setCouponState("invalid");
+      setCouponMessage(message);
+    }
+  }
+
+  useEffect(() => {
+    setValidatedPromotion(null);
+    if (canProceedToCheckout) {
+      void validatePromotion(appliedCoupon).catch(() => {
+        setValidatedPromotion(null);
+        if (appliedCoupon) {
+          setAppliedCoupon("");
+          setCouponState("invalid");
+          setCouponMessage("Coupon needs to be applied again after cart changes.");
+        }
+      });
+    }
+  }, [appliedCoupon, canProceedToCheckout, subtotal, deliveryZone, validatePromotion]);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (submitLockRef.current || createOrder.isPending) {
@@ -108,6 +189,7 @@ function CheckoutContent() {
         })),
         shippingAddress: values,
         paymentMethod: "cash_on_delivery",
+        couponCode: appliedCoupon || undefined,
       });
 
       clearCart();
@@ -342,7 +424,11 @@ function CheckoutContent() {
                   </div>
                   <div className="flex justify-between text-sm text-neutral-600">
                     <span>Shipping</span>
-                    <span>{formatPrice(shippingFee)}</span>
+                    <span>{formatPrice(displayedShippingFee)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-neutral-600">
+                    <span>Discount</span>
+                    <span>-{formatPrice(discountAmount)}</span>
                   </div>
                   <div className="flex justify-between border-t border-brand-100 pt-3 font-medium text-neutral-800">
                     <span>Total</span>
@@ -350,6 +436,32 @@ function CheckoutContent() {
                       {formatPrice(totalAmount)}
                     </span>
                   </div>
+                </div>
+
+                <div className="mt-4 border-t border-brand-100 pt-4">
+                  <Label htmlFor="couponCode">Coupon Code</Label>
+                  <div className="mt-2 flex gap-2">
+                    <Input
+                      id="couponCode"
+                      value={couponInput}
+                      onChange={(event) => {
+                        setCouponInput(event.target.value.toUpperCase());
+                        if (couponState !== "idle") {
+                          setCouponState("idle");
+                          setCouponMessage(null);
+                        }
+                      }}
+                      placeholder="MIORALAUNCH"
+                    />
+                    <Button type="button" variant="outline" onClick={applyCoupon} disabled={couponState === "validating" || !canProceedToCheckout}>
+                      {couponState === "validating" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                    </Button>
+                  </div>
+                  {couponMessage ? (
+                    <p className={cn("mt-2 text-xs", couponState === "applied" ? "text-emerald-600" : "text-red-500")}>
+                      {couponMessage}
+                    </p>
+                  ) : null}
                 </div>
 
                 {isSyncingCatalog && (

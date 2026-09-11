@@ -30,6 +30,19 @@ export interface Order {
   itemsTotal: number;
   shippingFee: number;
   totalAmount: number;
+  discountAmount?: number;
+  promotion?: {
+    campaignId?: string;
+    campaignName?: string;
+    campaignType?: string;
+  };
+  coupon?: {
+    couponId?: string;
+    code?: string;
+    discountType?: string;
+    discountValue?: number;
+    discountAmount?: number;
+  };
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
@@ -52,4 +65,5 @@ export interface CreateOrderPayload {
   }>;
   shippingAddress: ShippingAddress;
   paymentMethod?: PaymentMethod;
+  couponCode?: string;
 }
