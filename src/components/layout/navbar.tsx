@@ -59,7 +59,7 @@ function BrandsNavItem() {
         Brands
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full z-[130] -translate-x-1/2 pt-2">
+        <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
           <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
               {BRANDS.map((brand) => (
@@ -189,35 +189,124 @@ type MegaMenuColumn = {
 
 const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
   {
-    id: "product-type",
-    label: "Product Type",
-    href: "/shop",
+    id: "cleansers",
+    label: "Cleansers",
+    href: "/shop?category=cleansers",
     links: [
-      { label: "Cleansers", href: "/shop?category=cleansers" },
-      { label: "Toners", href: "/shop?category=toners" },
-      { label: "Serums & Treatments", href: "/shop?category=serums" },
-      { label: "Exfoliators", comingSoon: true },
-      { label: "Moisturizers", href: "/shop?category=moisturizers" },
-      { label: "Masks", href: "/shop?category=masks" },
-      { label: "Lip & Eye Care", comingSoon: true },
-      { label: "Sunscreen", href: "/shop?category=sun-care" },
+      { label: "Oil Cleansers", comingSoon: true },
+      { label: "Water Based Cleansers", comingSoon: true },
+      { label: "Cleansing Balms", comingSoon: true },
+      { label: "Make-Up Removers", comingSoon: true },
+      { label: "Micellar Waters", comingSoon: true },
     ],
   },
   {
-    id: "curated-sets",
-    label: "Curated Sets",
-    href: "/combo",
+    id: "toners",
+    label: "Toners",
+    href: "/shop?category=toners",
     links: [
-      { label: "Starter Routines", href: "/combo" },
-      { label: "Travel Kits", href: "/combo" },
-      { label: "Bundles", href: "/combo" },
-      { label: "New Arrivals", href: "/shop?sort=newest" },
-      { label: "Best Sellers", href: "/shop?bestSeller=true" },
+      { label: "Hydrating Toners", comingSoon: true },
+      { label: "Calming Toners", comingSoon: true },
+      { label: "Mist Toners", comingSoon: true },
+      { label: "Exfoliating Toners", comingSoon: true },
+      { label: "Toner Pads", comingSoon: true },
+    ],
+  },
+  {
+    id: "treatments",
+    label: "Treatments",
+    comingSoon: true,
+    links: [
+      { label: "Serums", comingSoon: true },
+      { label: "Ampoules", comingSoon: true },
+      { label: "Essences", comingSoon: true },
+      { label: "Spot Treatments", comingSoon: true },
+    ],
+  },
+  {
+    id: "exfoliators",
+    label: "Exfoliators",
+    comingSoon: true,
+    links: [
+      { label: "Physical Exfoliators", comingSoon: true },
+      { label: "Chemical Exfoliators", comingSoon: true },
+    ],
+  },
+  {
+    id: "concerns",
+    label: "Skin Concerns",
+    href: "/shop",
+    links: [
+      { label: "Acne", href: "/shop?concern=acne" },
+      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
+      { label: "Dry Skin", comingSoon: true },
+      { label: "Fungal Acne Safe", comingSoon: true },
+      { label: "Hyperpigmentation", comingSoon: true },
+      { label: "Skin Redness", comingSoon: true },
+      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
+      { label: "Oily Skin", comingSoon: true },
+    ],
+  },
+  {
+    id: "moisturizers",
+    label: "Moisturizers",
+    href: "/shop?category=moisturizers",
+    links: [
+      { label: "Face Creams", comingSoon: true },
+      { label: "Gel Moisturizers", comingSoon: true },
+      { label: "Facial Oils", comingSoon: true },
+      { label: "Emulsions", comingSoon: true },
+    ],
+  },
+  {
+    id: "masks",
+    label: "Masks",
+    href: "/shop?category=masks",
+    links: [
+      { label: "Peeling Masks", comingSoon: true },
+      { label: "Sheet Masks", comingSoon: true },
+      { label: "Sleeping Masks", comingSoon: true },
+      { label: "Wash-Off Masks", comingSoon: true },
+    ],
+  },
+  {
+    id: "lip-eye",
+    label: "Lip & Eye Care",
+    comingSoon: true,
+    links: [
+      { label: "Eye Creams", comingSoon: true },
+      { label: "Eye Patches", comingSoon: true },
+      { label: "Lip Care", comingSoon: true },
+    ],
+  },
+  {
+    id: "sunscreens",
+    label: "Sunscreens",
+    href: "/shop?category=sun-care",
+    links: [
+      { label: "SPF 50+", comingSoon: true },
+      { label: "SPF 30", comingSoon: true },
+      { label: "Sun Sticks", comingSoon: true },
+      { label: "After Sun Care", comingSoon: true },
+    ],
+  },
+  {
+    id: "ingredients",
+    label: "Shop By Ingredients",
+    comingSoon: true,
+    links: [
+      { label: "AHA BHA PHA", comingSoon: true },
+      { label: "Centella", comingSoon: true },
+      { label: "Hyaluronic Acid", comingSoon: true },
+      { label: "Peptides", comingSoon: true },
+      { label: "Propolis", comingSoon: true },
+      { label: "Snail Mucin", comingSoon: true },
+      { label: "Vitamin C", comingSoon: true },
     ],
   },
 ];
 
-function SkinCareNavItem() {
+function SkinCareNavItem({ panelTop }: { panelTop: number }) {
   const [open, setOpen] = useState(false);
   const [activeCol, setActiveCol] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -327,67 +416,66 @@ function SkinCareNavItem() {
           ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="absolute left-1/2 top-full z-[130] w-[600px] -translate-x-1/2 pt-2"
+          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          style={{ top: panelTop }}
         >
-          <div className="rounded-lg border border-border-light bg-white px-8 py-8 shadow-lg">
-            <div className="grid grid-cols-2 gap-x-12">
-              {MEGA_MENU_COLUMNS.map((column) => (
-                <div
-                  key={column.id}
-                  onMouseEnter={() => positionUnderline(column.id)}
-                  className="min-w-0"
-                >
-                  <div>
-                    <NavigationItem
-                      label={column.label}
-                      href={column.href}
-                      comingSoon={column.comingSoon}
-                      onClick={() => setOpen(false)}
-                      className="block"
+          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
+            {MEGA_MENU_COLUMNS.map((column) => (
+              <div
+                key={column.id}
+                onMouseEnter={() => positionUnderline(column.id)}
+                className="min-w-0"
+              >
+                <div className="border-t border-[#C98A7D]/30 pt-4">
+                  <NavigationItem
+                    label={column.label}
+                    href={column.href}
+                    comingSoon={column.comingSoon}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                  >
+                    <span
+                      ref={(element) => {
+                        headerRefs.current[column.id] = element;
+                      }}
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
                     >
-                      <span
-                        ref={(element) => {
-                          headerRefs.current[column.id] = element;
-                        }}
-                        className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted"
-                      >
-                        {column.label}
-                      </span>
-                    </NavigationItem>
-                  </div>
-                  <ul className="mt-5 space-y-3">
-                    {column.links.map((link) => (
-                      <li key={link.label}>
-                        <NavigationItem
-                          label={link.label}
-                          href={link.href}
-                          comingSoon={link.comingSoon}
-                          onClick={() => setOpen(false)}
-                          className="text-sm text-ink-soft transition-colors hover:text-ink hover:underline hover:decoration-brand-500 hover:decoration-2 hover:underline-offset-4"
-                        />
-                      </li>
-                    ))}
-                  </ul>
+                      {column.label}
+                    </span>
+                  </NavigationItem>
                 </div>
-              ))}
-            </div>
-
-            <div
-              ref={underlineRef}
-              className="pointer-events-none absolute h-[2px] bg-brand-500 transition-all duration-200"
-              style={{
-                opacity: activeCol ? 1 : 0,
-                transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-              }}
-            />
+                <ul className="mt-5 space-y-3.5">
+                  {column.links.map((link) => (
+                    <li key={link.label}>
+                      <NavigationItem
+                        label={link.label}
+                        href={link.href}
+                        comingSoon={link.comingSoon}
+                        onClick={() => setOpen(false)}
+                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
+
+          <div
+            ref={underlineRef}
+            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            style={{
+              opacity: activeCol ? 1 : 0,
+              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          />
         </div>
       )}
     </div>
   );
 }
 
-function DesktopNavLinks() {
+function DesktopNavLinks({ panelTop }: { panelTop: number }) {
   return (
     <>
       {BOTTOM_NAV.map((link) => {
@@ -395,6 +483,7 @@ function DesktopNavLinks() {
           return (
             <SkinCareNavItem
               key={link.href + link.label}
+              panelTop={panelTop}
             />
           );
         }
@@ -464,7 +553,7 @@ function HeaderIcons({
       <Link href="/wishlist" className={`relative inline-flex ${iconClassName}`} aria-label="Wishlist">
         <Heart className={iconSize} />
         {wishlistCount > 0 ? (
-          <span className={`${badgeClassName} bg-rose-500`}>{wishlistCount}</span>
+          <span className={`${badgeClassName} bg-brand-500`}>{wishlistCount}</span>
         ) : null}
       </Link>
 
@@ -484,9 +573,12 @@ export function Navbar() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [showCompactDesktopNav, setShowCompactDesktopNav] = useState(false);
+  const [defaultDesktopNavBottom, setDefaultDesktopNavBottom] = useState(164);
+  const [compactDesktopNavBottom, setCompactDesktopNavBottom] = useState(64);
   const compactActiveRef = useRef(false);
   const desktopHeaderRef = useRef<HTMLElement>(null);
   const desktopMainHeaderRef = useRef<HTMLDivElement>(null);
+  const desktopDefaultNavRef = useRef<HTMLDivElement>(null);
   const desktopCompactNavRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const {
@@ -541,6 +633,17 @@ export function Navbar() {
         }
       }
 
+      if (desktopDefaultNavRef.current) {
+        setDefaultDesktopNavBottom(
+          desktopDefaultNavRef.current.getBoundingClientRect().bottom,
+        );
+      }
+
+      if (desktopCompactNavRef.current) {
+        setCompactDesktopNavBottom(
+          desktopCompactNavRef.current.getBoundingClientRect().bottom,
+        );
+      }
     };
 
     const scheduleMeasurements = () => {
@@ -586,12 +689,12 @@ export function Navbar() {
     <>
       <header className="sticky top-0 z-[70] bg-white lg:hidden">
         <div className="border-b border-border-light">
-          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-3 sm:px-6">
             <div className="relative z-10 flex items-center gap-1">
               <MobileMenu />
               <button
                 onClick={() => setSearchModalOpen(true)}
-                className="rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+                className="rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink sm:p-2.5"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
@@ -601,18 +704,18 @@ export function Navbar() {
             <BrandLogo
               size="md"
               variant={showCompactDesktopNav ? "icon" : "full"}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-[374px]:[&>img]:h-6"
               priority
             />
 
-            <HeaderIcons />
+            <HeaderIcons compact />
           </div>
         </div>
       </header>
 
       <header
         ref={desktopHeaderRef}
-        className="relative z-[120] hidden bg-white lg:block"
+        className="hidden bg-white lg:block"
       >
         <div
           ref={desktopMainHeaderRef}
@@ -716,6 +819,7 @@ export function Navbar() {
         </div>
 
         <div
+          ref={desktopDefaultNavRef}
           className={`border-b border-border-light bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} ${
             showCompactDesktopNav
               ? "pointer-events-none -translate-y-1 opacity-0"
@@ -724,7 +828,7 @@ export function Navbar() {
         >
           <div className="mx-auto max-w-[1400px] px-6">
             <nav className="flex h-12 items-center justify-center gap-8">
-              <DesktopNavLinks />
+              <DesktopNavLinks panelTop={defaultDesktopNavBottom} />
             </nav>
           </div>
         </div>
@@ -749,7 +853,7 @@ export function Navbar() {
           />
 
           <nav className="flex items-center justify-center gap-8">
-            <DesktopNavLinks />
+            <DesktopNavLinks panelTop={compactDesktopNavBottom} />
           </nav>
 
           <div

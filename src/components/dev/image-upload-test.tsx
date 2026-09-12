@@ -179,8 +179,8 @@ export function ImageUploadTest() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8">
-      <div className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-8 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">
+      <div className="rounded-[2rem] border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-amber-50 p-8 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-500">
           Development only
         </p>
         <h1 className="mt-3 text-3xl font-light tracking-tight text-neutral-800 md:text-4xl">
@@ -191,7 +191,7 @@ export function ImageUploadTest() {
         </p>
       </div>
 
-      <Card className="border-rose-100">
+      <Card className="border-brand-100">
         <CardHeader>
           <CardTitle className="text-neutral-800">Select image</CardTitle>
           <CardDescription>
@@ -211,7 +211,7 @@ export function ImageUploadTest() {
 
           {isOptimizing && (
             <div className="flex items-center gap-2 text-sm text-neutral-500">
-              <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
               Optimizing image in browser...
             </div>
           )}
@@ -226,7 +226,7 @@ export function ImageUploadTest() {
 
       {optimization && summary && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <Card className="border-rose-100">
+          <Card className="border-brand-100">
             <CardHeader>
               <CardTitle className="text-neutral-800">Original</CardTitle>
               <CardDescription>{summary.original}</CardDescription>
@@ -236,7 +236,7 @@ export function ImageUploadTest() {
             </CardContent>
           </Card>
 
-          <Card className="border-rose-100">
+          <Card className="border-brand-100">
             <CardHeader>
               <CardTitle className="text-neutral-800">Optimized</CardTitle>
               <CardDescription>
@@ -264,7 +264,7 @@ export function ImageUploadTest() {
       )}
 
       {optimization && (
-        <Card className="border-rose-100">
+        <Card className="border-brand-100">
           <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-medium text-neutral-800">
@@ -298,7 +298,7 @@ export function ImageUploadTest() {
       )}
 
       {comparison?.candidates.length ? (
-        <Card className="border-rose-100">
+        <Card className="border-brand-100">
           <CardHeader>
             <CardTitle className="text-neutral-800">Diagnostic comparison</CardTitle>
             <CardDescription>
@@ -312,9 +312,9 @@ export function ImageUploadTest() {
                   key={`${candidate.qualityUsed}-${candidate.outputMimeType}`}
                   type="button"
                   onClick={() => setExpandedCandidateIndex(index)}
-                  className="group overflow-hidden rounded-3xl border border-rose-100 bg-[#FAF8F5] text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="group overflow-hidden rounded-3xl border border-brand-100 bg-[#FAF8F5] text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <div className="flex items-center justify-between border-b border-rose-100 px-4 py-3">
+                  <div className="flex items-center justify-between border-b border-brand-100 px-4 py-3">
                     <div>
                       <p className="text-sm font-medium text-neutral-800">
                         Quality {candidate.qualityUsed.toFixed(2)}
@@ -420,13 +420,13 @@ function PreviewFrame({
   src?: string | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-rose-100 bg-[#FAF8F5]">
-      <div className="flex items-center justify-between border-b border-rose-100 px-4 py-3">
+    <div className="overflow-hidden rounded-3xl border border-brand-100 bg-[#FAF8F5]">
+      <div className="flex items-center justify-between border-b border-brand-100 px-4 py-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-neutral-800">{title}</p>
           <p className="text-xs text-neutral-500">Local preview</p>
         </div>
-        <ImageIcon className="h-4 w-4 text-rose-400" />
+        <ImageIcon className="h-4 w-4 text-brand-400" />
       </div>
       <div className="flex min-h-[280px] items-center justify-center p-4">
         {src ? (
@@ -446,7 +446,7 @@ function PreviewFrame({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-rose-100 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-brand-100 bg-white px-4 py-3">
       <div className="text-xs uppercase tracking-[0.2em] text-neutral-400">{label}</div>
       <div className="mt-1 break-all text-sm font-medium text-neutral-800">{value}</div>
     </div>

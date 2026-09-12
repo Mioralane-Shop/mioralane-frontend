@@ -31,8 +31,6 @@ interface ProductCardProps {
   combo?: ComboCardMeta;
   /** Compact image treatment used by the Featured Products homepage grid */
   compactImage?: boolean;
-  /** Shop listing can switch between a compact grid card and a wider list row. */
-  layout?: "grid" | "list";
 }
 
 /** Compute discount percentage from original vs. current price */
@@ -67,13 +65,7 @@ const UI_COLORS = {
 
 const PRODUCT_CARD_IMAGEKIT_LOADER = createImageKitLoader({ preset: "productCard" });
 
-export function ProductCard({
-  product,
-  onNavigate,
-  combo,
-  compactImage,
-  layout = "grid",
-}: ProductCardProps) {
+export function ProductCard({ product, onNavigate, combo, compactImage }: ProductCardProps) {
   const router = useRouter();
   const [mainImgSrc, setMainImgSrc] = useState<string>(product.images?.[0] ?? "");
   const [mainFailed, setMainFailed] = useState<boolean>(false);
@@ -103,7 +95,6 @@ export function ProductCard({
   const isOutOfStock = product.stock <= 0;
   const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const productCardImageLoader = isImageKitUrl(mainImgSrc) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined;
-  const isListLayout = layout === "list";
 
   const handleClick = () => {
     if (onNavigate) {
@@ -179,21 +170,12 @@ export function ProductCard({
     return (
       <div
         onClick={handleClick}
-        className={cn(
-          "group flex h-full w-full cursor-pointer overflow-hidden bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
-          isListLayout ? "flex-row gap-5 border-b border-border-light py-4" : "flex-col"
-        )}
+        className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
         id={`product-card-${product.id}`}
       >
         <div
-          className={cn(
-            "relative overflow-hidden bg-[#FAF8F6]",
-            isListLayout
-              ? "h-36 w-28 shrink-0"
-              : compactImage
-                ? "aspect-square w-full"
-                : "aspect-[3/4] w-full"
-          )}
+          className={`relative m-2 overflow-hidden rounded-2xl bg-[#FAF8F6] ${compactImage ? "aspect-square" : "aspect-[4/5]"
+            }`}
         >
           {discount > 0 && (
             <div className="absolute right-3 top-3 left-auto z-30">
@@ -233,7 +215,7 @@ export function ProductCard({
               referrerPolicy="no-referrer"
               loader={productCardImageLoader}
               sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 320px"
-              className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.05]"
+              className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
               loading="lazy"
               onError={() => {
                 const idx = product.images?.indexOf(mainImgSrc) ?? -1;
@@ -252,35 +234,35 @@ export function ProductCard({
           )}
         </div>
 
-        <div
-          className={cn(
-            "flex flex-1 flex-col",
-            isListLayout ? "justify-center pr-3" : "px-0 pb-1 pt-4"
-          )}
-        >
+        <div className="flex flex-1 flex-col px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
           <div>
-            <div className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-ink-muted">
-              {formatCategoryLabel(product.category)}
+            <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+              {product.brand} <span className="text-accent-light">{"\u00b7"}</span> {formatCategoryLabel(product.category)}
             </div>
 
-            <h3 className="line-clamp-1 text-sm font-medium leading-snug text-ink">
+            <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink sm:text-[16px]">
               {product.name}
             </h3>
-            <p className="mt-1 text-xs text-ink-muted">{product.brand}</p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-semibold uppercase tracking-wider sm:text-xs">
               <span
                 className={cn(
-                  "font-medium",
-                  product.stock > 0 ? "text-success" : "text-ink-muted line-through"
+                  "flex items-center gap-1 text-[10px] sm:text-[11px]",
+                  product.stock > 0 ? "text-[#1F6B4E]" : "text-ink-muted"
                 )}
               >
-                {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    product.stock > 0 ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
+                  )}
+                />
+                {product.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}
               </span>
               {volumeLabel && (
                 <>
                   <span className="text-border">|</span>
-                  <span className="font-normal text-ink-soft">
+                  <span className="font-medium normal-case tracking-normal text-ink-soft">
                     {volumeLabel}
                   </span>
                 </>
@@ -288,31 +270,24 @@ export function ProductCard({
             </div>
           </div>
 
-          <div
-            className={cn(
-              "mt-4 flex gap-3",
-              isListLayout
-                ? "items-center justify-between"
-                : "flex-col items-stretch"
-            )}
-          >
+          <div className="mt-4 flex items-end justify-between gap-3 border-t border-border-light/60 pt-3">
             <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
-              <span className="whitespace-nowrap text-base font-semibold tracking-tight text-ink">
-                {formatPrice(product.price)}
-              </span>
               {displayCompareAt && (
-                <span className="whitespace-nowrap text-xs font-normal line-through text-ink-muted">
+                <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
                   {formatPrice(displayCompareAt)}
                 </span>
               )}
+              <span className="whitespace-nowrap text-base font-semibold tracking-tight text-ink sm:text-xl">
+                {formatPrice(product.price)}
+              </span>
             </div>
 
             {isInCart ? (
               <button
                 onClick={handleViewCart}
-                className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 active:scale-95"
+                className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
               >
-                <ShoppingCart className="h-4 w-4 shrink-0" />
+                <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
                 <span>View Cart</span>
               </button>
             ) : (
@@ -320,13 +295,13 @@ export function ProductCard({
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 className={cn(
-                  "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium shadow-sm transition-all duration-150 active:scale-95",
+                  "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
                   isOutOfStock
                     ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
-                    : UI_COLORS.cart
+                    : UI_COLORS.cart + " hover:shadow active:scale-95"
                 )}
               >
-                <ShoppingBag className="h-4 w-4 shrink-0" />
+                <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
                 <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
               </button>
             )}
