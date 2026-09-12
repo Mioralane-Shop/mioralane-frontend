@@ -58,23 +58,23 @@ function ProfileContent() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
-        <Card className="border-rose-100">
-          <CardContent className="p-8">
+        <Card className="border-brand-100">
+          <CardContent className="p-4 sm:p-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-100">
-                <User className="h-8 w-8 text-rose-500" />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-100">
+                <User className="h-8 w-8 text-brand-500" />
               </div>
               <div className="min-w-0">
                 <h2 className="truncate text-lg font-medium text-neutral-800">
                   {user.username}
                 </h2>
-                <p className="text-sm text-neutral-400">
+                <p className="break-words text-sm text-neutral-400">
                   {user.email ?? "No email available"}
                 </p>
               </div>
             </div>
 
-            <div className="mt-8 space-y-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4">
+            <div className="mt-8 space-y-3 rounded-2xl border border-brand-100 bg-brand-50/40 p-4">
               <ProfileRow label="Name" value={user.username} icon={<User className="h-4 w-4" />} />
               <ProfileRow label="Email" value={user.email ?? "Not available"} icon={<Mail className="h-4 w-4" />} />
               <ProfileRow label="Role" value={accountRole} icon={<Shield className="h-4 w-4" />} />
@@ -98,7 +98,7 @@ function ProfileContent() {
               </div>
             </div>
 
-            <div className="mt-8 border-t border-rose-100 pt-6">
+            <div className="mt-8 border-t border-brand-100 pt-6">
               <Button
                 variant="outline"
                 className="text-red-500 border-red-200 hover:bg-red-50"
@@ -113,9 +113,9 @@ function ProfileContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-rose-100">
-          <CardContent className="p-8">
-            <div className="mb-5 flex items-center justify-between gap-4">
+        <Card className="border-brand-100">
+          <CardContent className="p-4 sm:p-8">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-medium text-neutral-800">
                   Recent Orders
@@ -128,13 +128,13 @@ function ProfileContent() {
                 <Button asChild variant="outline" size="sm">
                   <Link href="/orders">View all orders</Link>
                 </Button>
-                <Package className="h-5 w-5 text-rose-500" />
+                <Package className="h-5 w-5 text-brand-500" />
               </div>
             </div>
 
             {isLoading ? (
               <div className="flex min-h-[240px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
               </div>
             ) : (
               <OrderHistory
@@ -168,10 +168,10 @@ function ProfileRow({
   return (
     <div className="flex items-start justify-between gap-4 rounded-xl bg-white px-4 py-3">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="mt-0.5 text-rose-400">{icon}</span>
+        <span className="mt-0.5 text-brand-400">{icon}</span>
         <span className="text-sm font-medium text-neutral-500">{label}</span>
       </div>
-      <span className="max-w-[65%] truncate text-right text-sm font-medium text-neutral-800">
+      <span className="min-w-0 max-w-[65%] break-words text-right text-sm font-medium text-neutral-800">
         {value}
       </span>
     </div>

@@ -20,11 +20,7 @@ import { formatPrice } from "@/lib/utils";
 
 const BOTTOM_NAV = [
   { label: "Skin Care", href: "/shop" },
-  { label: "Collections", href: "/shop" },
-  { label: "Combo", href: "/combo" },
-  { label: "New", href: "/shop?sort=newest" },
   { label: "Brands", href: "/shop" },
-  { label: "Support", comingSoon: true },
   { label: "Blog", href: "/blog" },
   { label: "Sales", comingSoon: true },
 ];
@@ -557,7 +553,7 @@ function HeaderIcons({
       <Link href="/wishlist" className={`relative inline-flex ${iconClassName}`} aria-label="Wishlist">
         <Heart className={iconSize} />
         {wishlistCount > 0 ? (
-          <span className={`${badgeClassName} bg-rose-500`}>{wishlistCount}</span>
+          <span className={`${badgeClassName} bg-brand-500`}>{wishlistCount}</span>
         ) : null}
       </Link>
 
@@ -693,12 +689,12 @@ export function Navbar() {
     <>
       <header className="sticky top-0 z-[70] bg-white lg:hidden">
         <div className="border-b border-border-light">
-          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-6">
+          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-3 sm:px-6">
             <div className="relative z-10 flex items-center gap-1">
               <MobileMenu />
               <button
                 onClick={() => setSearchModalOpen(true)}
-                className="rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+                className="rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink sm:p-2.5"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
@@ -708,11 +704,11 @@ export function Navbar() {
             <BrandLogo
               size="md"
               variant={showCompactDesktopNav ? "icon" : "full"}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-[374px]:[&>img]:h-6"
               priority
             />
 
-            <HeaderIcons />
+            <HeaderIcons compact />
           </div>
         </div>
       </header>

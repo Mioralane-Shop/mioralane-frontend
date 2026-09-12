@@ -1,452 +1,176 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
-import { CheckCircle2, CircleX, Clock3, Package, Truck, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { CheckCircle2, Clock3, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ProductImage } from "@/components/common/product-image";
-import { RequireAuth } from "@/components/common/require-auth";
-import { useOrder } from "@/hooks/use-orders";
-import { formatPrice, cn } from "@/lib/utils";
-import type { OrderStatus, PaymentStatus } from "@/types/order";
-
-const ORDER_STEPS: Array<{ key: OrderStatus; label: string; icon: ReactNode }> = [
-  { key: "pending", label: "Pending", icon: <Clock3 className="h-4 w-4" /> },
-  { key: "processing", label: "Processing", icon: <Package className="h-4 w-4" /> },
-  { key: "shipped", label: "Shipped", icon: <Truck className="h-4 w-4" /> },
-  { key: "delivered", label: "Delivered", icon: <CheckCircle2 className="h-4 w-4" /> },
-];
-
-const ORDER_STATUS_META: Record<
-  OrderStatus,
-  { label: string; className: string; icon: ReactNode; description: string }
-> = {
-  pending: {
-    label: "Pending",
-    className: "border-amber-200 bg-amber-50 text-amber-700",
-    icon: <Clock3 className="h-4 w-4" />,
-    description: "We have received the order.",
-  },
-  processing: {
-    label: "Processing",
-    className: "border-amber-200 bg-amber-50 text-amber-700",
-    icon: <Package className="h-4 w-4" />,
-    description: "Our team is preparing the package.",
-  },
-  shipped: {
-    label: "Shipped",
-    className: "border-blue-200 bg-blue-50 text-blue-700",
-    icon: <Truck className="h-4 w-4" />,
-    description: "The courier is handling delivery.",
-  },
-  delivered: {
-    label: "Delivered",
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    icon: <CheckCircle2 className="h-4 w-4" />,
-    description: "Delivered successfully.",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "border-rose-200 bg-rose-50 text-rose-700",
-    icon: <CircleX className="h-4 w-4" />,
-    description: "This order was cancelled before fulfillment.",
-  },
-};
-
-const PAYMENT_STATUS_META: Record<
-  PaymentStatus,
-  { label: string; className: string }
-> = {
-  pending: {
-    label: "Pending payment",
-    className: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  paid: {
-    label: "Paid",
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  failed: {
-    label: "Payment failed",
-    className: "border-rose-200 bg-rose-50 text-rose-700",
-  },
-};
-
-function formatPaymentMethod(method: string): string {
-  if (method === "cash_on_delivery") {
-    return "Cash on Delivery";
-  }
-
-  return method
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+import { orderService } from "@/services/order.service";
+import { formatPrice } from "@/lib/utils";
 
 export default function OrderSuccessPage() {
   const params = useParams<{ id: string }>();
-  const orderId = typeof params.id === "string" ? params.id : params.id?.[0] ?? "";
+  const orderId = params.id;
 
-  return (
-    <RequireAuth>
-      <OrderSuccessContent orderId={orderId} />
-    </RequireAuth>
-  );
-}
-
-function OrderSuccessContent({ orderId }: { orderId: string }) {
-  const { data: order, isLoading, isError, error, refetch, isFetching } = useOrder(orderId);
-
-  const statusCode = (error as { response?: { status?: number } } | undefined)?.response?.status;
-  const hasOrderId = orderId.trim().length > 0;
-  const isNotFoundError = statusCode === 400 || statusCode === 404;
-
-  if (!hasOrderId) {
-    return (
-      <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
-          Order not found
-        </h1>
-        <p className="mt-3 text-neutral-400">
-          We could not find that order. Please check your orders page.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Button asChild>
-            <Link href="/orders">View Orders</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/shop">Continue Shopping</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const {
+    data: order,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["order", orderId],
+    queryFn: () => orderService.getById(orderId),
+    enabled: Boolean(orderId),
+  });
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-16">
+        <div className="rounded-2xl border border-border-light bg-white p-8 text-center">
+          <Clock3 className="mx-auto h-10 w-10 animate-pulse text-brand-500" />
+          <h1 className="mt-4 text-2xl font-semibold text-ink">
+            Loading your order
+          </h1>
+        </div>
+      </main>
     );
   }
 
   if (isError || !order) {
-    if (isNotFoundError) {
-      return (
-        <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
-          <h1 className="text-3xl font-light tracking-tight text-neutral-800">
-            Order not found
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-16">
+        <div className="rounded-2xl border border-border-light bg-white p-8 text-center">
+          <Package className="mx-auto h-10 w-10 text-ink/30" />
+          <h1 className="mt-4 text-2xl font-semibold text-ink">
+            We could not load this order
           </h1>
-          <p className="mt-3 text-neutral-400">
-            We could not find that order. Please check your orders page.
+          <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">
+            Please try again in a moment or check your order history.
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Button asChild>
-              <Link href="/orders">View Orders</Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button type="button" onClick={() => void refetch()}>
+              Try again
             </Button>
             <Button asChild variant="outline">
-              <Link href="/shop">Continue Shopping</Link>
+              <Link href="/orders">Order history</Link>
             </Button>
           </div>
         </div>
-      );
-    }
-
-    return (
-      <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
-          Could not load order
-        </h1>
-        <p className="mt-3 text-neutral-400">
-          We could not load this order right now. Please try again.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Button onClick={() => refetch()} disabled={isFetching}>
-            {isFetching ? "Retrying..." : "Retry"}
-          </Button>
-          <Button asChild>
-            <Link href="/orders">View Orders</Link>
-          </Button>
-        </div>
-      </div>
+      </main>
     );
   }
 
-  const status = order.orderStatus ?? order.status ?? "pending";
-  const isCancelled = status === "cancelled";
-  const statusMeta = ORDER_STATUS_META[status] ?? ORDER_STATUS_META.pending;
-  const activeStepIndex = isCancelled ? -1 : ORDER_STEPS.findIndex((step) => step.key === status);
-  const isInsideDhaka = order.shippingAddress.deliveryZone === "inside_dhaka";
-  const deliveryWindow = isInsideDhaka ? "2-4 business days" : "3-6 business days";
-  const paymentStatusMeta = PAYMENT_STATUS_META[order.paymentStatus];
+  const itemCount = order.items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-10">
-      <Card className="overflow-hidden border-rose-100">
-        <CardContent className="p-0">
-          <div className="bg-gradient-to-br from-rose-500 to-rose-600 px-6 py-8 text-white">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                  {isCancelled ? <CircleX className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                  {isCancelled ? "Order Cancelled" : "Order Confirmed"}
-                </div>
-                <h1 className="mt-4 text-3xl font-light tracking-tight">
-                  {isCancelled ? "Your order was cancelled" : "Your order is placed"}
-                </h1>
-                <p className="mt-2 max-w-xl text-sm text-white/85">
-                  {isCancelled
-                    ? "This order was cancelled and will not move through the delivery timeline."
-                    : "We have received your order and will contact you if we need any delivery clarification."}
-                </p>
-              </div>
+    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+      <div className="mb-8 text-center">
+        <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
+        <h1 className="mt-4 text-3xl font-semibold text-ink">
+          Order confirmed
+        </h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Order #{order.orderNumber} - {itemCount}{" "}
+          {itemCount === 1 ? "item" : "items"}
+        </p>
+      </div>
 
-              <div className="rounded-2xl bg-white/15 px-4 py-3 text-right">
-                <p className="text-xs uppercase tracking-wider text-white/75">
-                  Order ID
-                </p>
-                <p className="mt-1 font-mono text-sm font-semibold">
-                  {order.orderNumber}
-                </p>
-                <div className="mt-3">
-                  <p className="text-xs uppercase tracking-wider text-white/75">
-                    Order status
-                  </p>
-                  <Badge variant="outline" className={cn("mt-2 w-fit gap-1.5 border-white/20 bg-white/10", statusMeta.className)}>
-                    {statusMeta.icon}
-                    {statusMeta.label}
-                  </Badge>
-                </div>
-              </div>
+      <Card className="border-brand-100">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid gap-4 border-b border-border-light pb-5 sm:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-ink-muted">
+                Payment
+              </p>
+              <p className="mt-1 text-sm font-semibold capitalize text-ink">
+                {order.paymentStatus.replace("_", " ")}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-ink-muted">
+                Status
+              </p>
+              <p className="mt-1 text-sm font-semibold capitalize text-ink">
+                {(order.orderStatus ?? order.status ?? "pending").replace("_", " ")}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-ink-muted">
+                Total
+              </p>
+              <p className="mt-1 text-sm font-semibold text-brand-600">
+                {formatPrice(order.totalAmount)}
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-8 p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-5">
-                <h2 className="text-base font-semibold text-neutral-800">
-                  Delivery timeline
-                </h2>
-                <p className="mt-1 text-sm text-neutral-500">
-                  {isCancelled
-                    ? "This order stopped before dispatch, so the delivery steps are not progressing."
-                    : isInsideDhaka
-                      ? "Inside Dhaka orders usually move faster through our courier chain."
-                      : "Outside Dhaka orders take a little longer because of the extended courier route."}
+          <div className="mt-6 space-y-4">
+            {order.items.map((item) => (
+              <div key={item.sourceId} className="flex min-w-0 items-center gap-3">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-brand-50">
+                  <ProductImage
+                    src={item.thumbnail ?? ""}
+                    alt={item.title}
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                    fallbackId={item.sourceId}
+                    deliveryPreset="thumbnail"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium text-ink">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-ink-muted">Qty {item.quantity}</p>
+                </div>
+                <p className="shrink-0 text-sm font-semibold text-ink">
+                  {formatPrice(item.price * item.quantity)}
                 </p>
-
-                {isCancelled ? (
-                  <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    {statusMeta.description}
-                  </div>
-                ) : null}
-
-                <div className="mt-5 space-y-3">
-                  {ORDER_STEPS.map((step, index) => {
-                    const isActive = !isCancelled && index <= activeStepIndex;
-                    return (
-                      <div
-                        key={step.key}
-                        className={cn(
-                          "flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors",
-                          isActive
-                            ? "border-rose-200 bg-white text-neutral-800"
-                            : "border-rose-100 bg-white/60 text-neutral-400"
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "flex h-9 w-9 items-center justify-center rounded-full",
-                            isActive ? "bg-rose-100 text-rose-600" : "bg-neutral-100"
-                          )}
-                        >
-                          {step.icon}
-                        </div>
-                        <div>
-                          <p className="font-medium">{step.label}</p>
-                          <p className="text-xs text-neutral-500">
-                            {isCancelled
-                              ? "Cancelled before this step could begin"
-                              : step.key === "pending"
-                              ? "We have received the order"
-                              : step.key === "processing"
-                                ? "Our team prepares the package"
-                                : step.key === "shipped"
-                                  ? `Courier delivery in about ${deliveryWindow}`
-                                  : "Delivered successfully"}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
+            ))}
+          </div>
 
-              <div>
-                <h2 className="mb-3 text-base font-semibold text-neutral-800">
-                  Order Items
-                </h2>
-                <div className="space-y-3">
-                  {order.items.map((item) => (
-                    <div
-                      key={`${order.id}-${item.sourceId}`}
-                      className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white p-4"
-                    >
-                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-rose-50">
-                        <ProductImage
-                          src={item.thumbnail ?? ""}
-                          alt={item.title}
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                          fallbackId={item.sourceId}
-                          deliveryPreset="thumbnail"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-neutral-800">
-                          {item.title}
-                        </p>
-                        <p className="text-sm text-neutral-500">
-                          Quantity {item.quantity}
-                        </p>
-                      </div>
-                      <p className="shrink-0 font-semibold text-neutral-800">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <Card className="border-rose-100">
-                <CardContent className="p-6">
-                  <h2 className="text-base font-semibold text-neutral-800">
-                    Breakdown
-                  </h2>
-
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-sm text-neutral-600">
-                      <span>Items subtotal</span>
-                      <span>{formatPrice(order.itemsTotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-neutral-600">
-                      <span>Shipping fee</span>
-                      <span>{formatPrice(order.shippingFee)}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-rose-100 pt-3 text-sm font-semibold text-neutral-800">
-                      <span>Grand total</span>
-                      <span className="text-rose-600">
-                        {formatPrice(order.totalAmount)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 rounded-2xl bg-rose-50/60 p-4 text-sm text-neutral-600">
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Customer name
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {order.shippingAddress.name}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Customer phone
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {order.shippingAddress.phone}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Delivery zone
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {isInsideDhaka ? "Inside Dhaka" : "Outside Dhaka"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Area
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {order.shippingAddress.area}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Full address
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {order.shippingAddress.address}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Payment method
-                      </p>
-                      <p className="mt-1 font-medium text-neutral-800">
-                        {formatPaymentMethod(order.paymentMethod)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Payment status
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className={cn("mt-2 w-fit", paymentStatusMeta.className)}
-                      >
-                        {paymentStatusMeta.label}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-neutral-400">
-                        Order status
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className={cn("mt-2 w-fit gap-1.5", statusMeta.className)}
-                      >
-                        {statusMeta.icon}
-                        {statusMeta.label}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-rose-100">
-                <CardContent className="p-6">
-                  <h2 className="text-base font-semibold text-neutral-800">
-                    Next steps
-                  </h2>
-                  <ul className="mt-4 space-y-2 text-sm text-neutral-600">
-                    <li>1. We confirm the order and prepare your package.</li>
-                    <li>2. The courier picks up your parcel.</li>
-                    <li>3. You pay cash when it arrives.</li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <div className="flex gap-3">
-                <Button asChild className="flex-1">
-                  <Link href="/orders">View Orders</Link>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href="/shop">Continue Shopping</Link>
-                </Button>
-              </div>
-            </div>
+          <div className="mt-6 rounded-2xl bg-brand-50/50 p-4">
+            <p className="text-xs uppercase tracking-wider text-ink-muted">
+              Delivery address
+            </p>
+            <p className="mt-2 text-sm font-medium text-ink">
+              {order.shippingAddress.name}
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              {order.shippingAddress.phone}
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              {[order.shippingAddress.area, order.shippingAddress.district, order.shippingAddress.division].filter(Boolean).join(", ")}
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              {order.shippingAddress.address}
+            </p>
+            {order.shippingAddress.landmark ? (
+              <p className="mt-1 text-sm text-ink-muted">
+                {order.shippingAddress.landmark}
+              </p>
+            ) : null}
+            {order.shipping ? (
+              <p className="mt-2 text-xs text-ink-muted">
+                Estimated delivery: {order.shipping.estimatedMinDays}-{order.shipping.estimatedMaxDays} business days
+              </p>
+            ) : null}
           </div>
         </CardContent>
       </Card>
-    </div>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Button asChild>
+          <Link href="/shop">Continue shopping</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/orders">View orders</Link>
+        </Button>
+      </div>
+    </main>
   );
 }

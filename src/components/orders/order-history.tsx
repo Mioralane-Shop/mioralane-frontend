@@ -33,7 +33,7 @@ const STATUS_META: Record<OrderStatus, { label: string; className: string; icon:
   },
   cancelled: {
     label: "Cancelled",
-    className: "bg-rose-100 text-rose-700 border-rose-200",
+    className: "bg-brand-100 text-brand-700 border-brand-200",
     icon: <CircleX className="h-4 w-4" />,
   },
 };
@@ -82,8 +82,8 @@ export function OrderHistory({
         const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
         return (
-          <Card key={order.id} className="border-rose-100">
-            <CardContent className="p-6">
+          <Card key={order.id} className="border-brand-100">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -118,7 +118,7 @@ export function OrderHistory({
               <div className="mt-5 space-y-3">
                 {order.items.slice(0, 4).map((item) => (
                   <div key={`${order.id}-${item.sourceId}`} className="flex items-center gap-3">
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-rose-50">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-brand-50">
                       <ProductImage
                         src={item.thumbnail ?? ""}
                         alt={item.title}
@@ -130,7 +130,7 @@ export function OrderHistory({
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">
+                      <p className="line-clamp-2 text-sm font-medium text-ink">
                         {item.title}
                       </p>
                       <p className="text-xs text-ink-muted">Qty {item.quantity}</p>
@@ -142,7 +142,7 @@ export function OrderHistory({
                 ))}
               </div>
 
-              <div className="mt-5 grid gap-3 rounded-2xl bg-rose-50/50 p-4 sm:grid-cols-3">
+              <div className="mt-5 grid gap-3 rounded-2xl bg-brand-50/50 p-4 sm:grid-cols-3">
                 <div>
                   <p className="text-xs uppercase tracking-wider text-ink-muted">
                     Items total
@@ -163,17 +163,17 @@ export function OrderHistory({
                   <p className="text-xs uppercase tracking-wider text-ink-muted">
                     Grand total
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-rose-600">
+                  <p className="mt-1 text-sm font-semibold text-brand-600">
                     {formatPrice(order.totalAmount)}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-rose-100 pt-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-brand-100 pt-4">
                 <div className="text-sm text-ink-muted">
                   Delivery to{" "}
                   <span className="font-medium text-ink">
-                    {order.shippingAddress.area}
+                    {[order.shippingAddress.area, order.shippingAddress.district].filter(Boolean).join(", ")}
                   </span>
                 </div>
                 <Button asChild variant="outline" size="sm">

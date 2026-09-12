@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -26,20 +26,21 @@ import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
-import { ProductImage } from "@/components/common/product-image";
-import { createImageKitLoader, getImageKitUrl, isImageKitUrl } from "@/lib/imagekit-delivery";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
-import type { Product } from "@/types/product";
+import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
 
-const DESKTOP_THUMBNAIL_SLOTS = 4;
+const PRODUCT_TABS: Array<{ key: Exclude<ProductTab, "reviews">; label: string }> = [
+  { key: "overview", label: "Overview" },
+  { key: "ingredients", label: "Ingredients" },
+  { key: "shipping", label: "Shipping & Returns" },
+];
 
-const THUMBNAIL_IMAGEKIT_LOADER = createImageKitLoader({ preset: "thumbnail" });
-const PDP_MAIN_IMAGEKIT_LOADER = createImageKitLoader({ preset: "pdpMain" });
+const DESKTOP_THUMBNAIL_SLOTS = 4;
 
 const TRUST_ITEMS = [
   {
@@ -59,6 +60,12 @@ const TRUST_ITEMS = [
   },
 ];
 
+function splitValues(value?: string | string[]) {
+  if (!value) return [];
+  const values = Array.isArray(value) ? value : value.split(/[,/|]+/);
+  return values.map((item) => item.trim()).filter(Boolean);
+}
+
 function formatCategory(category: string) {
   return category
     .split(/[-_\s]+/)
@@ -67,21 +74,104 @@ function formatCategory(category: string) {
     .join(" ");
 }
 
-function getSkinChips(product: Product) {
-  const chips = [...(product.skinType ?? []), ...(product.skinConcern ?? product.concerns ?? [])]
+function getBenefitChips(product: Product) {
+  const chips = [
+    ...(product.tags ?? []),
+    ...(product.concerns ?? []),
+    ...(product.skinType ? splitValues(product.skinType) : []),
+  ]
     .map((item) => formatCategory(item))
     .filter(Boolean);
-  return Array.from(new Set(chips)).slice(0, 6);
+  return Array.from(new Set(chips)).slice(0, 3);
 }
 
 function getBestForChips(product: Product) {
-  const tokens = [...(product.skinType ?? []), ...(product.skinConcern ?? product.concerns ?? [])]
+  const tokens = [
+    ...(product.skinType ? splitValues(product.skinType) : []),
+    ...(product.concerns ?? []),
+    ...(product.tags ?? []),
+  ]
     .map((value) => formatCategory(value))
     .filter(Boolean);
   return Array.from(new Set(tokens)).slice(0, 6);
 }
 
-function getShippingNotes() {
+function getIngredientHighlights(product: Product) {
+  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
+  const highlights = [
+    {
+      name: "Hyaluronic Acid",
+      meta: "Hydration · Plumping",
+      description: /hyalur|plump|hydrat/i.test(text)
+        ? "A moisture-binding humectant that helps draw hydration into the skin for a plumper, smoother feel."
+        : "",
+      match: /hyalur|ha\b|water-fit|moistur/i,
+    },
+    {
+      name: "Centella Asiatica",
+      meta: "Calming · Sensitive Skin Friendly",
+      description: "Helps calm visible redness and keep sensitive skin feeling comfortable.",
+      match: /centella|cica|sooth|calm/i,
+    },
+    {
+      name: "Niacinamide",
+      meta: "Brightening · Tone Support",
+      description: "Supports a more even-looking tone while helping skin appear clearer and balanced.",
+      match: /niacinamide|bright|glow|spot|tone/i,
+    },
+    {
+      name: "Panthenol",
+      meta: "Barrier Support · Comfort",
+      description: "Helps support the skin barrier and reduce feelings of dryness or tightness.",
+      match: /panthenol|barrier|repair/i,
+    },
+    {
+      name: "Snail Mucin",
+      meta: "Repair · Recovery",
+      description: "Helps support recovery while leaving skin feeling supple and cushioned.",
+      match: /snail/i,
+    },
+    {
+      name: "Propolis",
+      meta: "Glow · Support",
+      description: "Helps boost radiance while supporting skin that feels stressed or dull.",
+      match: /propolis/i,
+    },
+    {
+      name: "Ceramide",
+      meta: "Barrier Support · Moisture",
+      description: "Helps lock in moisture and maintain a healthier-feeling skin barrier.",
+      match: /ceramide/i,
+    },
+    {
+      name: "Tea Tree / BHA",
+      meta: "Clarifying · Oil Control",
+      description: "Helps refine excess oil and keep pores feeling fresher and clearer.",
+      match: /bha|tea tree|acne|oil/i,
+    },
+    {
+      name: "Vitamin C",
+      meta: "Brightening · Radiance",
+      description: "Helps improve the look of dullness for a brighter, fresher finish.",
+      match: /vitamin c|ascorb|c-vit/i,
+    },
+    {
+      name: "SPF Filters",
+      meta: "UV Protection · Daily Wear",
+      description: "Helps defend skin against daily UV exposure in a wearable finish.",
+      match: /spf|uv|sunscreen|sun/i,
+    },
+  ];
+
+  return highlights.filter((item) => item.match.test(text)).slice(0, 4);
+}
+
+function getShippingNotes(product: Product) {
+  const source = product.source?.toLowerCase() ?? "";
+  const authenticity = source
+    ? `Sourced through verified suppliers and trusted distribution channels, including ${product.source}.`
+    : "Sourced through verified suppliers and trusted distribution channels.";
+
   return {
     delivery: [
       { label: "Inside Dhaka", value: "1-2 Business Days" },
@@ -90,8 +180,14 @@ function getShippingNotes() {
     ],
     returns:
       "Unused and unopened products may be returned within 7 days of delivery, subject to the store's return review.",
-    authenticity: "Sourced through verified suppliers and trusted distribution channels.",
+    authenticity,
   };
+}
+
+function getBenefitStatement(product: Product) {
+  const source = product.description || product.longDescription;
+  if (!source) return "Targeted Korean skincare selected for a balanced, healthy-looking routine.";
+  return source;
 }
 
 function clampQuantityToStock(quantity: number, stock: number) {
@@ -130,6 +226,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [thumbnailStart, setThumbnailStart] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
@@ -148,27 +245,27 @@ export default function ProductPage() {
     return () => document.removeEventListener("keydown", onKey);
   }, [lightboxOpen]);
 
-  const displayPrice = product?.price ?? 0;
-  const compareAtPrice = product?.compareAtPrice;
-  const effectiveStock = product?.stock ?? 0;
-  const productItemType = product?.itemType ?? (product?.category === "combo" ? "combo" : "product");
-  const hasSkincareContent = Boolean(
-    product?.ingredients?.trim() ||
-      product?.howToUse?.trim() ||
-      (product?.keyIngredients?.length ?? 0) > 0,
-  );
-  const volumeLabel = product?.volume?.trim() ?? "";
-  const productTabs: Array<{ key: ProductTab; label: string }> = [
-    { key: "overview", label: "Overview" },
-    ...(hasSkincareContent ? [{ key: "ingredients" as const, label: "Ingredients" }] : []),
-    { key: "shipping", label: "Shipping & Returns" },
-  ];
+  const sizeOptions: SizeOption[] =
+    product && product.sizeOptions && product.sizeOptions.length > 0
+      ? product.sizeOptions
+      : product
+        ? [
+          {
+            label: "Default",
+            volume: product.volume ?? "",
+            price: product.price,
+            compareAtPrice: product.compareAtPrice,
+            stock: product.stock,
+          },
+        ]
+        : [];
 
-  useEffect(() => {
-    if (activeTab === "ingredients" && !hasSkincareContent) {
-      setActiveTab("overview");
-    }
-  }, [activeTab, hasSkincareContent]);
+  const selectedSizeOption = sizeOptions[selectedSize] ?? sizeOptions[0];
+  const displayPrice = selectedSizeOption?.price ?? product?.price ?? 0;
+  const compareAtPrice =
+    selectedSizeOption?.compareAtPrice ?? product?.compareAtPrice;
+  const effectiveStock = selectedSizeOption?.stock ?? product?.stock ?? 0;
+  const productItemType = product?.itemType ?? (product?.category === "combo" ? "combo" : "product");
 
   useEffect(() => {
     if (!product) return;
@@ -293,16 +390,18 @@ export default function ProductPage() {
       ? [product.hoverImage]
       : [];
   const selectedImageSrc = images[selectedImage] ?? images[0];
-  const selectedImageIsImageKit = isImageKitUrl(selectedImageSrc);
-  const lightboxImageSrc = selectedImageIsImageKit
-    ? getImageKitUrl(selectedImageSrc, { preset: "pdpLarge" })
-    : selectedImageSrc;
   const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
-  const skinChips = getSkinChips(product);
+  const benefitChips = getBenefitChips(product);
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
       ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
       : 0;
+  const selectedSizeLabel =
+    selectedSizeOption?.volume ||
+    product.volume ||
+    product.size ||
+    (sizeOptions.length > 1 ? selectedSizeOption?.label : "");
+  const showSizeSelector = sizeOptions.length > 1 || Boolean(selectedSizeLabel);
   const goToImage = (offset: number) => {
     if (images.length === 0) return;
     setSelectedImage((current) => {
@@ -318,7 +417,8 @@ export default function ProductPage() {
     });
   };
   const bestForChips = getBestForChips(product);
-  const shippingNotes = getShippingNotes();
+  const ingredientHighlights = getIngredientHighlights(product);
+  const shippingNotes = getShippingNotes(product);
   const maxThumbnailStart = Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS);
   const visibleThumbnailStart = Math.min(thumbnailStart, maxThumbnailStart);
   const thumbnailSlots = Array.from({ length: DESKTOP_THUMBNAIL_SLOTS }, (_, index) => {
@@ -328,7 +428,7 @@ export default function ProductPage() {
       image: images[actualIndex],
     };
   });
-  const reviewTabLabel = `Reviews (${product.reviewCount ?? 0})`;
+  const reviewTabLabel = `Reviews (${product.reviewCount || 4})`;
 
   return (
     <div className="bg-white pb-28 md:pb-0">
@@ -347,7 +447,7 @@ export default function ProductPage() {
           </span>
         </nav>
 
-        <section className="grid gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10">
+        <section className="grid gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10 xl:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)]">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="hidden md:flex md:items-start md:gap-4">
               <div className="flex w-[72px] shrink-0 flex-col items-center gap-3">
@@ -370,7 +470,6 @@ export default function ProductPage() {
                         fill
                         className="object-contain p-2.5"
                         sizes="72px"
-                        loader={isImageKitUrl(image) ? THUMBNAIL_IMAGEKIT_LOADER : undefined}
                       />
                     </button>
                   ) : (
@@ -416,9 +515,9 @@ export default function ProductPage() {
                 className="group relative aspect-square flex-1 overflow-hidden rounded-[28px]"
                 aria-label="Zoom product image"
               >
-                {(product.isBestSeller || product.tag === "best" || product.isNewArrival || product.isNew || product.tag === "new") && (
+                {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && (
                   <span className="absolute left-5 top-5 z-10 rounded-full border border-border bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/70">
-                    {product.isNewArrival || product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
+                    {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
                   </span>
                 )}
                 {images.length > 1 && (
@@ -455,7 +554,6 @@ export default function ProductPage() {
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                     sizes="(max-width: 1024px) 100vw, 48vw"
                     priority
-                    loader={isImageKitUrl(selectedImageSrc) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-ink/25">
@@ -503,9 +601,9 @@ export default function ProductPage() {
                     )}
                     aria-label={`Open image ${index + 1}`}
                   >
-                    {(product.isBestSeller || product.tag === "best" || product.isNewArrival || product.isNew || product.tag === "new") && index === 0 && (
+                    {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && index === 0 && (
                       <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/70">
-                        {product.isNewArrival || product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
+                        {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
                       </span>
                     )}
                     {image ? (
@@ -517,7 +615,6 @@ export default function ProductPage() {
                           className="object-cover"
                           sizes="100vw"
                           priority={index === 0}
-                          loader={isImageKitUrl(image) ? PDP_MAIN_IMAGEKIT_LOADER : undefined}
                         />
                         <button
                           type="button"
@@ -571,7 +668,7 @@ export default function ProductPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
                 {SITE_NAME}
               </p>
-              <h1 className="max-w-[12ch] text-[2.6rem] font-serif font-medium leading-[0.98] text-ink sm:text-[3.6rem]">
+              <h1 className="max-w-[14ch] break-words text-[2.35rem] font-serif font-medium leading-[1.02] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
                 {product.name}
               </h1>
             </div>
@@ -609,14 +706,12 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-4">
-              {product.description?.trim() ? (
-                <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
-                  {product.description}
-                </p>
-              ) : null}
-              {skinChips.length > 0 && (
+              <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
+                {getBenefitStatement(product)}
+              </p>
+              {benefitChips.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {skinChips.map((chip) => (
+                  {benefitChips.map((chip) => (
                     <span
                       key={chip}
                       className="rounded-full border border-border bg-white px-3.5 py-2 text-xs font-medium text-ink/65"
@@ -628,15 +723,37 @@ export default function ProductPage() {
               )}
             </div>
 
-            {volumeLabel ? (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-semibold text-ink">Volume:</span>
-                <span className="font-semibold text-ink/85">{volumeLabel}</span>
+            {showSizeSelector && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold text-ink">Size:</span>
+                  <span className="font-semibold text-ink/85">{selectedSizeLabel}</span>
+                </div>
+                {sizeOptions.length > 1 && (
+                  <div className="rounded-[24px] border border-border bg-white px-5 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      {sizeOptions.map((opt, i) => (
+                        <button
+                          key={`${opt.label}-${i}`}
+                          onClick={() => setSelectedSize(i)}
+                          className={cn(
+                            "min-h-10 rounded-full border px-4 text-center text-sm font-medium transition-all",
+                            selectedSize === i
+                              ? "border-accent bg-accent-pale text-ink"
+                              : "border-border bg-white text-ink/65 hover:border-ink/25",
+                          )}
+                        >
+                          {opt.volume || opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : null}
+            )}
 
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 min-[380px]:flex-nowrap">
                 <div className="flex h-12 w-[132px] shrink-0 items-center rounded-full border border-border bg-white px-1 sm:w-[144px]">
                   <button
                     onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
@@ -660,7 +777,7 @@ export default function ProductPage() {
                   onClick={() => addToCart()}
                   disabled={effectiveStock === 0}
                   className={cn(
-                    "flex h-12 min-w-0 flex-[1.65] items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition-colors",
+                    "flex h-12 min-w-[min(100%,12rem)] flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors min-[380px]:min-w-0 sm:px-6",
                     effectiveStock === 0
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
                       : "bg-accent text-white hover:bg-accent-dark",
@@ -675,7 +792,7 @@ export default function ProductPage() {
                   onClick={handleWishlist}
                   disabled={isTogglingWishlist}
                   className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-all hover:border-accent/50 hover:text-accent",
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-all hover:border-accent/50 hover:text-accent max-[379px]:ml-auto",
                     isWishlisted && "border-accent/25 bg-accent-pale text-accent",
                     isTogglingWishlist && "cursor-wait opacity-70",
                   )}
@@ -695,7 +812,7 @@ export default function ProductPage() {
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
             <div className="overflow-x-auto">
               <div className="flex min-w-max gap-8">
-                {[...productTabs, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
+                {[...PRODUCT_TABS, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
@@ -725,7 +842,7 @@ export default function ProductPage() {
                       About This Product
                     </p>
                     <p className="max-w-[64ch] text-sm leading-7 text-[#5F5A57]">
-                      {product.description}
+                      {product.longDescription || product.description}
                     </p>
                   </section>
 
@@ -772,45 +889,34 @@ export default function ProductPage() {
 
             {activeTab === "ingredients" && (
               <div className="space-y-8">
-                {product.keyIngredients?.length ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Key Ingredients
-                    </p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {product.keyIngredients.map((ingredient) => (
-                        <div key={ingredient.name} className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
-                          <h3 className="text-lg font-semibold text-[#1F1F1F]">{ingredient.name}</h3>
-                          {ingredient.benefit ? (
-                            <p className="mt-2 text-sm leading-7 text-[#5F5A57]">{ingredient.benefit}</p>
-                          ) : null}
-                        </div>
-                      ))}
+                <section className="max-w-2xl space-y-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Key Ingredient</p>
+                  {ingredientHighlights[0] ? (
+                    <div className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
+                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{ingredientHighlights[0].name}</h3>
+                      <p className="mt-1 text-sm font-medium text-[#8A8581]">{ingredientHighlights[0].meta}</p>
+                      {ingredientHighlights[0].description ? (
+                        <p className="mt-3 max-w-[58ch] text-sm leading-7 text-[#5F5A57]">
+                          {ingredientHighlights[0].description}
+                        </p>
+                      ) : null}
                     </div>
-                  </section>
-                ) : null}
+                  ) : (
+                    <p className="text-sm leading-7 text-[#5F5A57]">
+                      Ingredient details are not listed in the current catalog entry for this product.
+                    </p>
+                  )}
+                </section>
 
-                {product.ingredients?.trim() ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Full Ingredient List
-                    </p>
-                    <p className="max-w-3xl whitespace-pre-line text-sm leading-7 text-[#5F5A57]">
-                      {product.ingredients}
-                    </p>
-                  </section>
-                ) : null}
-
-                {product.howToUse?.trim() ? (
-                  <section className="space-y-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      How To Use
-                    </p>
-                    <p className="max-w-3xl whitespace-pre-line text-sm leading-7 text-[#5F5A57]">
-                      {product.howToUse}
-                    </p>
-                  </section>
-                ) : null}
+                <details className="group border-t border-[#E6E0DA] pt-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-[#1F1F1F]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Full Ingredient List</span>
+                    <span className="text-lg leading-none text-[#8A8581] transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[#5F5A57]">
+                    {product.ingredients || "Full INCI ingredient list is not available in the current product data."}
+                  </p>
+                </details>
               </div>
             )}
 
@@ -835,10 +941,12 @@ export default function ProductPage() {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Returns</p>
                     <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.returns}</p>
                   </div>
-                  <div className="border-t border-[#E6E0DA] pt-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Authenticity Guarantee</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.authenticity}</p>
-                  </div>
+                  {product.source ? (
+                    <div className="border-t border-[#E6E0DA] pt-6">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Authenticity Guarantee</p>
+                      <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.authenticity}</p>
+                    </div>
+                  ) : null}
                 </section>
               </div>
             )}
@@ -859,35 +967,21 @@ export default function ProductPage() {
         <section className="bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
             <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-              {relatedProducts.map((p) => {
-                const isOutOfStock = p.stock <= 0;
-
-                return (
-                  <div key={p.id} className="flex flex-col">
-                    <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]">
-                      <ProductImage
-                        src={p.images?.[0] ?? ""}
-                        alt={p.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) calc((100vw - 28px) / 2), (max-width: 1024px) 50vw, 320px"
-                        fallbackId={p.id}
-                        deliveryPreset="productCard"
-                      />
-                    </Link>
-                    <div className="mt-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                      <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                      <div className="mt-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { if (isOutOfStock) return; addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} disabled={isOutOfStock} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/[0.04] disabled:text-ink/35">{isOutOfStock ? "Out of Stock" : "Add to Cart"}</button></div>
-                    </div>
+            <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+              {relatedProducts.map((p) => (
+                <div key={p.id} className="flex flex-col">
+                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
+                  <div className="mt-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
+                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </section>
-      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-ink/10 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
         <div className="flex items-center rounded-full border border-ink/15">
           <button
             onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
@@ -910,7 +1004,7 @@ export default function ProductPage() {
         <button
           onClick={() => addToCart()}
           disabled={effectiveStock === 0}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
+          className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] px-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
         >
           <ShoppingBag className="h-4 w-4" />
           Add to Cart
@@ -932,12 +1026,11 @@ export default function ProductPage() {
           <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
             {selectedImageSrc ? (
               <Image
-                src={lightboxImageSrc}
+                src={selectedImageSrc}
                 alt={product.name}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 48rem"
-                unoptimized={selectedImageIsImageKit}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-white/40">
@@ -950,5 +1043,3 @@ export default function ProductPage() {
     </div>
   );
 }
-
-

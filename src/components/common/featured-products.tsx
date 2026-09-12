@@ -73,7 +73,7 @@ export function FeaturedProducts() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
@@ -83,7 +83,7 @@ export function FeaturedProducts() {
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
-            <AlertCircle className="h-16 w-16 text-rose-300" />
+            <AlertCircle className="h-16 w-16 text-brand-300" />
             <h3 className="mt-4 text-lg font-semibold text-ink">
               {isNotFoundError ? "Products not found" : "Could not load products"}
             </h3>
@@ -113,7 +113,7 @@ export function FeaturedProducts() {
             <p className="text-lg text-neutral-400">No products found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {singleProducts.slice(0, 8).map((product) => (
               <ProductCard key={product.id} product={product} compactImage />
             ))}

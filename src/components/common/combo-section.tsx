@@ -26,7 +26,7 @@ function extractComboMeta(p: Product | ComboProduct): ComboCardMeta | undefined 
   };
 }
 
-/** Bundle card grid for the Combo page â€” fetches live data from the API. */
+/** Bundle card grid for the Combo page Ã¢â‚¬â€ fetches live data from the API. */
 export function ComboSection() {
   const router = useRouter();
   const {
@@ -40,7 +40,7 @@ export function ComboSection() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
@@ -54,7 +54,7 @@ export function ComboSection() {
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-6 py-20 text-center">
-        <AlertCircle className="h-16 w-16 text-rose-300" />
+        <AlertCircle className="h-16 w-16 text-brand-300" />
         <h3 className="mt-4 text-lg font-semibold text-ink">
           Could not load bundles
         </h3>
@@ -97,7 +97,7 @@ export function ComboSection() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
       {combos.map((product) => (
         <ProductCard
           key={product.id}
