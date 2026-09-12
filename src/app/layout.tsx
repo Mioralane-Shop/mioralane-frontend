@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-summary";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollProgress } from "@/components/common/scroll-progress";
+import { PromotionCampaign } from "@/components/common/promotion-campaign";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/constants/site";
 import "./globals.css";
 
@@ -68,6 +69,7 @@ export default function RootLayout({
           <Navbar />
           <CartDrawer />
           <Toaster />
+          <PromotionCampaign />
           <main className="flex-1">{children}</main>
           <Footer />
         </QueryProvider>

@@ -199,7 +199,7 @@ export function AuthForm({
         className
       )}
     >
-      <section className="rounded-xl border border-border bg-white/90 px-6 py-7 shadow-lg shadow-brand-100/30 backdrop-blur sm:px-10 sm:py-10">
+      <section className="rounded-xl border border-border bg-white/90 px-4 py-7 shadow-lg shadow-brand-100/30 backdrop-blur sm:px-10 sm:py-10">
         <Link
           href="/"
           className="mb-6 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-brand-500"
@@ -450,7 +450,7 @@ export function AuthForm({
               </span>
             </div>
           </div>
-          <div className="flex justify-center">
+          <div className="flex min-w-0 justify-center overflow-hidden">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() =>
@@ -460,7 +460,7 @@ export function AuthForm({
               text="signin_with"
               shape="pill"
               theme="outline"
-              width="360"
+              width="100%"
             />
           </div>
 
