@@ -144,8 +144,21 @@ export default function OrderSuccessPage() {
               {order.shippingAddress.phone}
             </p>
             <p className="mt-1 text-sm text-ink-muted">
-              {order.shippingAddress.area}, {order.shippingAddress.address}
+              {[order.shippingAddress.area, order.shippingAddress.district, order.shippingAddress.division].filter(Boolean).join(", ")}
             </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              {order.shippingAddress.address}
+            </p>
+            {order.shippingAddress.landmark ? (
+              <p className="mt-1 text-sm text-ink-muted">
+                {order.shippingAddress.landmark}
+              </p>
+            ) : null}
+            {order.shipping ? (
+              <p className="mt-2 text-xs text-ink-muted">
+                Estimated delivery: {order.shipping.estimatedMinDays}-{order.shipping.estimatedMaxDays} business days
+              </p>
+            ) : null}
           </div>
         </CardContent>
       </Card>

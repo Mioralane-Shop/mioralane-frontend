@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
 import type { ActivePromotion, PromotionValidationResponse } from "@/types/promotion";
+import type { ShippingQuoteAddress } from "@/types/shipping";
 
 export const promotionService = {
   async getActive() {
@@ -9,7 +10,7 @@ export const promotionService = {
 
   async validate(payload: {
     items: Array<{ itemId: string; itemType: "product" | "combo"; quantity: number }>;
-    deliveryZone: "inside_dhaka" | "outside_dhaka";
+    shippingAddress: ShippingQuoteAddress;
     couponCode?: string;
   }) {
     const { data } = await api.post<PromotionValidationResponse>("/promotions/validate", payload);

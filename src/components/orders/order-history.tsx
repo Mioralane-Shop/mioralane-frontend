@@ -173,7 +173,7 @@ export function OrderHistory({
                 <div className="text-sm text-ink-muted">
                   Delivery to{" "}
                   <span className="font-medium text-ink">
-                    {order.shippingAddress.area}
+                    {[order.shippingAddress.area, order.shippingAddress.district].filter(Boolean).join(", ")}
                   </span>
                 </div>
                 <Button asChild variant="outline" size="sm">
