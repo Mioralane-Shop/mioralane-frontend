@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useAuthStore } from "@/store/auth.store";
 import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
+import { getProductAvailability } from "@/lib/pre-order";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -92,7 +93,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
       ? product.compareAtPrice
       : undefined;
   const volumeLabel = formatVolumeLabel(product);
-  const isOutOfStock = product.stock <= 0;
+  const availability = getProductAvailability(product);
   const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const productCardImageLoader = isImageKitUrl(mainImgSrc) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined;
 
@@ -248,16 +249,16 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               <span
                 className={cn(
                   "flex items-center gap-1 text-[10px] sm:text-[11px]",
-                  product.stock > 0 ? "text-[#1F6B4E]" : "text-ink-muted"
+                  availability.isAvailable ? "text-[#1F6B4E]" : "text-ink-muted"
                 )}
               >
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    product.stock > 0 ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
+                    availability.isAvailable ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
                   )}
                 />
-                {product.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}
+                {availability.label}
               </span>
               {volumeLabel && (
                 <>
@@ -293,16 +294,16 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             ) : (
               <button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock}
+                disabled={!availability.isAvailable}
                 className={cn(
                   "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
-                  isOutOfStock
+                  !availability.isAvailable
                     ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
                     : UI_COLORS.cart + " hover:shadow active:scale-95"
                 )}
               >
                 <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
-                <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
+                <span>{availability.ctaLabel}</span>
               </button>
             )}
           </div>
@@ -427,16 +428,16 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               <span
                 className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  product.stock > 0 ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
+                  availability.isAvailable ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
                 )}
               />
               <span
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-wider sm:text-[11px] lg:text-[10px]",
-                  product.stock > 0 ? "text-[#1F6B4E]" : "text-ink-muted"
+                  availability.isAvailable ? "text-[#1F6B4E]" : "text-ink-muted"
                 )}
               >
-                {product.stock > 0 ? "IN STOCK" : "OUT OF STOCK"}
+                {availability.label}
               </span>
               {volumeLabel && (
                 <>
@@ -485,16 +486,16 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           ) : (
             <button
               onClick={handleAddToCart}
-              disabled={isOutOfStock}
+              disabled={!availability.isAvailable}
               className={cn(
                 "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition-all duration-150 max-[360px]:w-full sm:px-6 sm:py-3 sm:text-base lg:px-4 lg:py-2 lg:text-xs",
-                isOutOfStock
+                !availability.isAvailable
                   ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
                   : UI_COLORS.cart + " shadow-sm hover:shadow active:scale-95"
               )}
             >
               <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5 lg:h-3.5 lg:w-3.5" />
-              <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
+              <span>{availability.ctaLabel}</span>
             </button>
           )}
         </div>

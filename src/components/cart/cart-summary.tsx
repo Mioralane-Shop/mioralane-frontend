@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { ShoppingBag, MessageCircle } from "lucide-react";
 import { SITE_WHATSAPP } from "@/constants/site";
+import { getCartPreOrderReadiness, getPurchasableQuantityLimit, isPurchasableProduct, formatPreOrderDate } from "@/lib/pre-order";
 
 export function CartDrawer() {
   const {
@@ -29,9 +30,10 @@ export function CartDrawer() {
   const purchasableItems = items.filter(
     (item) =>
       item.catalogStatus === "verified" &&
-      item.product.stock > 0 &&
-      item.quantity <= item.product.stock,
+      isPurchasableProduct(item.product) &&
+      item.quantity <= getPurchasableQuantityLimit(item.product),
   );
+  const expectedReadiness = getCartPreOrderReadiness(items);
 
   const orderText = `Hello Mioralane! I'd like to place an order:\n${purchasableItems
     .map(
@@ -122,6 +124,11 @@ export function CartDrawer() {
               <p className="mb-4 text-xs text-neutral-400">
                 Shipping and taxes calculated at checkout
               </p>
+              {expectedReadiness ? (
+                <p className="mb-4 rounded-2xl bg-brand-50/70 px-4 py-3 text-xs text-neutral-600">
+                  This order contains pre-order items and will ship together when all items are available. Expected availability: {formatPreOrderDate(expectedReadiness)}.
+                </p>
+              ) : null}
 
               {canCheckout() ? (
                 <Link href="/checkout" onClick={closeCart}>

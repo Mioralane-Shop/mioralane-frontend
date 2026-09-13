@@ -19,6 +19,14 @@ export interface Product {
   rating: number;
   reviewCount: number;
   stock: number;
+  availabilityMode?: "in_stock" | "pre_order";
+  preOrder?: {
+    expectedArrivalDate?: string;
+    quantityLimit?: number;
+    customerMessage?: string;
+    status?: "accepting" | "closed" | "arrived";
+    remainingQuantity?: number;
+  };
   ingredients?: string;
   howToUse?: string;
   keyIngredients?: ProductKeyIngredient[];

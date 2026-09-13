@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { comboService } from "@/services/combo.service";
 import { productService } from "@/services/product.service";
+import { getPurchasableQuantityLimit, isPurchasableProduct } from "@/lib/pre-order";
 import type { CartCatalogStatus, CartItem, Product } from "@/types/product";
 
 type CartItemType = "product" | "combo";
@@ -77,7 +78,7 @@ function isPurchasableItem(item: CartItem): boolean {
     return false;
   }
 
-  return item.product.stock > 0 && item.quantity <= item.product.stock;
+  return isPurchasableProduct(item.product) && item.quantity <= getPurchasableQuantityLimit(item.product);
 }
 
 function getCatalogStatusMessage(
@@ -113,10 +114,10 @@ function syncItemFromCatalog(
     ...catalogProduct,
     itemType,
   };
-  const nextQuantity =
-    catalogProduct.stock > 0
-      ? clampQuantity(item.quantity, catalogProduct.stock)
-      : item.quantity;
+  const limit = getPurchasableQuantityLimit(catalogProduct);
+  const nextQuantity = isPurchasableProduct(catalogProduct)
+    ? clampQuantity(item.quantity, limit)
+    : item.quantity;
 
   return {
     ...item,
@@ -157,12 +158,12 @@ export const useCartStore = create<CartState>()(
       catalogSyncError: null,
 
       addItem: (product, quantity = 1) => {
-        if (product.stock <= 0) {
+        if (!isPurchasableProduct(product)) {
           return;
         }
 
         const identity = getCartItemIdentity(product);
-        const normalizedQuantity = clampQuantity(quantity, product.stock);
+        const normalizedQuantity = clampQuantity(quantity, getPurchasableQuantityLimit(product));
         const normalizedProduct: Product = {
           ...product,
           itemType: identity.itemType,
@@ -177,7 +178,7 @@ export const useCartStore = create<CartState>()(
             const existing = state.items[existingIndex];
             const nextQuantity = clampQuantity(
               existing.quantity + normalizedQuantity,
-              product.stock,
+              getPurchasableQuantityLimit(product),
             );
 
             const nextItems = [...state.items];
@@ -232,7 +233,7 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
-        const nextQuantity = clampQuantity(quantity, item.product.stock);
+        const nextQuantity = clampQuantity(quantity, getPurchasableQuantityLimit(item.product));
         set((state) => ({
           items: state.items.map((entry) =>
             resolveCartItemIdentity(entry).itemId === itemId &&
@@ -427,14 +428,14 @@ export const useCartStore = create<CartState>()(
         }
 
         const outOfStockItem = state.items.find(
-          (item) => item.catalogStatus === "verified" && item.product.stock <= 0,
+          (item) => item.catalogStatus === "verified" && !isPurchasableProduct(item.product),
         );
         if (outOfStockItem) {
-          return "One or more items in your cart are currently out of stock.";
+          return "One or more items in your cart are currently unavailable.";
         }
 
         const overLimitItem = state.items.find(
-          (item) => item.catalogStatus === "verified" && item.quantity > item.product.stock,
+          (item) => item.catalogStatus === "verified" && item.quantity > getPurchasableQuantityLimit(item.product),
         );
         if (overLimitItem) {
           return "One or more items exceed the current stock level.";

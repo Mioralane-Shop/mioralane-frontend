@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/common/product-image";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Order, OrderStatus, PaymentStatus } from "@/types/order";
+import { formatPreOrderDate, orderContainsPreOrder } from "@/lib/pre-order";
 
 const STATUS_META: Record<OrderStatus, { label: string; className: string; icon: ReactNode }> = {
   pending: {
@@ -80,6 +81,7 @@ export function OrderHistory({
         const status = getOrderStatus(order);
         const statusMeta = STATUS_META[status] ?? STATUS_META.pending;
         const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        const containsPreOrder = orderContainsPreOrder(order);
 
         return (
           <Card key={order.id} className="border-brand-100">
@@ -94,6 +96,7 @@ export function OrderHistory({
                       {statusMeta.icon}
                       {statusMeta.label}
                     </Badge>
+                    {containsPreOrder ? <Badge variant="outline">PRE-ORDER</Badge> : null}
                   </div>
                   <p className="mt-1 text-xs text-ink-muted">
                     {new Date(order.createdAt).toLocaleDateString("en-US", {
@@ -134,6 +137,11 @@ export function OrderHistory({
                         {item.title}
                       </p>
                       <p className="text-xs text-ink-muted">Qty {item.quantity}</p>
+                      {item.fulfillmentType === "pre_order" ? (
+                        <p className="text-xs text-ink-muted">
+                          PRE-ORDER / Expected arrival: {formatPreOrderDate(item.preOrderSnapshot?.expectedArrivalDate)}
+                        </p>
+                      ) : null}
                     </div>
                     <p className="shrink-0 text-sm font-semibold text-ink">
                       {formatPrice(item.price * item.quantity)}
@@ -143,6 +151,11 @@ export function OrderHistory({
               </div>
 
               <div className="mt-5 grid gap-3 rounded-2xl bg-brand-50/50 p-4 sm:grid-cols-3">
+                {containsPreOrder ? (
+                  <div className="sm:col-span-3 text-sm text-ink-muted">
+                    This order contains pre-order items and will be shipped together when all items are available.
+                  </div>
+                ) : null}
                 <div>
                   <p className="text-xs uppercase tracking-wider text-ink-muted">
                     Items total

@@ -22,6 +22,7 @@ import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checko
 import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict } from "@/constants/bangladesh-locations";
 import { shippingService } from "@/services/shipping.service";
 import type { ShippingQuoteResponse } from "@/types/shipping";
+import { formatPreOrderDate, getCartPreOrderReadiness, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
 
 export default function CheckoutPage() {
   return (
@@ -98,6 +99,7 @@ function CheckoutContent() {
   const totalAmount = shippingQuote?.totals.totalAmount ?? Math.max(subtotal - discountAmount, 0);
   const deliveryAvailable = shippingQuote?.shipping.availability.available ?? false;
   const quoteLocationReady = Boolean(selectedDivision && selectedDistrict && selectedArea);
+  const expectedPreOrderReadiness = getCartPreOrderReadiness(items);
 
   const validationItems = useMemo(
     () =>
@@ -538,12 +540,13 @@ function CheckoutContent() {
                         </p>
                         <p className="text-xs text-neutral-400">
                           Qty {item.quantity}
+                          {isPreOrderProduct(item.product) ? " / PRE-ORDER" : ""}
                         </p>
                       </div>
                       <span className="shrink-0 font-medium text-neutral-800">
                         {item.catalogStatus === "verified" &&
-                        item.product.stock > 0 &&
-                        item.quantity <= item.product.stock
+                        isPurchasableProduct(item.product) &&
+                        item.quantity <= getPurchasableQuantityLimit(item.product)
                           ? formatPrice(item.product.price * item.quantity)
                           : "Unavailable"}
                       </span>
@@ -609,6 +612,20 @@ function CheckoutContent() {
                     Refreshing cart prices and stock. Please wait before placing the order.
                   </p>
                 )}
+
+                {expectedPreOrderReadiness ? (
+                  <div className="mt-4 rounded-2xl bg-brand-50/70 p-4 text-sm text-neutral-600">
+                    <p className="font-medium text-neutral-800">
+                      This order contains pre-order items.
+                    </p>
+                    <p className="mt-1">
+                      All items will be shipped together once the pre-order items become available.
+                    </p>
+                    <p className="mt-2">
+                      Expected product availability: {formatPreOrderDate(expectedPreOrderReadiness)}
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="mt-5 rounded-2xl bg-brand-50/50 p-4 text-sm text-neutral-600">
                   <div className="flex items-center gap-2 font-medium text-neutral-800">
