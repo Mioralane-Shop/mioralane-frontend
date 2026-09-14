@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/common/product-image";
 import { orderService } from "@/services/order.service";
 import { formatPrice } from "@/lib/utils";
+import { formatPreOrderDate, orderContainsPreOrder } from "@/lib/pre-order";
 
 export default function OrderSuccessPage() {
   const params = useParams<{ id: string }>();
@@ -63,6 +64,7 @@ export default function OrderSuccessPage() {
   }
 
   const itemCount = order.items.reduce((total, item) => total + item.quantity, 0);
+  const containsPreOrder = orderContainsPreOrder(order);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
@@ -75,6 +77,11 @@ export default function OrderSuccessPage() {
           Order #{order.orderNumber} - {itemCount}{" "}
           {itemCount === 1 ? "item" : "items"}
         </p>
+        {containsPreOrder ? (
+          <p className="mx-auto mt-3 max-w-md rounded-2xl bg-brand-50/70 px-4 py-3 text-sm text-ink-muted">
+            This order contains pre-order items. All items will be shipped together once the pre-order items become available.
+          </p>
+        ) : null}
       </div>
 
       <Card className="border-brand-100">
@@ -125,6 +132,11 @@ export default function OrderSuccessPage() {
                     {item.title}
                   </p>
                   <p className="text-xs text-ink-muted">Qty {item.quantity}</p>
+                  {item.fulfillmentType === "pre_order" ? (
+                    <p className="text-xs text-ink-muted">
+                      PRE-ORDER / Expected arrival: {formatPreOrderDate(item.preOrderSnapshot?.expectedArrivalDate)}
+                    </p>
+                  ) : null}
                 </div>
                 <p className="shrink-0 text-sm font-semibold text-ink">
                   {formatPrice(item.price * item.quantity)}
