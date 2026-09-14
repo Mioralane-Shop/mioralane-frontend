@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/common/product-image";
 import { useCartStore } from "@/store/cart.store";
 import { cn, formatPrice } from "@/lib/utils";
+import { formatPreOrderDate, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
 import type { CartItem as CartItemType } from "@/types/product";
 
 interface CartItemProps {
@@ -20,14 +21,20 @@ export function CartItemRow({ item }: CartItemProps) {
   const itemHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const isVerified = catalogStatus === "verified";
   const isUnavailable = catalogStatus === "missing" || catalogStatus === "error";
-  const isOutOfStock = isVerified && product.stock <= 0;
-  const canIncrease = isVerified && product.stock > 0 && quantity < product.stock;
+  const isPreOrder = isPreOrderProduct(product);
+  const quantityLimit = getPurchasableQuantityLimit(product);
+  const isOutOfStock = isVerified && !isPurchasableProduct(product);
+  const canIncrease = isVerified && isPurchasableProduct(product) && quantity < quantityLimit;
   const statusLabel = isUnavailable
     ? catalogStatus === "missing"
       ? "No longer available"
       : "Availability could not be verified"
-    : isOutOfStock
-      ? "Out of stock"
+      : isOutOfStock
+        ? isPreOrder
+          ? product.preOrder?.status === "accepting"
+            ? "Pre-order full"
+            : "Pre-order closed"
+          : "Out of stock"
       : null;
   const showPrice = isVerified || isOutOfStock;
   const canNavigate = !isUnavailable;
@@ -79,6 +86,14 @@ export function CartItemRow({ item }: CartItemProps) {
           <p className="mt-0.5 text-sm font-semibold text-brand-600">
             {showPrice ? formatPrice(product.price) : "Price unavailable"}
           </p>
+          {isPreOrder ? (
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+              <span className="font-semibold uppercase tracking-wide text-brand-600">PRE-ORDER</span>
+              {product.preOrder?.expectedArrivalDate ? (
+                <span>Expected arrival: {formatPreOrderDate(product.preOrder.expectedArrivalDate)}</span>
+              ) : null}
+            </div>
+          ) : null}
           {statusLabel && (
             <p
               className={cn(

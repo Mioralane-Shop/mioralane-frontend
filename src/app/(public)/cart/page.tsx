@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CartItemRow } from "@/components/cart/cart-item";
+import { CrossSellRecommendations } from "@/components/cart/cross-sell-recommendations";
 import { useCartStore } from "@/store/cart.store";
 import { formatPrice } from "@/lib/utils";
 
@@ -94,6 +95,7 @@ export default function CartPage() {
                 </Link>
               </div>
             </div>
+            <CrossSellRecommendations className="mt-6" />
           </div>
 
           <div className="lg:col-span-1">

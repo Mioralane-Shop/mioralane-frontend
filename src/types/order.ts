@@ -12,6 +12,12 @@ export interface OrderItem {
   quantity: number;
   price: number;
   thumbnail: string;
+  fulfillmentType?: "regular" | "pre_order";
+  preOrderSnapshot?: {
+    expectedArrivalDate?: string;
+    customerMessage?: string;
+    quantityLimit?: number;
+  };
 }
 
 export interface ShippingAddress {
@@ -62,6 +68,8 @@ export interface Order {
   orderStatus: OrderStatus;
   status?: OrderStatus;
   trackingStatus?: OrderStatus;
+  containsPreOrder?: boolean;
+  expectedReadinessDate?: string;
   orderId?: string;
   userId?: string;
   createdAt: string;
