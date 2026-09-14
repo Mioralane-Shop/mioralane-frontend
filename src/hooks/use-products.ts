@@ -56,6 +56,17 @@ export function useRelatedProducts(category: string, excludeId: string) {
   });
 }
 
+export function useCartRecommendations(productIds: string[]) {
+  const uniqueProductIds = Array.from(new Set(productIds.filter(Boolean))).sort();
+
+  return useQuery({
+    queryKey: ["cart-cross-sell-recommendations", uniqueProductIds],
+    queryFn: () => productService.getCartRecommendations(uniqueProductIds),
+    enabled: uniqueProductIds.length > 0,
+    retry: false,
+  });
+}
+
 /** Hook: fetch products by tab - bestsellers, new arrivals, or trending */
 export function useProductsByTab(
   tab: "bestseller" | "new" | "trending",

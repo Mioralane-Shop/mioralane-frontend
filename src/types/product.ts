@@ -41,6 +41,7 @@ export interface Product {
   isNewArrival?: boolean;
   isBestSeller?: boolean;
   itemType?: "product" | "combo";
+  recommendationPriority?: number;
   createdAt: string;
 }
 

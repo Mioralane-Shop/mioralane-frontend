@@ -5,6 +5,7 @@ import { useCartStore } from "@/store/cart.store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CartItemRow } from "./cart-item";
+import { CrossSellRecommendations } from "./cross-sell-recommendations";
 import {
   Sheet,
   SheetContent,
@@ -102,6 +103,7 @@ export function CartDrawer() {
                   item={item}
                 />
               ))}
+              <CrossSellRecommendations className="py-4" />
             </div>
 
             <div className="shrink-0 border-t border-brand-100 px-4 py-4 sm:px-6">
