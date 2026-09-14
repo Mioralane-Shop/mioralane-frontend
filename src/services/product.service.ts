@@ -16,6 +16,11 @@ export interface SingleProductResponse {
   product: Product;
 }
 
+export interface CartRecommendationsResponse {
+  success: boolean;
+  recommendations: Product[];
+}
+
 export const productService = {
   getAll: async (params?: Record<string, string>): Promise<PaginatedProductsResponse> => {
     const { data } = await api.get<PaginatedProductsResponse>("/products", { params });
@@ -39,6 +44,13 @@ export const productService = {
       params: { category, limit: "4" },
     });
     return data.products.filter((p) => p.id !== excludeId).slice(0, 4);
+  },
+
+  getCartRecommendations: async (productIds: string[]): Promise<Product[]> => {
+    const { data } = await api.post<CartRecommendationsResponse>("/products/recommendations/cart", {
+      productIds,
+    });
+    return data.recommendations;
   },
 
   /** Fetch products by a specific tab: bestsellers, new arrivals, or trending */

@@ -30,6 +30,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
+import {
+  formatPreOrderDate,
+  getProductAvailability,
+  isPreOrderProduct,
+} from "@/lib/pre-order";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
@@ -266,18 +271,24 @@ export default function ProductPage() {
     selectedSizeOption?.compareAtPrice ?? product?.compareAtPrice;
   const effectiveStock = selectedSizeOption?.stock ?? product?.stock ?? 0;
   const productItemType = product?.itemType ?? (product?.category === "combo" ? "combo" : "product");
+  const isPreOrder = isPreOrderProduct(product);
+  const availability = product ? getProductAvailability(product) : null;
+  const effectiveLimit = availability?.quantityLimit ?? effectiveStock;
+  const canPurchase = availability?.isAvailable ?? false;
 
   useEffect(() => {
     if (!product) return;
 
-    setQuantity((current) => clampQuantityToStock(current, effectiveStock));
-    syncItemStock(product.id, effectiveStock, productItemType);
-  }, [effectiveStock, product, productItemType, syncItemStock]);
+    setQuantity((current) => clampQuantityToStock(current, effectiveLimit));
+    if (!isPreOrder) {
+      syncItemStock(product.id, effectiveStock, productItemType);
+    }
+  }, [effectiveLimit, effectiveStock, isPreOrder, product, productItemType, syncItemStock]);
 
   const addToCart = (qty: number = quantity) => {
-    if (!product || effectiveStock <= 0) return;
+    if (!product || !canPurchase) return;
 
-    const quantityToAdd = clampQuantityToStock(qty, effectiveStock);
+    const quantityToAdd = clampQuantityToStock(qty, effectiveLimit);
     addItem(
       {
         ...product,
@@ -692,17 +703,29 @@ export default function ProductPage() {
               <div
                 className={cn(
                   "flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]",
-                  effectiveStock > 0 ? "text-[#1F6B4E]" : "text-ink-muted",
+                  canPurchase ? "text-[#1F6B4E]" : "text-ink-muted",
                 )}
               >
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    effectiveStock > 0 ? "animate-stock-radar bg-current" : "bg-current",
+                    canPurchase ? "animate-stock-radar bg-current" : "bg-current",
                   )}
                 />
-                <span>{effectiveStock > 0 ? "In Stock" : "Out of Stock"}</span>
+                <span>{availability?.label ?? (effectiveStock > 0 ? "IN STOCK" : "OUT OF STOCK")}</span>
               </div>
+              {isPreOrder ? (
+                <div className="rounded-2xl border border-border bg-white px-4 py-3 text-sm text-ink/70">
+                  <p className="font-semibold uppercase tracking-[0.12em] text-accent">PRE-ORDER</p>
+                  <p className="mt-2">Expected arrival: {formatPreOrderDate(product.preOrder?.expectedArrivalDate)}</p>
+                  {product.preOrder?.customerMessage ? <p className="mt-1">{product.preOrder.customerMessage}</p> : null}
+                  {availability?.label === "PRE-ORDER CLOSED" ? <p className="mt-1 font-medium text-ink">Pre-order Closed</p> : null}
+                  {availability?.label === "PRE-ORDER FULL" ? <p className="mt-1 font-medium text-ink">Pre-order Full</p> : null}
+                  {product.preOrder?.status === "accepting" && effectiveLimit > 0 ? (
+                    <p className="mt-1">{effectiveLimit} pre-order slots remaining</p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-4">
@@ -756,7 +779,7 @@ export default function ProductPage() {
               <div className="flex flex-wrap items-center gap-3 min-[380px]:flex-nowrap">
                 <div className="flex h-12 w-[132px] shrink-0 items-center rounded-full border border-border bg-white px-1 sm:w-[144px]">
                   <button
-                    onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
+                    onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveLimit))}
                     disabled={quantity <= 1}
                     className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink"
                     aria-label="Decrease quantity"
@@ -765,8 +788,8 @@ export default function ProductPage() {
                   </button>
                   <span className="flex-1 text-center text-sm font-semibold">{quantity}</span>
                   <button
-                    onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
-                    disabled={quantity >= effectiveStock || effectiveStock <= 0}
+                    onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveLimit))}
+                    disabled={quantity >= effectiveLimit || !canPurchase}
                     className="flex h-10 w-10 items-center justify-center text-ink/55 transition-colors hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
                     aria-label="Increase quantity"
                   >
@@ -775,15 +798,15 @@ export default function ProductPage() {
                 </div>
                 <button
                   onClick={() => addToCart()}
-                  disabled={effectiveStock === 0}
+                  disabled={!canPurchase}
                   className={cn(
                     "flex h-12 min-w-[min(100%,12rem)] flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors min-[380px]:min-w-0 sm:px-6",
-                    effectiveStock === 0
+                    !canPurchase
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
                       : "bg-accent text-white hover:bg-accent-dark",
                   )}
                 >
-                  Add to Cart
+                  {availability?.ctaLabel ?? "Add to Cart"}
                   {/* · {formatPrice(displayPrice)}
                   <ChevronRight className="h-4 w-4" /> */}
                 </button>
@@ -984,7 +1007,7 @@ export default function ProductPage() {
       )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
         <div className="flex items-center rounded-full border border-ink/15">
           <button
-            onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveStock))}
+            onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveLimit))}
             disabled={quantity <= 1}
             className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink"
             aria-label="Decrease quantity"
@@ -993,8 +1016,8 @@ export default function ProductPage() {
           </button>
           <span className="w-7 text-center text-sm font-medium">{quantity}</span>
           <button
-            onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveStock))}
-            disabled={quantity >= effectiveStock || effectiveStock <= 0}
+            onClick={() => setQuantity((current) => clampQuantityToStock(current + 1, effectiveLimit))}
+            disabled={quantity >= effectiveLimit || !canPurchase}
             className="flex h-11 w-9 items-center justify-center text-ink/60 hover:text-ink disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:text-neutral-300"
             aria-label="Increase quantity"
           >
@@ -1003,11 +1026,11 @@ export default function ProductPage() {
         </div>
         <button
           onClick={() => addToCart()}
-          disabled={effectiveStock === 0}
+          disabled={!canPurchase}
           className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] px-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
         >
           <ShoppingBag className="h-4 w-4" />
-          Add to Cart
+          {availability?.ctaLabel ?? "Add to Cart"}
         </button>
       </div>
 
