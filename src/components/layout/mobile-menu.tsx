@@ -59,6 +59,7 @@ export function MobileMenu() {
     { label: isAuthenticated ? "My Account" : "Login", href: isAuthenticated ? "/profile" : "/login" },
     { label: "Shopping Cart", href: "/cart" },
     { label: "Order History", href: "/orders" },
+    { label: "Saved Addresses", href: "/addresses" },
     { label: "Wishlist", href: "/wishlist" },
     { label: "Mioralane Club", comingSoon: true },
     { label: "Shipping & Returns", href: "/returns" },
@@ -94,8 +95,8 @@ export function MobileMenu() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors sm:px-3.5 ${tab === t
-                    ? "bg-white text-ink shadow-sm"
-                    : "text-white/60 hover:text-white"
+                  ? "bg-white text-ink shadow-sm"
+                  : "text-white/60 hover:text-white"
                   }`}
               >
                 {t[0].toUpperCase() + t.slice(1)}

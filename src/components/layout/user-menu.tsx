@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, Package, LogOut } from "lucide-react";
+import { User, Package, LogOut, MapPin } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useAccountLogout } from "@/hooks/use-account-logout";
 import {
@@ -70,6 +70,12 @@ export function UserMenu() {
           <Link href="/orders" className="flex items-center gap-3 cursor-pointer">
             <Package className="h-4 w-4" />
             My Orders
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/addresses" className="flex items-center gap-3 cursor-pointer">
+            <MapPin className="h-4 w-4" />
+            Saved Addresses
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

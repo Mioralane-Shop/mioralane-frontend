@@ -59,6 +59,9 @@ export function ProfileMenu() {
         <DropdownMenuItem asChild>
           <Link href="/orders">My Orders</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/addresses">Saved Addresses</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() => {
