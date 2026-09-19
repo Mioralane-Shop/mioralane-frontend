@@ -28,6 +28,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProductReviews } from "@/components/product/product-reviews";
 import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
 import {
@@ -439,7 +440,7 @@ export default function ProductPage() {
       image: images[actualIndex],
     };
   });
-  const reviewTabLabel = `Reviews (${product.reviewCount || 4})`;
+  const reviewTabLabel = `Reviews (${product.reviewCount ?? 0})`;
 
   return (
     <div className="bg-white pb-28 md:pb-0">
@@ -887,23 +888,23 @@ export default function ProductPage() {
                   </p>
                   <div className="mt-6 rounded-[20px] border border-[#F0DFDB] bg-[#FFF9F8] p-7 sm:p-8">
                     <div className="grid gap-0 md:grid-cols-3">
-                    {TRUST_ITEMS.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div
-                          key={item.title}
-                          className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
-                        >
-                          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
-                            <Icon className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
-                            <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
+                      {TRUST_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <div
+                            key={item.title}
+                            className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
+                          >
+                            <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
+                              <Icon className="h-5 w-5" />
+                            </span>
+                            <div>
+                              <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
+                              <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                     </div>
                   </div>
                 </section>
@@ -975,12 +976,7 @@ export default function ProductPage() {
             )}
 
             {activeTab === "reviews" && (
-              <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
-                <p className="text-sm font-semibold text-ink">No reviews yet</p>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-ink/60">
-                  Customer reviews will appear here once a real review system is introduced.
-                </p>
-              </div>
+              <ProductReviews productId={product.id} productName={product.name} />
             )}
           </div>
         </div>

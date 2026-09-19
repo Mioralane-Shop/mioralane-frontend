@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { User, LogOut, Loader2, Package, Heart, Shield, Clock3, Mail } from "lucide-react";
+import { User, LogOut, Loader2, Package, Heart, Shield, Clock3, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RequireAuth } from "@/components/common/require-auth";
@@ -93,6 +93,12 @@ function ProfileContent() {
                   <Link href="/wishlist">
                     <Heart className="mr-2 h-4 w-4" />
                     Wishlist
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="justify-start">
+                  <Link href="/reviews">
+                    <Star className="mr-2 h-4 w-4" />
+                    My Reviews
                   </Link>
                 </Button>
               </div>
