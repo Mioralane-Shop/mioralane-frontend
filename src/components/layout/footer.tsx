@@ -38,7 +38,7 @@ export function Footer() {
           <div>
             <BrandLogo
               size="lg"
-              className="mb-3"
+              className="mb-4 w-fit rounded-2xl bg-white px-3.5 py-2.5"
             />
             <p className="max-w-[220px] text-sm font-light leading-[1.55]">
               Curated Korean skincare, sourced with care.

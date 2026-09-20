@@ -704,7 +704,7 @@ export default function ProductPage() {
               <div
                 className={cn(
                   "flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]",
-                  canPurchase ? "text-[#1F6B4E]" : "text-ink-muted",
+                  canPurchase ? "text-success" : "text-ink-muted",
                 )}
               >
                 <span
@@ -804,7 +804,7 @@ export default function ProductPage() {
                     "flex h-12 min-w-[min(100%,12rem)] flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors min-[380px]:min-w-0 sm:px-6",
                     !canPurchase
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
-                      : "bg-accent text-white hover:bg-accent-dark",
+                      : "bg-cart text-white hover:bg-cart-dark",
                   )}
                 >
                   {availability?.ctaLabel ?? "Add to Cart"}
@@ -886,14 +886,14 @@ export default function ProductPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
                     The Mioralane Promise
                   </p>
-                  <div className="mt-6 rounded-[20px] border border-[#F0DFDB] bg-[#FFF9F8] p-7 sm:p-8">
+                  <div className="mt-6 rounded-[20px] border border-[#FBD6DE] bg-[#FFF6F8] p-7 sm:p-8">
                     <div className="grid gap-0 md:grid-cols-3">
                       {TRUST_ITEMS.map((item) => {
                         const Icon = item.icon;
                         return (
                           <div
                             key={item.title}
-                            className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
+                            className="flex items-start gap-4 border-t border-[#FAD8E1] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
                           >
                             <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
                               <Icon className="h-5 w-5" />
@@ -988,12 +988,12 @@ export default function ProductPage() {
             <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
             <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
-                <div key={p.id} className="flex flex-col">
+                <div key={p.id} className="flex h-full flex-col">
                   <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
+                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
+                    <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>
               ))}
@@ -1023,7 +1023,7 @@ export default function ProductPage() {
         <button
           onClick={() => addToCart()}
           disabled={!canPurchase}
-          className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] px-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
+          className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-cart px-3 text-sm font-semibold text-white transition-colors hover:bg-cart-dark disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
         >
           <ShoppingBag className="h-4 w-4" />
           {availability?.ctaLabel ?? "Add to Cart"}

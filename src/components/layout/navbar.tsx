@@ -416,8 +416,11 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
           ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
-          style={{ top: panelTop }}
+          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          style={{
+            top: panelTop,
+            maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
+          }}
         >
           <div className="grid grid-cols-5 gap-x-10 gap-y-12">
             {MEGA_MENU_COLUMNS.map((column) => (
@@ -426,7 +429,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
                 onMouseEnter={() => positionUnderline(column.id)}
                 className="min-w-0"
               >
-                <div className="border-t border-[#C98A7D]/30 pt-4">
+                <div className="border-t border-accent/30 pt-4">
                   <NavigationItem
                     label={column.label}
                     href={column.href}
@@ -452,7 +455,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
                         href={link.href}
                         comingSoon={link.comingSoon}
                         onClick={() => setOpen(false)}
-                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-[#C98A7D]"
+                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-accent"
                       />
                     </li>
                   ))}
@@ -463,7 +466,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
 
           <div
             ref={underlineRef}
-            className="pointer-events-none absolute h-[2px] bg-[#C98A7D] transition-all duration-200"
+            className="pointer-events-none absolute h-[2px] bg-accent transition-all duration-200"
             style={{
               opacity: activeCol ? 1 : 0,
               transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
@@ -601,6 +604,18 @@ export function Navbar() {
   };
 
   useEffect(() => {
+    // The bars slide via `top` (not `transform`, which would trap the
+    // mega-menu's stacking context and break its `position: fixed`).
+    // Measure the shown position so the panel aligns to the bar, not its offset.
+    const measureBottom = (element: HTMLElement | null) => {
+      if (!element) return null;
+      const topOffset = parseFloat(getComputedStyle(element).top);
+      return (
+        element.getBoundingClientRect().bottom -
+        (Number.isNaN(topOffset) ? 0 : topOffset)
+      );
+    };
+
     const updateMeasurements = () => {
       const isDesktop =
         window.matchMedia("(min-width: 1024px)").matches;
@@ -633,16 +648,14 @@ export function Navbar() {
         }
       }
 
-      if (desktopDefaultNavRef.current) {
-        setDefaultDesktopNavBottom(
-          desktopDefaultNavRef.current.getBoundingClientRect().bottom,
-        );
+      const defaultNavBottom = measureBottom(desktopDefaultNavRef.current);
+      if (defaultNavBottom !== null) {
+        setDefaultDesktopNavBottom(defaultNavBottom);
       }
 
-      if (desktopCompactNavRef.current) {
-        setCompactDesktopNavBottom(
-          desktopCompactNavRef.current.getBoundingClientRect().bottom,
-        );
+      const compactNavBottom = measureBottom(desktopCompactNavRef.current);
+      if (compactNavBottom !== null) {
+        setCompactDesktopNavBottom(compactNavBottom);
       }
     };
 
@@ -715,7 +728,7 @@ export function Navbar() {
 
       <header
         ref={desktopHeaderRef}
-        className="hidden bg-white lg:block"
+        className="relative z-[70] hidden bg-white lg:block"
       >
         <div
           ref={desktopMainHeaderRef}
@@ -820,11 +833,10 @@ export function Navbar() {
 
         <div
           ref={desktopDefaultNavRef}
-          className={`border-b border-border-light bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} ${
-            showCompactDesktopNav
-              ? "pointer-events-none -translate-y-1 opacity-0"
-              : "translate-y-0 opacity-100"
-          }`}
+          className={`relative border-b border-border-light bg-white transition-[opacity,top] ${COMPACT_NAV_TRANSITION} ${showCompactDesktopNav
+            ? "pointer-events-none -top-1 opacity-0"
+            : "top-0 opacity-100"
+            }`}
         >
           <div className="mx-auto max-w-[1400px] px-6">
             <nav className="flex h-12 items-center justify-center gap-8">
@@ -836,19 +848,17 @@ export function Navbar() {
 
       <div
         ref={desktopCompactNavRef}
-        className={`fixed left-0 right-0 top-0 z-[80] hidden border-b border-border-light/90 bg-white transition-[opacity,transform] ${COMPACT_NAV_TRANSITION} lg:block ${
-          showCompactDesktopNav
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none -translate-y-3 opacity-0"
-        }`}
+        className={`fixed left-0 right-0 z-[80] hidden border-b border-border-light/90 bg-white transition-[opacity,top] ${COMPACT_NAV_TRANSITION} lg:block ${showCompactDesktopNav
+          ? "top-0 opacity-100"
+          : "pointer-events-none -top-3 opacity-0"
+          }`}
       >
         <div className="mx-auto grid h-[60px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-8 px-6">
           <BrandLogo
             size="md"
             variant="icon"
-            className={`transition-opacity ${COMPACT_NAV_FADE} ${
-              showCompactDesktopNav ? "opacity-100" : "opacity-0"
-            }`}
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
+              }`}
             priority
           />
 
@@ -857,9 +867,8 @@ export function Navbar() {
           </nav>
 
           <div
-            className={`transition-opacity ${COMPACT_NAV_FADE} ${
-              showCompactDesktopNav ? "opacity-100" : "opacity-0"
-            }`}
+            className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
+              }`}
           >
             <HeaderIcons
               compact

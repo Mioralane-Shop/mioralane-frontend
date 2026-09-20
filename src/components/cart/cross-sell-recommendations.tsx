@@ -71,7 +71,7 @@ function RecommendationRow({ product }: { product: Product }) {
       <Button
         type="button"
         size="sm"
-        className="shrink-0"
+        className="shrink-0 bg-cart text-white hover:bg-cart-dark"
         onClick={handleAddToCart}
         disabled={isAdding || isInCart || !availability.isAvailable}
       >

@@ -103,12 +103,12 @@ export function PromotionCampaign() {
 
   return (
     <>
-      <div className="fixed right-0 top-[52%] z-[90] -translate-y-1/2 sm:top-1/2">
+      <div className="fixed right-0 top-[52%] z-[60] -translate-y-1/2 sm:top-1/2">
         <button
           type="button"
           aria-label={`Open ${activeCampaign.name} promotion`}
           onClick={() => setIsOpen(true)}
-          className="hidden w-12 rounded-l-xl border border-r-0 border-brand-100 bg-white px-3 py-7 text-center text-[14px] font-black uppercase tracking-[0.08em] text-ink shadow-[0_14px_34px_rgba(26,26,26,0.16),0_3px_10px_rgba(255,102,117,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_16px_38px_rgba(26,26,26,0.2),0_4px_12px_rgba(255,102,117,0.2)] sm:flex sm:min-h-[224px] sm:items-center sm:justify-center"
+          className="hidden w-12 rounded-l-xl border border-r-0 border-brand-100 bg-white px-3 py-7 text-center text-[14px] font-black uppercase tracking-[0.08em] text-ink shadow-[0_14px_34px_rgba(26,26,26,0.16),0_3px_10px_rgba(251,111,146,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_16px_38px_rgba(26,26,26,0.2),0_4px_12px_rgba(251,111,146,0.2)] sm:flex sm:min-h-[224px] sm:items-center sm:justify-center"
         >
           <span className="[writing-mode:vertical-rl]">{campaignText}</span>
         </button>
@@ -127,12 +127,12 @@ export function PromotionCampaign() {
         </button>
       </div>
 
-      <div className="fixed bottom-5 right-0 z-[90] sm:hidden">
+      <div className="fixed bottom-5 right-0 z-[60] sm:hidden">
         <button
           type="button"
           aria-label={`Open ${activeCampaign.name} promotion`}
           onClick={() => setIsOpen(true)}
-          className="max-w-[86vw] rounded-l-full border border-r-0 border-brand-100 bg-white px-6 py-3 text-xs font-black uppercase tracking-[0.06em] text-ink shadow-[0_12px_28px_rgba(26,26,26,0.16),0_3px_10px_rgba(255,102,117,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_14px_32px_rgba(26,26,26,0.2),0_4px_12px_rgba(255,102,117,0.2)]"
+          className="max-w-[86vw] rounded-l-full border border-r-0 border-brand-100 bg-white px-6 py-3 text-xs font-black uppercase tracking-[0.06em] text-ink shadow-[0_12px_28px_rgba(26,26,26,0.16),0_3px_10px_rgba(251,111,146,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_14px_32px_rgba(26,26,26,0.2),0_4px_12px_rgba(251,111,146,0.2)]"
         >
           <span className="line-clamp-1">
             {activeCampaign.floatingTab.subtitle || activeCampaign.floatingTab.title}
@@ -162,7 +162,7 @@ export function PromotionCampaign() {
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-sm rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(255,102,117,0.12)] sm:px-6 sm:py-7"
+            className="relative w-full max-w-sm rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(251,111,146,0.12)] sm:px-6 sm:py-7"
             onClick={(event) => event.stopPropagation()}
           >
             <button

@@ -57,7 +57,7 @@ function comboSetLabel(product: Product): string {
 }
 
 const UI_COLORS = {
-  cart: "bg-accent text-white hover:bg-accent-dark",
+  cart: "bg-cart text-white hover:bg-cart-dark",
   discount:
     "isolate inline-flex h-6 items-center justify-center overflow-hidden rounded-full border border-[#D8C9B4] bg-[#EEE7DA] px-[10px] text-[11px] font-semibold leading-none text-[#79664B]",
   newBadge: "bg-[#DDEBFF] text-[#4C78B8]",
@@ -235,13 +235,14 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           )}
         </div>
 
-        <div className="flex flex-1 flex-col px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
+        <div className="flex flex-1 flex-col justify-between px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
           <div>
-            <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-accent sm:text-xs lg:text-[10px]">
               {product.brand} <span className="text-accent-light">{"\u00b7"}</span> {formatCategoryLabel(product.category)}
             </div>
 
-            <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink sm:text-[16px]">
+            {/* Reserve two lines so the rows below line up across cards */}
+            <h3 className="line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]">
               {product.name}
             </h3>
 
@@ -249,13 +250,13 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               <span
                 className={cn(
                   "flex items-center gap-1 text-[10px] sm:text-[11px]",
-                  availability.isAvailable ? "text-[#1F6B4E]" : "text-ink-muted"
+                  availability.isAvailable ? "text-success" : "text-ink-muted"
                 )}
               >
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    availability.isAvailable ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
+                    availability.isAvailable ? "animate-stock-radar bg-success" : "bg-ink-muted"
                   )}
                 />
                 {availability.label}
@@ -271,7 +272,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             </div>
           </div>
 
-          <div className="mt-4 flex items-end justify-between gap-3 border-t border-border-light/60 pt-3">
+          <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
             <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
               {displayCompareAt && (
                 <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
@@ -315,11 +316,14 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
   return (
     <div
       onClick={handleClick}
-      className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-lg"
+      className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       id={`product-card-${product.id}`}
     >
       {/* Image container */}
-      <div className="relative m-2 aspect-[3/3] overflow-hidden rounded-2xl bg-[#FAF8F6]">
+      <div
+        className={`relative m-2 overflow-hidden rounded-2xl bg-[#FAF8F6] ${compactImage ? "aspect-square" : "aspect-[4/5]"
+          }`}
+      >
         {/* Discount badge - combos and single cards */}
         {!isCombo && discount > 0 && (
           <div className="absolute right-3 top-3 left-auto z-30">
@@ -409,7 +413,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {/* Product name */}
           <h3
             className={cn(
-              "line-clamp-2 text-[15px] font-semibold leading-snug text-ink sm:text-[17px] lg:text-base xl:text-base"
+              "line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]"
             )}
           >
             {product.name}
@@ -428,13 +432,13 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               <span
                 className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  availability.isAvailable ? "animate-stock-radar bg-[#1F6B4E]" : "bg-ink-muted"
+                  availability.isAvailable ? "animate-stock-radar bg-success" : "bg-ink-muted"
                 )}
               />
               <span
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-wider sm:text-[11px] lg:text-[10px]",
-                  availability.isAvailable ? "text-[#1F6B4E]" : "text-ink-muted"
+                  availability.isAvailable ? "text-success" : "text-ink-muted"
                 )}
               >
                 {availability.label}
@@ -461,15 +465,15 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
         </div>
 
         {/* Footer: Price + Add to Cart */}
-        <div className="mt-4 flex flex-row items-center justify-between gap-3 border-t border-border-light/60 pt-3 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
+        <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
           {/* Price */}
           <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
             {displayCompareAt && (
-              <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-lg lg:text-sm">
+              <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
                 {formatPrice(displayCompareAt)}
               </span>
             )}
-            <span className="whitespace-nowrap text-base font-semibold tracking-tight text-ink sm:text-2xl lg:text-lg xl:text-base">
+            <span className="whitespace-nowrap text-base font-semibold tracking-tight text-ink sm:text-xl">
               {formatPrice(product.price)}
             </span>
           </div>
@@ -478,9 +482,9 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {isInCart ? (
             <button
               onClick={handleViewCart}
-              className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[360px]:w-full sm:px-6 sm:py-3 sm:text-base lg:px-4 lg:py-2 lg:text-xs"
+              className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
             >
-              <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5 lg:h-3.5 lg:w-3.5" />
+              <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
               <span>View Cart</span>
             </button>
           ) : (
@@ -488,13 +492,13 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               onClick={handleAddToCart}
               disabled={!availability.isAvailable}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition-all duration-150 max-[360px]:w-full sm:px-6 sm:py-3 sm:text-base lg:px-4 lg:py-2 lg:text-xs",
+                "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
                 !availability.isAvailable
                   ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
-                  : UI_COLORS.cart + " shadow-sm hover:shadow active:scale-95"
+                  : UI_COLORS.cart + " hover:shadow active:scale-95"
               )}
             >
-              <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5 lg:h-3.5 lg:w-3.5" />
+              <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
               <span>{availability.ctaLabel}</span>
             </button>
           )}

@@ -139,7 +139,7 @@ export function InstagramSection() {
           animation: handle-focus 2.8s ease-in-out infinite;
           text-shadow:
             0 0 10px rgba(139, 115, 85, 0.2),
-            0 0 18px rgba(232, 166, 154, 0.12);
+            0 0 18px rgba(251, 111, 146, 0.12);
           filter: saturate(1.08);
         }
 

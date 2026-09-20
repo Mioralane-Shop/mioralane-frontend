@@ -167,7 +167,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
         className="relative block aspect-square overflow-hidden bg-ink/[0.03]"
       >
         <ProductImage
-          src={product.images?.[0] || "/images/logo-m.svg"}
+          src={product.images?.[0] || "/logo/logo_icon.svg"}
           alt={product.name}
           fallbackId={product.id}
           fill

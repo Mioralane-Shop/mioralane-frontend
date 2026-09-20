@@ -10,7 +10,7 @@ const PROMOS = [
     desc: "Fresh Korean skincare drops",
     cta: "Explore New",
     href: "/shop?sort=newest",
-    bg: "#D8E2DC",
+    bg: "#E6F0E6",
     img: "/images/promo-arrivals.jpg",
   },
   {
@@ -19,7 +19,7 @@ const PROMOS = [
     desc: "Build a routine that fits your skin goals",
     cta: "Explore Routines",
     href: "/combo",
-    bg: "#FFE5EC",
+    bg: "#FEE4EA",
     img: "/images/promo-routine.jpg",
   },
   {
