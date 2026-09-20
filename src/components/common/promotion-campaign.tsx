@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Check, Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useActivePromotion } from "@/hooks/use-active-promotion";
+import { cn } from "@/lib/utils";
 
 const excludedPaths = [
   "/login",
@@ -127,7 +128,13 @@ export function PromotionCampaign() {
         </button>
       </div>
 
-      <div className="fixed bottom-5 right-0 z-[60] sm:hidden">
+      <div
+        className={cn(
+          "fixed right-0 z-[60] sm:hidden",
+          // The product page has a fixed buy bar at the bottom, so lift the pill above it.
+          pathname.startsWith("/product/") ? "bottom-24" : "bottom-5",
+        )}
+      >
         <button
           type="button"
           aria-label={`Open ${activeCampaign.name} promotion`}
@@ -147,22 +154,22 @@ export function PromotionCampaign() {
             setIsOpen(false);
             setIsVisible(false);
           }}
-          className="absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white shadow-[0_6px_14px_rgba(26,26,26,0.35)] transition-colors hover:bg-ink-soft"
+          className="absolute -left-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-ink text-white shadow-[0_6px_14px_rgba(26,26,26,0.35)] transition-colors hover:bg-ink-soft"
         >
-          <X className="h-3.5 w-3.5" aria-hidden="true" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {isOpen ? (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-ink/35 px-4 py-8"
+          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-ink/35 px-4 py-6 sm:items-center sm:py-8"
           role="dialog"
           aria-modal="true"
           aria-labelledby="promotion-campaign-title"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-sm rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(251,111,146,0.12)] sm:px-6 sm:py-7"
+            className="relative max-h-[calc(100dvh-3rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(251,111,146,0.12)] sm:px-6 sm:py-7"
             onClick={(event) => event.stopPropagation()}
           >
             <button

@@ -15,7 +15,7 @@ export default function BlogPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           The Journal
         </span>
-        <h1 className="mt-3 text-4xl font-serif font-medium text-ink">
+        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
           Mioralane Blog
         </h1>
         <p className="mt-3 text-ink/50">
@@ -23,7 +23,7 @@ export default function BlogPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-2">
+      <div className="mt-12 grid gap-8 sm:grid-cols-2">
         {BLOG_POSTS.map((post) => (
           <article
             key={post.slug}

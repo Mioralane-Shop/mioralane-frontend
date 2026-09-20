@@ -17,7 +17,7 @@ export default function AboutPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           About Us
         </span>
-        <h1 className="mt-3 text-4xl font-serif font-medium text-ink">
+        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
           Bringing authentic K-beauty to Bangladesh
         </h1>
         <p className="mt-4 text-ink/60 leading-relaxed">

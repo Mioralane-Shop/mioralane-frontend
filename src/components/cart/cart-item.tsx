@@ -29,12 +29,12 @@ export function CartItemRow({ item }: CartItemProps) {
     ? catalogStatus === "missing"
       ? "No longer available"
       : "Availability could not be verified"
-      : isOutOfStock
-        ? isPreOrder
-          ? product.preOrder?.status === "accepting"
-            ? "Pre-order full"
-            : "Pre-order closed"
-          : "Out of stock"
+    : isOutOfStock
+      ? isPreOrder
+        ? product.preOrder?.status === "accepting"
+          ? "Pre-order full"
+          : "Pre-order closed"
+        : "Out of stock"
       : null;
   const showPrice = isVerified || isOutOfStock;
   const canNavigate = !isUnavailable;
@@ -116,11 +116,11 @@ export function CartItemRow({ item }: CartItemProps) {
             <Button
               variant="outline"
               size="icon"
-              className="h-7 w-7 rounded-lg"
+              className="h-9 w-9 rounded-lg sm:h-8 sm:w-8"
               onClick={() => updateQuantity(catalogItemId, quantity - 1, itemType)}
               disabled={quantity === 1}
             >
-              <Minus className="h-3 w-3" />
+              <Minus className="h-3.5 w-3.5" />
             </Button>
             <span className="w-8 text-center text-sm font-medium">
               {quantity}
@@ -129,20 +129,20 @@ export function CartItemRow({ item }: CartItemProps) {
               variant="outline"
               size="icon"
               className={cn(
-                "h-7 w-7 rounded-lg",
+                "h-9 w-9 rounded-lg sm:h-8 sm:w-8",
                 "disabled:cursor-not-allowed disabled:text-neutral-300",
               )}
               onClick={() => updateQuantity(catalogItemId, quantity + 1, itemType)}
               disabled={!canIncrease}
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3.5 w-3.5" />
             </Button>
           </div>
 
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-neutral-400 hover:text-red-500"
+            className="h-9 w-9 text-neutral-400 hover:text-red-500 sm:h-8 sm:w-8"
             onClick={() => removeItem(catalogItemId, itemType)}
           >
             <Trash2 className="h-4 w-4" />

@@ -88,7 +88,7 @@ export function InstagramSection() {
         <div className="home-section-content relative mx-auto max-w-[1200px]">
           <button
             onClick={() => scrollByCards(-1)}
-            className="absolute -left-5 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors duration-200 hover:bg-ink hover:text-white md:flex"
+            className="absolute -left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors duration-200 hover:bg-ink hover:text-white md:flex xl:-left-5"
             aria-label="Previous posts"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -127,7 +127,7 @@ export function InstagramSection() {
 
           <button
             onClick={() => scrollByCards(1)}
-            className="absolute -right-5 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors duration-200 hover:bg-ink hover:text-white md:flex"
+            className="absolute -right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors duration-200 hover:bg-ink hover:text-white md:flex xl:-right-5"
             aria-label="Next posts"
           >
             <ChevronRight className="h-5 w-5" />

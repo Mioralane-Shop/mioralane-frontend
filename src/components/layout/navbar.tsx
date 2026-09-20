@@ -11,19 +11,13 @@ import { UserMenu } from "@/components/layout/user-menu";
 import { ProductImage } from "@/components/common/product-image";
 import { SearchModal } from "@/components/search/search-modal";
 import { BRANDS } from "@/constants/site";
+import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCombos } from "@/hooks/use-combos";
 import { useProductSearch } from "@/hooks/use-product-search";
 import { formatPrice } from "@/lib/utils";
-
-const BOTTOM_NAV = [
-  { label: "Skin Care", href: "/shop" },
-  { label: "Brands", href: "/shop" },
-  { label: "Blog", href: "/blog" },
-  { label: "Sales", comingSoon: true },
-];
 
 const COMPACT_NAV_HYSTERESIS = 12;
 const COMPACT_NAV_TRANSITION =
@@ -60,7 +54,7 @@ function BrandsNavItem() {
       </Link>
       {open && (
         <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
-          <div className="w-[640px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+          <div className="w-[min(640px,calc(100vw-2rem))] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
               {BRANDS.map((brand) => (
                 <Link
@@ -111,7 +105,7 @@ function ComboNavItem() {
       </Link>
       {open && (
         <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
-          <div className="w-[680px] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
+          <div className="w-[min(680px,calc(100vw-2rem))] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="flex items-center justify-between px-2 pb-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent-dark">
                 Curated Bundles
@@ -173,140 +167,7 @@ function ComboNavItem() {
   );
 }
 
-type MegaMenuLink = {
-  label: string;
-  href?: string;
-  comingSoon?: boolean;
-};
-
-type MegaMenuColumn = {
-  id: string;
-  label: string;
-  href?: string;
-  comingSoon?: boolean;
-  links: MegaMenuLink[];
-};
-
-const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
-  {
-    id: "cleansers",
-    label: "Cleansers",
-    href: "/shop?category=cleansers",
-    links: [
-      { label: "Oil Cleansers", comingSoon: true },
-      { label: "Water Based Cleansers", comingSoon: true },
-      { label: "Cleansing Balms", comingSoon: true },
-      { label: "Make-Up Removers", comingSoon: true },
-      { label: "Micellar Waters", comingSoon: true },
-    ],
-  },
-  {
-    id: "toners",
-    label: "Toners",
-    href: "/shop?category=toners",
-    links: [
-      { label: "Hydrating Toners", comingSoon: true },
-      { label: "Calming Toners", comingSoon: true },
-      { label: "Mist Toners", comingSoon: true },
-      { label: "Exfoliating Toners", comingSoon: true },
-      { label: "Toner Pads", comingSoon: true },
-    ],
-  },
-  {
-    id: "treatments",
-    label: "Treatments",
-    comingSoon: true,
-    links: [
-      { label: "Serums", comingSoon: true },
-      { label: "Ampoules", comingSoon: true },
-      { label: "Essences", comingSoon: true },
-      { label: "Spot Treatments", comingSoon: true },
-    ],
-  },
-  {
-    id: "exfoliators",
-    label: "Exfoliators",
-    comingSoon: true,
-    links: [
-      { label: "Physical Exfoliators", comingSoon: true },
-      { label: "Chemical Exfoliators", comingSoon: true },
-    ],
-  },
-  {
-    id: "concerns",
-    label: "Skin Concerns",
-    href: "/shop",
-    links: [
-      { label: "Acne", href: "/shop?concern=acne" },
-      { label: "Anti-Aging", href: "/shop?concern=anti-aging" },
-      { label: "Dry Skin", comingSoon: true },
-      { label: "Fungal Acne Safe", comingSoon: true },
-      { label: "Hyperpigmentation", comingSoon: true },
-      { label: "Skin Redness", comingSoon: true },
-      { label: "Sensitive Skin", href: "/shop?concern=sensitive" },
-      { label: "Oily Skin", comingSoon: true },
-    ],
-  },
-  {
-    id: "moisturizers",
-    label: "Moisturizers",
-    href: "/shop?category=moisturizers",
-    links: [
-      { label: "Face Creams", comingSoon: true },
-      { label: "Gel Moisturizers", comingSoon: true },
-      { label: "Facial Oils", comingSoon: true },
-      { label: "Emulsions", comingSoon: true },
-    ],
-  },
-  {
-    id: "masks",
-    label: "Masks",
-    href: "/shop?category=masks",
-    links: [
-      { label: "Peeling Masks", comingSoon: true },
-      { label: "Sheet Masks", comingSoon: true },
-      { label: "Sleeping Masks", comingSoon: true },
-      { label: "Wash-Off Masks", comingSoon: true },
-    ],
-  },
-  {
-    id: "lip-eye",
-    label: "Lip & Eye Care",
-    comingSoon: true,
-    links: [
-      { label: "Eye Creams", comingSoon: true },
-      { label: "Eye Patches", comingSoon: true },
-      { label: "Lip Care", comingSoon: true },
-    ],
-  },
-  {
-    id: "sunscreens",
-    label: "Sunscreens",
-    href: "/shop?category=sun-care",
-    links: [
-      { label: "SPF 50+", comingSoon: true },
-      { label: "SPF 30", comingSoon: true },
-      { label: "Sun Sticks", comingSoon: true },
-      { label: "After Sun Care", comingSoon: true },
-    ],
-  },
-  {
-    id: "ingredients",
-    label: "Shop By Ingredients",
-    comingSoon: true,
-    links: [
-      { label: "AHA BHA PHA", comingSoon: true },
-      { label: "Centella", comingSoon: true },
-      { label: "Hyaluronic Acid", comingSoon: true },
-      { label: "Peptides", comingSoon: true },
-      { label: "Propolis", comingSoon: true },
-      { label: "Snail Mucin", comingSoon: true },
-      { label: "Vitamin C", comingSoon: true },
-    ],
-  },
-];
-
-function SkinCareNavItem({ panelTop }: { panelTop: number }) {
+function SkinCareNavItem({ panelTop, columns }: { panelTop: number; columns: MegaMenuColumn[] }) {
   const [open, setOpen] = useState(false);
   const [activeCol, setActiveCol] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -423,7 +284,7 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
           }}
         >
           <div className="grid grid-cols-5 gap-x-10 gap-y-12">
-            {MEGA_MENU_COLUMNS.map((column) => (
+            {columns.map((column) => (
               <div
                 key={column.id}
                 onMouseEnter={() => positionUnderline(column.id)}
@@ -481,30 +342,25 @@ function SkinCareNavItem({ panelTop }: { panelTop: number }) {
 function DesktopNavLinks({ panelTop }: { panelTop: number }) {
   return (
     <>
-      {BOTTOM_NAV.map((link) => {
-        if (link.label === "Skin Care") {
-          return (
-            <SkinCareNavItem
-              key={link.href + link.label}
-              panelTop={panelTop}
-            />
-          );
+      {PRIMARY_NAV.map((entry) => {
+        if (entry.kind === "mega") {
+          return <SkinCareNavItem key={entry.id} panelTop={panelTop} columns={entry.columns} />;
         }
 
-        if (link.label === "Brands") {
-          return <BrandsNavItem key={link.href + link.label} />;
+        if (entry.kind === "brands") {
+          return <BrandsNavItem key={entry.id} />;
         }
 
-        if (link.label === "Combo") {
-          return <ComboNavItem key={link.href + link.label} />;
+        if (entry.kind === "combo") {
+          return <ComboNavItem key={entry.id} />;
         }
 
         return (
           <NavigationItem
-            key={link.label}
-            label={link.label}
-            href={link.href}
-            comingSoon={link.comingSoon}
+            key={entry.id}
+            label={entry.label}
+            href={entry.kind === "link" ? entry.href : undefined}
+            comingSoon={entry.kind === "soon"}
             className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
           />
         );
@@ -526,7 +382,7 @@ function HeaderIcons({
   const { isAuthenticated, _ready } = useAuthStore();
   const wishlistCount = useWishlistStore((state) => state.count());
   const iconClassName = compact
-    ? "rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+    ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
     : "rounded-full p-2.5 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink";
   const badgeClassName = compact
     ? "absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold text-white"
@@ -534,7 +390,7 @@ function HeaderIcons({
   const iconSize = compact ? "h-[18px] w-[18px]" : "h-5 w-5";
 
   return (
-    <div className={`relative z-10 flex items-center ${compact ? "gap-0.5" : "gap-1"}`}>
+    <div className={`relative z-10 flex items-center ${compact ? "gap-0" : "gap-1"}`}>
       {showSearchButton ? (
         <button
           onClick={onSearchClick}
@@ -702,12 +558,12 @@ export function Navbar() {
     <>
       <header className="sticky top-0 z-[70] bg-white lg:hidden">
         <div className="border-b border-border-light">
-          <div className="relative mx-auto flex h-[80px] max-w-[1400px] items-center justify-between px-3 sm:px-6">
-            <div className="relative z-10 flex items-center gap-1">
+          <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-2 px-2.5 sm:px-4">
+            <div className="relative z-10 flex items-center gap-0.5">
               <MobileMenu />
               <button
                 onClick={() => setSearchModalOpen(true)}
-                className="rounded-full p-2 text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink sm:p-2.5"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
@@ -717,7 +573,7 @@ export function Navbar() {
             <BrandLogo
               size="md"
               variant={showCompactDesktopNav ? "icon" : "full"}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-[374px]:[&>img]:h-6"
+              className="absolute left-1/2 top-1/2 max-w-[38%] -translate-x-1/2 -translate-y-1/2 [&>img]:max-h-7 [&>img]:w-auto max-[374px]:max-w-[32%] max-[374px]:[&>img]:h-6"
               priority
             />
 

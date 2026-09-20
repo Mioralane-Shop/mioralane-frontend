@@ -111,7 +111,7 @@ function SortControl({
           value={sort}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value as WishlistSort)}
-          className="h-11 min-w-[180px] appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-none transition-colors focus:border-accent/40 disabled:cursor-wait disabled:opacity-60"
+          className="h-11 min-w-[152px] appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-none transition-colors focus:border-accent/40 disabled:cursor-wait disabled:opacity-60"
         >
           {WISHLIST_SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -213,18 +213,20 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
             onClick={handleMoveToCart}
             disabled={!canMoveToCart}
             className={cn(
-              "inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors",
+              "inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors min-[430px]:gap-2 min-[430px]:text-sm",
               canMoveToCart
                 ? "bg-accent text-white hover:bg-accent-dark"
                 : "cursor-not-allowed bg-neutral-100 text-neutral-400",
             )}
           >
             {isMoving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
             ) : (
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-4 w-4 shrink-0" />
             )}
-            {isMoving ? "Moving..." : entry.isAvailable ? "Move to Cart" : "Out of Stock"}
+            <span className="truncate">
+              {isMoving ? "Moving..." : entry.isAvailable ? "Move to Cart" : "Out of Stock"}
+            </span>
           </button>
           <button
             onClick={handleRemove}

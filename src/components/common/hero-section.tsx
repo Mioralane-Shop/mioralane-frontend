@@ -70,15 +70,19 @@ export function HeroSection() {
             </div>
           ))}
 
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-4">
+          <div className="absolute bottom-1.5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 sm:bottom-2.5">
             {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`h-2.5 rounded-full bg-white transition-all duration-300 ${i === current ? "w-7 opacity-95" : "w-2.5 opacity-50"
-                  }`}
+                className="flex h-9 items-center px-1"
                 aria-label={`Go to banner ${i + 1}`}
-              />
+              >
+                <span
+                  className={`block h-2.5 rounded-full bg-white transition-all duration-300 ${i === current ? "w-7 opacity-95" : "w-2.5 opacity-50"
+                    }`}
+                />
+              </button>
             ))}
           </div>
 

@@ -367,7 +367,7 @@ export default function ProductPage() {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20 text-center">
         <AlertCircle className="mx-auto h-16 w-16 text-rose-300" />
-        <h1 className="mt-4 text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="mt-4 text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           Could not load product
         </h1>
         <p className="mt-3 text-neutral-400">
@@ -592,10 +592,17 @@ export default function ProductPage() {
                 onScroll={(event) => {
                   if (mobileGalleryItems.length <= 1) return;
                   const target = event.currentTarget;
-                  const itemWidth = target.scrollWidth / mobileGalleryItems.length;
+                  const slides = Array.from(target.children) as HTMLElement[];
+                  // Measure the real stride (slide width + gap) instead of scrollWidth / count
+                  // so the active dot stays in sync with the slide in view.
+                  const stride =
+                    slides.length > 1
+                      ? slides[1].offsetLeft - slides[0].offsetLeft
+                      : target.clientWidth;
+                  if (stride <= 0) return;
                   const index = Math.min(
-                    mobileGalleryItems.length - 1,
-                    Math.max(0, Math.round(target.scrollLeft / itemWidth)),
+                    slides.length - 1,
+                    Math.max(0, Math.round(target.scrollLeft / stride)),
                   );
                   setSelectedImage(index);
                 }}
@@ -656,19 +663,24 @@ export default function ProductPage() {
                       key={index}
                       onClick={() => {
                         setSelectedImage(index);
-                        const target = mobileGalleryRef.current;
-                        if (!target) return;
-                        target.scrollTo({
-                          left: (target.scrollWidth / images.length) * index,
+                        const track = mobileGalleryRef.current;
+                        const slide = track?.children[index] as HTMLElement | undefined;
+                        if (!track || !slide) return;
+                        track.scrollTo({
+                          left: slide.offsetLeft,
                           behavior: "smooth",
                         });
                       }}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all",
-                        selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
-                      )}
+                      className="flex h-6 items-center px-0.5"
                       aria-label={`Select image ${index + 1}`}
-                    />
+                    >
+                      <span
+                        className={cn(
+                          "block h-1.5 rounded-full transition-all",
+                          selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
+                        )}
+                      />
+                    </button>
                   ))}
                 </div>
               )}
@@ -680,7 +692,7 @@ export default function ProductPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
                 {SITE_NAME}
               </p>
-              <h1 className="max-w-[14ch] break-words text-[2.35rem] font-serif font-medium leading-[1.02] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
+              <h1 className="max-w-[14ch] break-words text-[2rem] font-serif font-medium leading-[1.05] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
                 {product.name}
               </h1>
             </div>
@@ -834,7 +846,7 @@ export default function ProductPage() {
       <section className="border-t border-ink/10 bg-white">
         <div className="border-b border-ink/10">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <div className="overflow-x-auto">
+            <div className="-mx-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6">
               <div className="flex min-w-max gap-8">
                 {[...PRODUCT_TABS, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
                   <button
@@ -1000,7 +1012,7 @@ export default function ProductPage() {
             </div>
           </div>
         </section>
-      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
+      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
         <div className="flex items-center rounded-full border border-ink/15">
           <button
             onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveLimit))}
@@ -1037,12 +1049,12 @@ export default function ProductPage() {
         >
           <button
             onClick={() => setLightboxOpen(false)}
-            className="absolute right-5 top-5 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
             aria-label="Close zoom"
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
+          <div className="relative h-full max-h-[85dvh] w-full max-w-3xl">
             {selectedImageSrc ? (
               <Image
                 src={selectedImageSrc}

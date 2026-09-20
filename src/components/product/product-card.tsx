@@ -272,7 +272,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             </div>
           </div>
 
-          <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
+          <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
             <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
               {displayCompareAt && (
                 <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
@@ -287,7 +287,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             {isInCart ? (
               <button
                 onClick={handleViewCart}
-                className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
+                className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
               >
                 <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
                 <span>View Cart</span>
@@ -297,7 +297,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
                 onClick={handleAddToCart}
                 disabled={!availability.isAvailable}
                 className={cn(
-                  "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
+                  "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
                   !availability.isAvailable
                     ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
                     : UI_COLORS.cart + " hover:shadow active:scale-95"
@@ -465,7 +465,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
         </div>
 
         {/* Footer: Price + Add to Cart */}
-        <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[360px]:flex-col max-[360px]:items-stretch max-[360px]:gap-2.5">
+        <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
           {/* Price */}
           <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
             {displayCompareAt && (
@@ -482,7 +482,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {isInCart ? (
             <button
               onClick={handleViewCart}
-              className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
+              className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow active:scale-95 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
             >
               <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
               <span>View Cart</span>
@@ -492,7 +492,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               onClick={handleAddToCart}
               disabled={!availability.isAvailable}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[360px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
+                "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
                 !availability.isAvailable
                   ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
                   : UI_COLORS.cart + " hover:shadow active:scale-95"
