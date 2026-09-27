@@ -1,0 +1,53 @@
+# P1.0 — build verification for the customer storefront.
+#
+# CI only: no deploy step, no Vercel trigger, no secrets. This app reads
+# `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` at build time, and both
+# are read defensively (`?? ""` and `|| ""`), so an unconfigured build succeeds.
+# Verified locally by building with the gitignored `.env.local` moved out of the
+# way — which is exactly what a fresh checkout looks like.
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'security/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Pinned to an exact release, not a floating major. Nothing in the repo
+      # pinned Node before this (no `engines`, no `.nvmrc`, no `packageManager`),
+      # and local development runs v24.9.0 — so this is the first and only pin.
+      # 20.20.2 is verified against nodejs.org/dist/index.json as the latest
+      # published 20.x; this app is on Next 14, which needs >= 18.17.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.20.2'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
