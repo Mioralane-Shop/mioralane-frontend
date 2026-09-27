@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify:csrf-client": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-csrf-client.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
