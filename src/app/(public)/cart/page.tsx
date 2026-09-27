@@ -23,7 +23,7 @@ export default function CartPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           Shopping Cart
         </h1>
         <p className="mt-1 text-neutral-400">

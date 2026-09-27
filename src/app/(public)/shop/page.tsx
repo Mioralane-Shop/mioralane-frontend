@@ -244,7 +244,7 @@ function FilterPanel({
               range.min === null && range.max === null
                 ? !activeMinPrice && !activeMaxPrice
                 : selectedPriceKey ===
-                  priceRangeKey(String(range.min ?? ""), String(range.max ?? ""));
+                priceRangeKey(String(range.min ?? ""), String(range.max ?? ""));
 
             return (
               <SelectionRow
@@ -286,7 +286,7 @@ function FilterSection({
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex min-h-8 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75"
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75"
       >
         <span className="text-[13px] font-semibold text-ink/80">
           {title}
@@ -318,7 +318,7 @@ function SelectionRow({ label, onSelect, selected }: SelectionRowProps) {
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "flex min-h-6 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors",
+        "flex min-h-11 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors",
         selected ? "text-ink" : "text-ink/65 hover:text-ink/85",
       )}
     >
@@ -649,7 +649,7 @@ function ShopContent() {
       <div className="relative mb-8 overflow-hidden rounded-3xl bg-surface py-12 md:py-16">
         <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-warm" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="font-serif text-9xl font-light uppercase tracking-widest text-ink/5 md:text-[180px]">
+          <span className="font-serif text-7xl font-light uppercase tracking-widest text-ink/5 sm:text-9xl md:text-[180px]">
             Shop
           </span>
         </div>
@@ -890,7 +890,7 @@ function ShopContent() {
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(false)}
-              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/[0.04] hover:text-ink"
+              className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/[0.04] hover:text-ink"
               aria-label="Close filters"
             >
               <X className="h-5 w-5" />
@@ -898,7 +898,7 @@ function ShopContent() {
             <div className="min-h-0 flex-1 overflow-y-auto pb-5 pr-1">
               <FilterPanel {...filterPanelProps} variant="mobile" />
             </div>
-            <div className="sticky bottom-0 -mx-5 border-t border-border-light bg-surface px-5 py-4">
+            <div className="sticky bottom-0 -mx-5 border-t border-border-light bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}

@@ -93,6 +93,21 @@ export function getUpazilasByDistrict(districtIdOrName: string, divisionIdOrName
 
 export const DIVISIONS = getDivisions();
 
+/**
+ * Ensures a stored name (for example from a saved delivery address) stays
+ * selectable even when it is not present in the location dataset. Without this
+ * a Radix select would render an empty trigger for a perfectly valid value.
+ */
+export function withSavedOption(options: LocationOption[], savedName?: string): LocationOption[] {
+  const normalized = savedName?.trim();
+
+  if (!normalized || options.some((option) => option.name === normalized)) {
+    return options;
+  }
+
+  return [{ id: `saved:${normalized}`, name: normalized }, ...options];
+}
+
 export const LOCATION_DATA_COUNTS = {
   divisions: divisions.length,
   districts: districts.length,

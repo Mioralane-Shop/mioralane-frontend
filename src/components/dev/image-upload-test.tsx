@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { isAxiosError } from "axios";
+import { formatApiError } from "@/lib/api-errors";
 import { CheckCircle2, Image as ImageIcon, Loader2, RefreshCw, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,11 +164,7 @@ export function ImageUploadTest() {
       setUploadResult(response);
       addToast("Optimized image uploaded successfully", "success");
     } catch (err) {
-      const message = isAxiosError(err)
-        ? err.response?.data?.message ?? err.message
-        : err instanceof Error
-          ? err.message
-          : "Upload failed";
+      const message = formatApiError(err, "Upload failed");
 
       setError(message);
       addToast(message, "error");
@@ -183,7 +179,7 @@ export function ImageUploadTest() {
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-500">
           Development only
         </p>
-        <h1 className="mt-3 text-3xl font-light tracking-tight text-neutral-800 md:text-4xl">
+        <h1 className="mt-3 text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl md:text-4xl">
           Image optimization test
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500">
@@ -271,7 +267,7 @@ export function ImageUploadTest() {
                 Ready to upload optimized file
               </p>
               <p className="mt-1 text-sm text-neutral-500">
-      Upload will send the optimized File object, not the original.
+                Upload will send the optimized File object, not the original.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

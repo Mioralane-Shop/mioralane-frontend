@@ -31,14 +31,14 @@ export function NewToKBeautySection() {
         <SectionHeading title="NEW TO KOREAN SKINCARE?" />
 
         <div className="mx-auto mt-10 max-w-[1200px]">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {CARDS.map((card) => (
               <Link
                 key={card.title}
                 href={card.href}
                 className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow"
               >
-                <div className="relative h-46 overflow-hidden bg-surface-soft md:h-48">
+                <div className="relative h-48 overflow-hidden bg-surface-soft sm:h-44 md:h-48">
                   <Image
                     src={card.image}
                     alt={card.title}

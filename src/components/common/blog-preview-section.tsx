@@ -36,7 +36,7 @@ export function BlogPreviewSection() {
           <span className="text-sm font-semibold tracking-wider text-brand">
             Learn
           </span>
-          <h2 className="mt-2 text-3xl font-light tracking-tight text-ink">
+          <h2 className="mt-2 text-2xl font-light tracking-tight text-ink sm:text-3xl">
             Korean skincare guide
           </h2>
         </div>

@@ -36,7 +36,10 @@ export function BrandLogo({
   priority = false,
 }: BrandLogoProps) {
   const styles = SIZE_STYLES[size];
-  const src = variant === "icon" ? "/logo/logo_icon.svg" : "/logo/logo_text.svg";
+  // Keep these paths lowercase — git tracks `logo_text.svg` (lowercase) and
+  // Linux hosts (Vercel) are case-sensitive.
+  const src =
+    variant === "icon" ? "/logo/logo_icon.svg" : "/logo/logo_text.svg";
   const dimensions =
     variant === "icon"
       ? { width: 692, height: 525 }

@@ -28,6 +28,8 @@ export interface ShippingAddress {
   deliveryZone?: DeliveryZone;
   area: string;
   address: string;
+  /** Read-only alias returned on order snapshots. */
+  fullAddress?: string;
   landmark?: string;
 }
 
@@ -86,6 +88,8 @@ export interface CreateOrderPayload {
     quantity: number;
   }>;
   shippingAddress: ShippingAddress;
+  /** Saved address book entry selected at checkout (server resolves the snapshot). */
+  addressId?: string;
   paymentMethod?: PaymentMethod;
   couponCode?: string;
   quoteFingerprint?: string;

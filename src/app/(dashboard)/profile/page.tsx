@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { User, LogOut, Loader2, Package, Heart, Shield, Clock3, Mail } from "lucide-react";
+import { User, LogOut, Loader2, Package, Heart, Shield, Clock3, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RequireAuth } from "@/components/common/require-auth";
@@ -49,7 +49,7 @@ function ProfileContent() {
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           My Profile
         </h1>
         <p className="mt-1 text-sm text-neutral-400">
@@ -93,6 +93,12 @@ function ProfileContent() {
                   <Link href="/wishlist">
                     <Heart className="mr-2 h-4 w-4" />
                     Wishlist
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="justify-start">
+                  <Link href="/reviews">
+                    <Star className="mr-2 h-4 w-4" />
+                    My Reviews
                   </Link>
                 </Button>
               </div>
