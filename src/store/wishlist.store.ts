@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { wishlistService } from "@/services/wishlist.service";
+import { formatApiError } from "@/lib/api-errors";
 import { getCartItemType, useCartStore } from "@/store/cart.store";
 import { isPurchasableProduct } from "@/lib/pre-order";
 import type { Product } from "@/types/product";
@@ -29,9 +30,6 @@ interface WishlistState {
   clearWishlist: () => void;
   count: () => number;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 /** The API always answers with a fresh snapshot, so every mutation syncs from it. */
 const toSnapshot = (response: WishlistResponse) => ({
@@ -67,7 +65,7 @@ export const useWishlistStore = create<WishlistState>()(
           });
         } catch (error) {
           set({
-            error: getErrorMessage(error, "Unable to load wishlist"),
+            error: formatApiError(error, "Unable to load wishlist"),
             isLoading: false,
             initialized: true,
           });
@@ -91,7 +89,7 @@ export const useWishlistStore = create<WishlistState>()(
           });
           return Boolean(wishlist.isWishlisted);
         } catch (error) {
-          set({ error: getErrorMessage(error, "Unable to update wishlist"), isToggling: null });
+          set({ error: formatApiError(error, "Unable to update wishlist"), isToggling: null });
           throw error;
         }
       },
@@ -103,7 +101,7 @@ export const useWishlistStore = create<WishlistState>()(
           set({ ...toSnapshot(wishlist), isToggling: null });
         } catch (error) {
           set({
-            error: getErrorMessage(error, "Unable to remove this item"),
+            error: formatApiError(error, "Unable to remove this item"),
             isToggling: null,
           });
           throw error;
@@ -143,7 +141,7 @@ export const useWishlistStore = create<WishlistState>()(
           return true;
         } catch (error) {
           set({
-            error: getErrorMessage(error, "Unable to move this item to your cart"),
+            error: formatApiError(error, "Unable to move this item to your cart"),
             movingItemId: null,
           });
           throw error;

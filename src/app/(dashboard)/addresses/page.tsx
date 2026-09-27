@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { formatApiError } from "@/lib/api-errors";
 import { Home, Loader2, MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,13 +27,6 @@ export default function AddressesPage() {
         </RequireAuth>
     );
 }
-
-const getErrorMessage = (error: unknown, fallback: string): string =>
-    axios.isAxiosError(error)
-        ? ((error.response?.data?.message as string | undefined) ?? fallback)
-        : error instanceof Error
-            ? error.message
-            : fallback;
 
 function AddressesContent() {
     const { user } = useAuthStore();
@@ -94,7 +87,7 @@ function AddressesContent() {
                 "success",
             );
         } catch (error) {
-            addToast(getErrorMessage(error, "Unable to save this address"), "error");
+            addToast(formatApiError(error, "Unable to save this address"), "error");
         }
     };
 
@@ -116,7 +109,7 @@ function AddressesContent() {
             setEditingId(null);
             addToast("Address updated", "success");
         } catch (error) {
-            addToast(getErrorMessage(error, "Unable to update this address"), "error");
+            addToast(formatApiError(error, "Unable to update this address"), "error");
         }
     };
 
@@ -131,7 +124,7 @@ function AddressesContent() {
                 "success",
             );
         } catch (error) {
-            addToast(getErrorMessage(error, "Unable to remove this address"), "error");
+            addToast(formatApiError(error, "Unable to remove this address"), "error");
         } finally {
             setDeletingId(null);
         }
@@ -143,7 +136,7 @@ function AddressesContent() {
             await setDefaultAddress.mutateAsync(addressId);
             addToast("Default address updated", "success");
         } catch (error) {
-            addToast(getErrorMessage(error, "Unable to set the default address"), "error");
+            addToast(formatApiError(error, "Unable to set the default address"), "error");
         } finally {
             setBusyId(null);
         }

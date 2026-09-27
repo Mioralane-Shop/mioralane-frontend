@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { formatApiError } from "@/lib/api-errors";
 // Review images are temporarily disabled — restore the ImagePlus/X icons to re-enable review images.
 // import { CheckCircle2, ImagePlus, Loader2, Star, X } from "lucide-react";
 import { CheckCircle2, Loader2, Star } from "lucide-react";
@@ -141,11 +141,7 @@ export function ReviewForm({
         } catch (requestError) {
             // Review images are temporarily disabled.
             // setIsUploading(false);
-            const message = axios.isAxiosError(requestError)
-                ? (requestError.response?.data?.message as string | undefined) ?? "Unable to submit your review."
-                : requestError instanceof Error
-                    ? requestError.message
-                    : "Unable to submit your review.";
+            const message = formatApiError(requestError, "Unable to submit your review.");
             setError(message);
         }
     }

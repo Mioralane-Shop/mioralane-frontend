@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Plus, RefreshCw } from "lucide-react";
 import axios from "axios";
+import { formatApiError } from "@/lib/api-errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -175,9 +176,7 @@ function CheckoutContent() {
       selectSavedAddress(created);
       addToast("Address saved", "success");
     } catch (requestError) {
-      const message = axios.isAxiosError(requestError)
-        ? (requestError.response?.data?.message as string | undefined) ?? "Unable to save this address."
-        : "Unable to save this address.";
+      const message = formatApiError(requestError, "Unable to save this address.");
       setAddressError(message);
       addToast(message, "error");
     }
@@ -282,11 +281,7 @@ function CheckoutContent() {
       if (quoteRequestRef.current === requestId) {
         setShippingQuote(null);
         setIsQuoteLoading(false);
-        const message = axios.isAxiosError(requestError)
-          ? (requestError.response?.data?.message as string | undefined) ?? "Unable to calculate delivery."
-          : requestError instanceof Error
-            ? requestError.message
-            : "Unable to calculate delivery.";
+        const message = formatApiError(requestError, "Unable to calculate delivery.");
         setQuoteError(message);
         if (couponCode) {
           setAppliedCoupon("");
@@ -336,11 +331,7 @@ function CheckoutContent() {
       setCouponState("applied");
       setCouponMessage("Coupon applied.");
     } catch (requestError) {
-      const message = axios.isAxiosError(requestError)
-        ? (requestError.response?.data?.message as string | undefined) ?? "Coupon could not be applied."
-        : requestError instanceof Error
-          ? requestError.message
-          : "Coupon could not be applied.";
+      const message = formatApiError(requestError, "Coupon could not be applied.");
       setShippingQuote(null);
       setAppliedCoupon("");
       setCouponState("invalid");
@@ -425,11 +416,7 @@ function CheckoutContent() {
         return;
       }
 
-      const message = axios.isAxiosError(error)
-        ? (error.response?.data?.message as string | undefined) ?? "Unable to place order. Please try again."
-        : error instanceof Error
-          ? error.message
-          : "Unable to place order. Please try again.";
+      const message = formatApiError(error, "Unable to place order. Please try again.");
       setServerError(message);
       addToast(message, "error");
     } finally {

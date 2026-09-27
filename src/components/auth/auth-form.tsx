@@ -3,6 +3,7 @@
 import { useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatApiError } from "@/lib/api-errors";
 import {
   AlertCircle,
   ArrowLeft,
@@ -141,20 +142,15 @@ export function AuthForm({
       // Give the user a moment to register the success state before redirecting.
       window.setTimeout(() => router.push(redirectTo), 900);
     } catch (error) {
-      const err = error as {
-        response?: { data?: { message?: string } };
-        code?: string;
-      };
-      const backendMessage = err.response?.data?.message;
-      if (backendMessage) {
-        setServerError(backendMessage);
-      } else if (err.code === "ERR_NETWORK") {
-        setServerError(
-          "Unable to reach the server. Please check your connection and try again."
-        );
-      } else {
-        setServerError("Something went wrong. Please try again.");
-      }
+      // The bespoke ERR_NETWORK copy is kept: `error.message` for a dropped
+      // connection is "Network Error", which is less helpful than this sentence.
+      // Everything else goes through the shared formatter so a Zod rejection shows
+      // the failing field instead of the bare "Validation failed".
+      setServerError(
+        (error as { code?: string } | undefined)?.code === "ERR_NETWORK"
+          ? "Unable to reach the server. Please check your connection and try again."
+          : formatApiError(error, "Something went wrong. Please try again.")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -180,13 +176,7 @@ export function AuthForm({
       setSuccess(message || "Signed in with Google successfully!");
       window.setTimeout(() => router.push(redirectTo), 900);
     } catch (error) {
-      const err = error as {
-        response?: { data?: { message?: string } };
-        code?: string;
-      };
-      setServerError(
-        err.response?.data?.message || "Google sign-in failed. Please try again."
-      );
+      setServerError(formatApiError(error, "Google sign-in failed. Please try again."));
     } finally {
       setIsLoading(false);
     }

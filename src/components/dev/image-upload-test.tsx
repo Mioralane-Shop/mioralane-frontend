@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { isAxiosError } from "axios";
+import { formatApiError } from "@/lib/api-errors";
 import { CheckCircle2, Image as ImageIcon, Loader2, RefreshCw, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,11 +164,7 @@ export function ImageUploadTest() {
       setUploadResult(response);
       addToast("Optimized image uploaded successfully", "success");
     } catch (err) {
-      const message = isAxiosError(err)
-        ? err.response?.data?.message ?? err.message
-        : err instanceof Error
-          ? err.message
-          : "Upload failed";
+      const message = formatApiError(err, "Upload failed");
 
       setError(message);
       addToast(message, "error");
