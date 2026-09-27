@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Check, Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useActivePromotion } from "@/hooks/use-active-promotion";
+import { cn } from "@/lib/utils";
 
 const excludedPaths = [
   "/login",
@@ -103,12 +104,12 @@ export function PromotionCampaign() {
 
   return (
     <>
-      <div className="fixed right-0 top-[52%] z-[90] -translate-y-1/2 sm:top-1/2">
+      <div className="fixed right-0 top-[52%] z-[60] -translate-y-1/2 sm:top-1/2">
         <button
           type="button"
           aria-label={`Open ${activeCampaign.name} promotion`}
           onClick={() => setIsOpen(true)}
-          className="hidden w-12 rounded-l-xl border border-r-0 border-brand-100 bg-white px-3 py-7 text-center text-[14px] font-black uppercase tracking-[0.08em] text-ink shadow-[0_14px_34px_rgba(26,26,26,0.16),0_3px_10px_rgba(255,102,117,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_16px_38px_rgba(26,26,26,0.2),0_4px_12px_rgba(255,102,117,0.2)] sm:flex sm:min-h-[224px] sm:items-center sm:justify-center"
+          className="hidden w-12 rounded-l-xl border border-r-0 border-brand-100 bg-white px-3 py-7 text-center text-[14px] font-black uppercase tracking-[0.08em] text-ink shadow-[0_14px_34px_rgba(26,26,26,0.16),0_3px_10px_rgba(251,111,146,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_16px_38px_rgba(26,26,26,0.2),0_4px_12px_rgba(251,111,146,0.2)] sm:flex sm:min-h-[224px] sm:items-center sm:justify-center"
         >
           <span className="[writing-mode:vertical-rl]">{campaignText}</span>
         </button>
@@ -127,12 +128,18 @@ export function PromotionCampaign() {
         </button>
       </div>
 
-      <div className="fixed bottom-5 right-0 z-[90] sm:hidden">
+      <div
+        className={cn(
+          "fixed right-0 z-[60] sm:hidden",
+          // The product page has a fixed buy bar at the bottom, so lift the pill above it.
+          pathname.startsWith("/product/") ? "bottom-24" : "bottom-5",
+        )}
+      >
         <button
           type="button"
           aria-label={`Open ${activeCampaign.name} promotion`}
           onClick={() => setIsOpen(true)}
-          className="max-w-[86vw] rounded-l-full border border-r-0 border-brand-100 bg-white px-6 py-3 text-xs font-black uppercase tracking-[0.06em] text-ink shadow-[0_12px_28px_rgba(26,26,26,0.16),0_3px_10px_rgba(255,102,117,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_14px_32px_rgba(26,26,26,0.2),0_4px_12px_rgba(255,102,117,0.2)]"
+          className="max-w-[86vw] rounded-l-full border border-r-0 border-brand-100 bg-white px-6 py-3 text-xs font-black uppercase tracking-[0.06em] text-ink shadow-[0_12px_28px_rgba(26,26,26,0.16),0_3px_10px_rgba(251,111,146,0.16)] transition-colors hover:bg-brand-100 hover:shadow-[0_14px_32px_rgba(26,26,26,0.2),0_4px_12px_rgba(251,111,146,0.2)]"
         >
           <span className="line-clamp-1">
             {activeCampaign.floatingTab.subtitle || activeCampaign.floatingTab.title}
@@ -147,22 +154,22 @@ export function PromotionCampaign() {
             setIsOpen(false);
             setIsVisible(false);
           }}
-          className="absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white shadow-[0_6px_14px_rgba(26,26,26,0.35)] transition-colors hover:bg-ink-soft"
+          className="absolute -left-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-ink text-white shadow-[0_6px_14px_rgba(26,26,26,0.35)] transition-colors hover:bg-ink-soft"
         >
-          <X className="h-3.5 w-3.5" aria-hidden="true" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {isOpen ? (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-ink/35 px-4 py-8"
+          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-ink/35 px-4 py-6 sm:items-center sm:py-8"
           role="dialog"
           aria-modal="true"
           aria-labelledby="promotion-campaign-title"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-sm rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(255,102,117,0.12)] sm:px-6 sm:py-7"
+            className="relative max-h-[calc(100dvh-3rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-brand-100 bg-white px-4 py-5 text-center shadow-[0_24px_70px_rgba(26,26,26,0.22),0_8px_24px_rgba(251,111,146,0.12)] sm:px-6 sm:py-7"
             onClick={(event) => event.stopPropagation()}
           >
             <button

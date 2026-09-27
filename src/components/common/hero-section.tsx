@@ -48,9 +48,8 @@ export function HeroSection() {
           {slides.map((slide, i) => (
             <div
               key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-700 ${
-                i === current ? "opacity-100" : "pointer-events-none opacity-0"
-              }`}
+              className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100" : "pointer-events-none opacity-0"
+                }`}
             >
               <Image
                 src={slide.image}
@@ -63,7 +62,7 @@ export function HeroSection() {
 
               <Link
                 href={slide.href}
-                className="hero-cta-glow absolute bottom-[18%] left-[8%] z-40 inline-flex h-9 items-center justify-center rounded-full bg-accent px-5 text-xs font-semibold text-white no-underline shadow-[0_12px_28px_rgba(255,102,117,0.24)] transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-accent-dark sm:h-10 sm:px-6 sm:text-sm md:h-11 md:px-7"
+                className="hero-cta-glow absolute bottom-[18%] left-[8%] z-40 inline-flex h-9 items-center justify-center rounded-full bg-accent px-5 text-xs font-semibold text-white no-underline shadow-[0_12px_28px_rgba(251,111,146,0.24)] transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-accent-dark sm:h-10 sm:px-6 sm:text-sm md:h-11 md:px-7"
               >
                 Shop Now
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -71,16 +70,19 @@ export function HeroSection() {
             </div>
           ))}
 
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-4">
+          <div className="absolute bottom-1.5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 sm:bottom-2.5">
             {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`h-2.5 rounded-full bg-white transition-all duration-300 ${
-                  i === current ? "w-7 opacity-95" : "w-2.5 opacity-50"
-                }`}
+                className="flex h-9 items-center px-1"
                 aria-label={`Go to banner ${i + 1}`}
-              />
+              >
+                <span
+                  className={`block h-2.5 rounded-full bg-white transition-all duration-300 ${i === current ? "w-7 opacity-95" : "w-2.5 opacity-50"
+                    }`}
+                />
+              </button>
             ))}
           </div>
 

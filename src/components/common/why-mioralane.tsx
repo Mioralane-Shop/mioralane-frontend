@@ -31,7 +31,7 @@ export function WhyMioralane() {
           <span className="text-sm font-semibold tracking-wider text-brand">
             Why Mioralane
           </span>
-          <h2 className="mt-2 text-3xl font-light tracking-tight text-ink">
+          <h2 className="mt-2 text-2xl font-light tracking-tight text-ink sm:text-3xl">
             Korean skincare you can trust
           </h2>
           <p className="mt-3 mx-auto max-w-2xl text-ink/50">
@@ -40,7 +40,7 @@ export function WhyMioralane() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
           {TRUST_PILLARS.map((pillar) => (
             <div
               key={pillar.title}

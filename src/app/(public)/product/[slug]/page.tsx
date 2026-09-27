@@ -28,6 +28,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProductReviews } from "@/components/product/product-reviews";
 import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
 import {
@@ -366,7 +367,7 @@ export default function ProductPage() {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20 text-center">
         <AlertCircle className="mx-auto h-16 w-16 text-rose-300" />
-        <h1 className="mt-4 text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="mt-4 text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           Could not load product
         </h1>
         <p className="mt-3 text-neutral-400">
@@ -439,7 +440,7 @@ export default function ProductPage() {
       image: images[actualIndex],
     };
   });
-  const reviewTabLabel = `Reviews (${product.reviewCount || 4})`;
+  const reviewTabLabel = `Reviews (${product.reviewCount ?? 0})`;
 
   return (
     <div className="bg-white pb-28 md:pb-0">
@@ -591,10 +592,17 @@ export default function ProductPage() {
                 onScroll={(event) => {
                   if (mobileGalleryItems.length <= 1) return;
                   const target = event.currentTarget;
-                  const itemWidth = target.scrollWidth / mobileGalleryItems.length;
+                  const slides = Array.from(target.children) as HTMLElement[];
+                  // Measure the real stride (slide width + gap) instead of scrollWidth / count
+                  // so the active dot stays in sync with the slide in view.
+                  const stride =
+                    slides.length > 1
+                      ? slides[1].offsetLeft - slides[0].offsetLeft
+                      : target.clientWidth;
+                  if (stride <= 0) return;
                   const index = Math.min(
-                    mobileGalleryItems.length - 1,
-                    Math.max(0, Math.round(target.scrollLeft / itemWidth)),
+                    slides.length - 1,
+                    Math.max(0, Math.round(target.scrollLeft / stride)),
                   );
                   setSelectedImage(index);
                 }}
@@ -655,19 +663,24 @@ export default function ProductPage() {
                       key={index}
                       onClick={() => {
                         setSelectedImage(index);
-                        const target = mobileGalleryRef.current;
-                        if (!target) return;
-                        target.scrollTo({
-                          left: (target.scrollWidth / images.length) * index,
+                        const track = mobileGalleryRef.current;
+                        const slide = track?.children[index] as HTMLElement | undefined;
+                        if (!track || !slide) return;
+                        track.scrollTo({
+                          left: slide.offsetLeft,
                           behavior: "smooth",
                         });
                       }}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all",
-                        selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
-                      )}
+                      className="flex h-6 items-center px-0.5"
                       aria-label={`Select image ${index + 1}`}
-                    />
+                    >
+                      <span
+                        className={cn(
+                          "block h-1.5 rounded-full transition-all",
+                          selectedImage === index ? "w-6 bg-accent" : "w-2.5 bg-ink/20",
+                        )}
+                      />
+                    </button>
                   ))}
                 </div>
               )}
@@ -679,7 +692,7 @@ export default function ProductPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
                 {SITE_NAME}
               </p>
-              <h1 className="max-w-[14ch] break-words text-[2.35rem] font-serif font-medium leading-[1.02] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
+              <h1 className="max-w-[14ch] break-words text-[2rem] font-serif font-medium leading-[1.05] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
                 {product.name}
               </h1>
             </div>
@@ -703,7 +716,7 @@ export default function ProductPage() {
               <div
                 className={cn(
                   "flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]",
-                  canPurchase ? "text-[#1F6B4E]" : "text-ink-muted",
+                  canPurchase ? "text-success" : "text-ink-muted",
                 )}
               >
                 <span
@@ -803,7 +816,7 @@ export default function ProductPage() {
                     "flex h-12 min-w-[min(100%,12rem)] flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors min-[380px]:min-w-0 sm:px-6",
                     !canPurchase
                       ? "cursor-not-allowed bg-neutral-200 text-neutral-500"
-                      : "bg-accent text-white hover:bg-accent-dark",
+                      : "bg-cart text-white hover:bg-cart-dark",
                   )}
                 >
                   {availability?.ctaLabel ?? "Add to Cart"}
@@ -833,7 +846,7 @@ export default function ProductPage() {
       <section className="border-t border-ink/10 bg-white">
         <div className="border-b border-ink/10">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <div className="overflow-x-auto">
+            <div className="-mx-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6">
               <div className="flex min-w-max gap-8">
                 {[...PRODUCT_TABS, { key: "reviews" as const, label: reviewTabLabel }].map((tab) => (
                   <button
@@ -885,25 +898,25 @@ export default function ProductPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
                     The Mioralane Promise
                   </p>
-                  <div className="mt-6 rounded-[20px] border border-[#F0DFDB] bg-[#FFF9F8] p-7 sm:p-8">
+                  <div className="mt-6 rounded-[20px] border border-[#FBD6DE] bg-[#FFF6F8] p-7 sm:p-8">
                     <div className="grid gap-0 md:grid-cols-3">
-                    {TRUST_ITEMS.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div
-                          key={item.title}
-                          className="flex items-start gap-4 border-t border-[#EADAD6] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
-                        >
-                          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
-                            <Icon className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
-                            <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
+                      {TRUST_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <div
+                            key={item.title}
+                            className="flex items-start gap-4 border-t border-[#FAD8E1] py-5 first:border-t-0 first:pt-0 last:pb-0 md:border-l md:border-t-0 md:px-6 md:py-0 md:first:border-l-0 md:first:pl-0 md:last:pr-0"
+                          >
+                            <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-pale text-accent sm:h-12 sm:w-12">
+                              <Icon className="h-5 w-5" />
+                            </span>
+                            <div>
+                              <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
+                              <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                     </div>
                   </div>
                 </section>
@@ -975,12 +988,7 @@ export default function ProductPage() {
             )}
 
             {activeTab === "reviews" && (
-              <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
-                <p className="text-sm font-semibold text-ink">No reviews yet</p>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-ink/60">
-                  Customer reviews will appear here once a real review system is introduced.
-                </p>
-              </div>
+              <ProductReviews productId={product.id} productName={product.name} />
             )}
           </div>
         </div>
@@ -992,19 +1000,19 @@ export default function ProductPage() {
             <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
             <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
-                <div key={p.id} className="flex flex-col">
+                <div key={p.id} className="flex h-full flex-col">
                   <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
+                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
+                    <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
-      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
+      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
         <div className="flex items-center rounded-full border border-ink/15">
           <button
             onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveLimit))}
@@ -1027,7 +1035,7 @@ export default function ProductPage() {
         <button
           onClick={() => addToCart()}
           disabled={!canPurchase}
-          className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-[#4B3858] px-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
+          className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-cart px-3 text-sm font-semibold text-white transition-colors hover:bg-cart-dark disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
         >
           <ShoppingBag className="h-4 w-4" />
           {availability?.ctaLabel ?? "Add to Cart"}
@@ -1041,12 +1049,12 @@ export default function ProductPage() {
         >
           <button
             onClick={() => setLightboxOpen(false)}
-            className="absolute right-5 top-5 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
             aria-label="Close zoom"
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative h-full max-h-[85vh] w-full max-w-3xl">
+          <div className="relative h-full max-h-[85dvh] w-full max-w-3xl">
             {selectedImageSrc ? (
               <Image
                 src={selectedImageSrc}

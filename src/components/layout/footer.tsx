@@ -34,11 +34,11 @@ export function Footer() {
   return (
     <footer className="bg-ink px-6 py-10 text-white/55 md:py-12">
       <div className="mx-auto max-w-[1200px]">
-        <div className="mb-7 grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-10">
+        <div className="mb-7 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-10">
           <div>
             <BrandLogo
               size="lg"
-              className="mb-3"
+              className="mb-4 w-fit rounded-2xl bg-white px-3.5 py-2.5"
             />
             <p className="max-w-[220px] text-sm font-light leading-[1.55]">
               Curated Korean skincare, sourced with care.

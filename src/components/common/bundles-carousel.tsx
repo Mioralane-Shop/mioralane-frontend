@@ -28,9 +28,9 @@ import type { ComboProduct } from "@/services/combo.service";
 
 const CARD_TREATMENTS = [
   {
-    background: "bg-[#FBF2F1]",
-    backgroundColor: "#FBF2F1",
-    wash: "bg-[linear-gradient(90deg,rgba(251,242,241,0.99)_0%,rgba(251,242,241,0.98)_40%,rgba(251,242,241,0.84)_54%,rgba(251,242,241,0.42)_66%,rgba(251,242,241,0.08)_80%,rgba(251,242,241,0)_100%)]",
+    background: "bg-[#FFF1F4]",
+    backgroundColor: "#FFF1F4",
+    wash: "bg-[linear-gradient(90deg,rgba(255,241,244,0.99)_0%,rgba(255,241,244,0.98)_40%,rgba(255,241,244,0.84)_54%,rgba(255,241,244,0.42)_66%,rgba(255,241,244,0.08)_80%,rgba(255,241,244,0)_100%)]",
     badge: "bg-brand-500 text-white",
     savings: "bg-brand-100 text-brand-600",
   },
@@ -261,7 +261,7 @@ function BundleCard({
               ) : null}
             </div>
             {savings > 0 ? (
-              <span className="shrink-0 text-sm font-semibold text-[#0B8A63]">
+              <span className="shrink-0 text-sm font-semibold text-success">
                 Save {formatPrice(savings)}
               </span>
             ) : null}
@@ -286,7 +286,7 @@ function BundleCard({
                 onAddToCart(combo);
               }}
               disabled={combo.stock <= 0}
-              className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-accent-dark hover:shadow disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full bg-cart px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-cart-dark hover:shadow disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
             >
               <span>{combo.stock > 0 ? "Add Bundle" : "Out of Stock"}</span>
               {combo.stock > 0 ? <ArrowRight className="h-4 w-4" /> : null}
@@ -447,7 +447,7 @@ export function BundlesCarousel() {
   const isNotFoundError = statusCode === 404;
 
   return (
-    <section className="home-section bg-[#fef6f7] shadow-[0_6px_24px_rgba(26,26,26,0.04)]">
+    <section className="home-section bg-accent-pale shadow-[0_6px_24px_rgba(26,26,26,0.04)]">
       <div className="mx-auto max-w-[1440px] px-4">
         <div className="home-section-heading">
           <SectionHeading

@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock3, Package } from "lucide-react";
+import { CheckCircle2, Clock3, Package, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/components/common/product-image";
+import { ReviewForm } from "@/components/reviews/review-form";
 import { orderService } from "@/services/order.service";
 import { formatPrice } from "@/lib/utils";
 import { formatPreOrderDate, orderContainsPreOrder } from "@/lib/pre-order";
@@ -14,6 +16,7 @@ import { formatPreOrderDate, orderContainsPreOrder } from "@/lib/pre-order";
 export default function OrderSuccessPage() {
   const params = useParams<{ id: string }>();
   const orderId = params.id;
+  const [reviewItem, setReviewItem] = useState<{ productId: string; title: string } | null>(null);
 
   const {
     data: order,
@@ -65,6 +68,8 @@ export default function OrderSuccessPage() {
 
   const itemCount = order.items.reduce((total, item) => total + item.quantity, 0);
   const containsPreOrder = orderContainsPreOrder(order);
+  const orderStatus = order.orderStatus ?? order.status ?? "pending";
+  const canReviewItems = orderStatus === "delivered";
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
@@ -138,9 +143,24 @@ export default function OrderSuccessPage() {
                     </p>
                   ) : null}
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-ink">
-                  {formatPrice(item.price * item.quantity)}
-                </p>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <p className="text-sm font-semibold text-ink">
+                    {formatPrice(item.price * item.quantity)}
+                  </p>
+                  {canReviewItems && item.itemType === "product" && item.productId ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setReviewItem({ productId: item.productId as string, title: item.title })
+                      }
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                      Write a review
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             ))}
           </div>
@@ -182,7 +202,19 @@ export default function OrderSuccessPage() {
         <Button asChild variant="outline">
           <Link href="/orders">View orders</Link>
         </Button>
+        <Button asChild variant="outline">
+          <Link href="/reviews">My reviews</Link>
+        </Button>
       </div>
+
+      <ReviewForm
+        open={Boolean(reviewItem)}
+        onOpenChange={(open) => {
+          if (!open) setReviewItem(null);
+        }}
+        productId={reviewItem?.productId ?? ""}
+        productName={reviewItem?.title ?? ""}
+      />
     </main>
   );
 }

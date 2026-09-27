@@ -5,7 +5,7 @@ export function CategorySection() {
   return (
     <section className="container mx-auto px-4 py-12 md:py-16">
       <div className="mb-10 text-center">
-        <h2 className="text-3xl font-light tracking-tight text-neutral-800">
+        <h2 className="text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           Shop by Category
         </h2>
         <p className="mt-2 text-neutral-400">Find exactly what your skin needs</p>

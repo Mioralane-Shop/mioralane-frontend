@@ -45,6 +45,10 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     type: "website",
   },
+  icons: {
+    icon: [{ url: "/logo/logo_icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo/logo_icon.svg" }],
+  },
 };
 
 export default function RootLayout({
@@ -63,16 +67,16 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
         <GoogleAuthProvider>
           <QueryProvider>
-          <StoreHydration />
-          <ScrollProgress />
-          <AnnouncementBar />
-          <Navbar />
-          <CartDrawer />
-          <Toaster />
-          <PromotionCampaign />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </QueryProvider>
+            <StoreHydration />
+            <ScrollProgress />
+            <AnnouncementBar />
+            <Navbar />
+            <CartDrawer />
+            <Toaster />
+            <PromotionCampaign />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </QueryProvider>
         </GoogleAuthProvider>
       </body>
     </html>

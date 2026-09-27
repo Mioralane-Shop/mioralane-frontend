@@ -13,7 +13,7 @@ export default function ContactPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           Contact
         </span>
-        <h1 className="mt-3 text-4xl font-serif font-medium text-ink">
+        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
           We&apos;d love to hear from you
         </h1>
         <p className="mt-3 text-ink/50">
@@ -22,7 +22,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-10 md:grid-cols-5">
+      <div className="mt-12 grid gap-8 md:grid-cols-5 md:gap-10">
         {/* Info */}
         <div className="space-y-6 md:col-span-2">
           <div className="flex items-start gap-4">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, Package, LogOut } from "lucide-react";
+import { User, Package, LogOut, MapPin } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useAccountLogout } from "@/hooks/use-account-logout";
 import {
@@ -25,10 +25,10 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-full p-2 text-ink/70 transition-colors hover:text-ink hover:bg-ink/[0.04] outline-none"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink outline-none lg:h-auto lg:w-auto lg:gap-2 lg:p-2"
           aria-label="Account menu"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-100 lg:h-8 lg:w-8">
             {user.avatar ? (
               <Image
                 src={user.avatar}
@@ -70,6 +70,12 @@ export function UserMenu() {
           <Link href="/orders" className="flex items-center gap-3 cursor-pointer">
             <Package className="h-4 w-4" />
             My Orders
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/addresses" className="flex items-center gap-3 cursor-pointer">
+            <MapPin className="h-4 w-4" />
+            Saved Addresses
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

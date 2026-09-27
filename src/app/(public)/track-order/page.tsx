@@ -24,7 +24,7 @@ export default function TrackOrderPage() {
           accept arbitrary order-number lookups.
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-ink/10 bg-surface p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-white">

@@ -1,26 +1,39 @@
 import api from "@/lib/axios";
-import type { Product } from "@/types/product";
+import type { WishlistItemType, WishlistResponse, WishlistSort } from "@/types/wishlist";
 
-export interface WishlistResponse {
-  success: boolean;
-  productIds: string[];
-  products: Product[];
-  isWishlisted?: boolean;
-  message?: string;
-}
+// Re-exported for existing imports of the response type.
+export type { WishlistResponse };
 
 export const wishlistService = {
-  get: async (): Promise<WishlistResponse> => {
-    const { data } = await api.get<WishlistResponse>("/wishlist");
+  get: async (sort?: WishlistSort): Promise<WishlistResponse> => {
+    const { data } = await api.get<WishlistResponse>("/wishlist", {
+      params: sort ? { sort } : undefined,
+    });
+    return data;
+  },
+
+  /** Idempotent — saving an already-saved item keeps its original saved price. */
+  add: async (
+    itemId: string,
+    itemType: WishlistItemType = "product"
+  ): Promise<WishlistResponse> => {
+    const { data } = await api.post<WishlistResponse>("/wishlist", { itemId, itemType });
+    return data;
+  },
+
+  remove: async (itemId: string, itemType?: WishlistItemType): Promise<WishlistResponse> => {
+    const { data } = await api.delete<WishlistResponse>(`/wishlist/${itemId}`, {
+      params: itemType ? { itemType } : undefined,
+    });
     return data;
   },
 
   toggle: async (
-    productId: string,
-    itemType: "product" | "combo" = "product"
+    itemId: string,
+    itemType: WishlistItemType = "product"
   ): Promise<WishlistResponse> => {
     const { data } = await api.post<WishlistResponse>("/wishlist/toggle", {
-      productId,
+      itemId,
       itemType,
     });
     return data;
