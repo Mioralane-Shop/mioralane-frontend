@@ -1,10 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-// Explicit `.ts` extensions (and relative paths) here on purpose: this module
-// must stay loadable by `scripts/verify-csrf-client.ts`, which runs the real
-// interceptors under Node's type stripping. Node's ESM resolver does not do
-// extension rewriting, and it cannot follow the `@/` alias. Both are legal
-// because this project never emits — see `allowImportingTsExtensions` in
-// tsconfig.json.
+// Explicit .ts extension: required by the CSRF client harness, which imports
+// these modules directly to test the interceptor logic without a browser.
+// This requires allowImportingTsExtensions in tsconfig.json.
 import { handleUnauthorizedSession } from "./auth-session.ts";
 import {
   CSRF_HEADER,

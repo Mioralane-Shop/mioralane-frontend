@@ -32,15 +32,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Pinned to an exact release, not a floating major. Nothing in the repo
-      # pinned Node before this (no `engines`, no `.nvmrc`, no `packageManager`),
-      # and local development runs v24.9.0 — so this is the first and only pin.
-      # 20.20.2 is verified against nodejs.org/dist/index.json as the latest
-      # published 20.x; this app is on Next 14, which needs >= 18.17.
+      # Node 24 — the same major the backend workflow runs and the one local
+      # development uses (v24.9.0), so CI and a developer's machine agree.
+      #
+      # This was pinned to the exact release 20.20.2 until the CSRF client
+      # harness existed. That pin is no longer keepable: `verify:csrf-client`
+      # executes the harness as TypeScript, and Node only strips types natively
+      # from 22.18/23.6 — on 20 the step cannot run at all, and a control that
+      # only ever runs on a developer's machine is how a regression reaches main
+      # unnoticed.
+      #
+      # The major line rather than an exact patch, matching the backend workflow:
+      # `'24'` resolves to the newest published 24.x on the runner. This app is on
+      # Next 14, which requires >= 18.17.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.20.2'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies
@@ -51,3 +59,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Drives the real axios instance through a scripted adapter: the CSRF header
+      # on writes, the single bounded retry when a token goes stale, and a
+      # negative control proving a request that never fails is never retried.
+      - name: Verify CSRF client
+        run: npm run verify:csrf-client
