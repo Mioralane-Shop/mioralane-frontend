@@ -5,21 +5,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Plus, RefreshCw } from "lucide-react";
 import axios from "axios";
+import { formatApiError } from "@/lib/api-errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RequireAuth } from "@/components/common/require-auth";
+import { AddressCard } from "@/components/address/address-card";
+import { AddressForm } from "@/components/address/address-form";
 import { useCartStore } from "@/store/cart.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useToastStore } from "@/store/toast.store";
 import { useCreateOrder } from "@/hooks/use-orders";
+import { useCreateAddress, useMyAddresses } from "@/hooks/use-addresses";
 import { formatPrice, cn } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
-import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict } from "@/constants/bangladesh-locations";
+import type { AddressFormValues } from "@/lib/validators/address";
+import type { SavedAddress } from "@/types/address";
+import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict, withSavedOption } from "@/constants/bangladesh-locations";
 import { shippingService } from "@/services/shipping.service";
 import type { ShippingQuoteResponse } from "@/types/shipping";
 import { formatPreOrderDate, getCartPreOrderReadiness, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
@@ -45,6 +51,11 @@ function CheckoutContent() {
   } = useCartStore();
   const addToast = useToastStore((state) => state.addToast);
   const createOrder = useCreateOrder();
+  const { data: savedAddresses = [], isLoading: isAddressesLoading } = useMyAddresses();
+  const createAddress = useCreateAddress();
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
@@ -56,6 +67,7 @@ function CheckoutContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
   const quoteRequestRef = useRef(0);
+  const newAddressPanelRef = useRef<HTMLDivElement | null>(null);
   const checkoutBlockMessage = getCheckoutBlockMessage();
   const canProceedToCheckout = canCheckout();
 
@@ -63,6 +75,7 @@ function CheckoutContent() {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
@@ -84,15 +97,137 @@ function CheckoutContent() {
     }
   }, [setValue, user?.username]);
 
+  /** Copies a saved address into the shipping form fields. */
+  const applySavedAddress = useCallback(
+    (address: SavedAddress) => {
+      setValue("name", address.name, { shouldDirty: true, shouldTouch: true });
+      setValue("phone", address.phone, { shouldDirty: true, shouldTouch: true });
+      setValue("division", address.division, { shouldDirty: true, shouldTouch: true });
+      setValue("district", address.district, { shouldDirty: true, shouldTouch: true });
+      setValue("area", address.area, { shouldDirty: true, shouldTouch: true });
+      setValue("address", address.fullAddress, { shouldDirty: true, shouldTouch: true });
+      setValue("landmark", address.landmark ?? "", { shouldDirty: true, shouldTouch: true });
+    },
+    [setValue],
+  );
+
+  const selectSavedAddress = useCallback(
+    (address: SavedAddress) => {
+      setSelectedAddressId(address.id);
+      applySavedAddress(address);
+    },
+    [applySavedAddress],
+  );
+
+  /**
+   * Editing any shipping field detaches the order from the saved address, so the
+   * manually typed values are used instead of the stored address book entry.
+   */
+  const detachSavedAddress = useCallback(() => {
+    setSelectedAddressId((current) => (current === null ? current : null));
+  }, []);
+
+  const didAutoSelectAddress = useRef(false);
+
+  // The inline "Add New Address" panel renders below the saved-address cards,
+  // which can sit under the fold — scroll it into view so the click visibly
+  // does something on short/mobile viewports.
+  useEffect(() => {
+    if (!isAddingAddress) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      newAddressPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isAddingAddress]);
+
+  useEffect(() => {
+    if (didAutoSelectAddress.current || savedAddresses.length === 0) {
+      return;
+    }
+
+    didAutoSelectAddress.current = true;
+
+    // Never overwrite details the customer already started typing.
+    if (getValues("division") || getValues("address")) {
+      return;
+    }
+
+    const preferred = savedAddresses.find((address) => address.isDefault) ?? savedAddresses[0];
+    selectSavedAddress(preferred);
+  }, [getValues, savedAddresses, selectSavedAddress]);
+
+  const handleCreateAddress = async (values: AddressFormValues) => {
+    setAddressError(null);
+
+    try {
+      const created = await createAddress.mutateAsync({
+        name: values.name,
+        phone: values.phone,
+        division: values.division,
+        district: values.district,
+        area: values.area,
+        fullAddress: values.fullAddress,
+        landmark: values.landmark || undefined,
+        isDefault: values.isDefault,
+      });
+      setIsAddingAddress(false);
+      selectSavedAddress(created);
+      addToast("Address saved", "success");
+    } catch (requestError) {
+      const message = formatApiError(requestError, "Unable to save this address.");
+      setAddressError(message);
+      addToast(message, "error");
+    }
+  };
+
   const selectedDivision = watch("division");
   const selectedDistrict = watch("district");
   const selectedArea = watch("area");
-  const divisionOptions = useMemo(() => getDivisions(), []);
-  const districtOptions = useMemo(() => getDistrictsByDivision(selectedDivision), [selectedDivision]);
-  const areaOptions = useMemo(
-    () => getUpazilasByDistrict(selectedDistrict, selectedDivision),
+  const divisionOptions = useMemo(() => withSavedOption(getDivisions(), selectedDivision), [selectedDivision]);
+  const districtOptions = useMemo(
+    () => withSavedOption(getDistrictsByDivision(selectedDivision), selectedDistrict),
     [selectedDivision, selectedDistrict],
   );
+  const areaOptions = useMemo(
+    () => withSavedOption(getUpazilasByDistrict(selectedDistrict, selectedDivision), selectedArea),
+    [selectedArea, selectedDivision, selectedDistrict],
+  );
+
+  /**
+   * Radix `Select` re-emits its current value through `onValueChange` whenever
+   * the value changes programmatically (its hidden native `<select>` dispatches
+   * a synthetic change event), and it emits `''` when the value is reset.
+   * Those echoes are not user input: ignoring them keeps the dependent
+   * district/area fields (and the selected saved address) intact.
+   */
+  const isEchoedSelectValue = (value: string | undefined, current: string | undefined) =>
+    !value || value === current;
+
+  const handleDivisionChange = (value: string) => {
+    if (isEchoedSelectValue(value, selectedDivision)) return;
+
+    detachSavedAddress();
+    setValue("division", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    setValue("district", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    setValue("area", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+  };
+
+  const handleDistrictChange = (value: string) => {
+    if (isEchoedSelectValue(value, selectedDistrict)) return;
+
+    detachSavedAddress();
+    setValue("district", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    setValue("area", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+  };
+
+  const handleAreaChange = (value: string) => {
+    if (isEchoedSelectValue(value, selectedArea)) return;
+
+    detachSavedAddress();
+    setValue("area", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+  };
   const subtotal = totalPrice();
   const discountAmount = shippingQuote?.totals.discountAmount ?? 0;
   const displayedShippingFee = shippingQuote?.totals.shippingFee ?? 0;
@@ -146,11 +281,7 @@ function CheckoutContent() {
       if (quoteRequestRef.current === requestId) {
         setShippingQuote(null);
         setIsQuoteLoading(false);
-        const message = axios.isAxiosError(requestError)
-          ? (requestError.response?.data?.message as string | undefined) ?? "Unable to calculate delivery."
-          : requestError instanceof Error
-            ? requestError.message
-            : "Unable to calculate delivery.";
+        const message = formatApiError(requestError, "Unable to calculate delivery.");
         setQuoteError(message);
         if (couponCode) {
           setAppliedCoupon("");
@@ -200,11 +331,7 @@ function CheckoutContent() {
       setCouponState("applied");
       setCouponMessage("Coupon applied.");
     } catch (requestError) {
-      const message = axios.isAxiosError(requestError)
-        ? (requestError.response?.data?.message as string | undefined) ?? "Coupon could not be applied."
-        : requestError instanceof Error
-          ? requestError.message
-          : "Coupon could not be applied.";
+      const message = formatApiError(requestError, "Coupon could not be applied.");
       setShippingQuote(null);
       setAppliedCoupon("");
       setCouponState("invalid");
@@ -233,7 +360,7 @@ function CheckoutContent() {
     if (!canProceedToCheckout) {
       setServerError(
         checkoutBlockMessage ??
-          "One or more items in your cart cannot be verified. Please update the cart before placing the order.",
+        "One or more items in your cart cannot be verified. Please update the cart before placing the order.",
       );
       return;
     }
@@ -241,8 +368,8 @@ function CheckoutContent() {
     if (isQuoteLoading || !shippingQuote || !deliveryAvailable) {
       setServerError(
         shippingQuote?.shipping.availability.message ??
-          quoteError ??
-          "Please complete delivery information and wait for the delivery charge to update.",
+        quoteError ??
+        "Please complete delivery information and wait for the delivery charge to update.",
       );
       return;
     }
@@ -261,6 +388,7 @@ function CheckoutContent() {
           quantity: item.quantity,
         })),
         shippingAddress: values,
+        addressId: selectedAddressId ?? undefined,
         paymentMethod: "cash_on_delivery",
         couponCode: appliedCoupon || undefined,
         quoteFingerprint: shippingQuote.quoteFingerprint,
@@ -288,11 +416,7 @@ function CheckoutContent() {
         return;
       }
 
-      const message = axios.isAxiosError(error)
-        ? (error.response?.data?.message as string | undefined) ?? "Unable to place order. Please try again."
-        : error instanceof Error
-          ? error.message
-          : "Unable to place order. Please try again.";
+      const message = formatApiError(error, "Unable to place order. Please try again.");
       setServerError(message);
       addToast(message, "error");
     } finally {
@@ -328,7 +452,7 @@ function CheckoutContent() {
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-tight text-neutral-800">
+        <h1 className="text-2xl font-light tracking-tight text-neutral-800 sm:text-3xl">
           Checkout
         </h1>
         <p className="mt-1 text-sm text-neutral-400">
@@ -346,16 +470,96 @@ function CheckoutContent() {
                     Shipping Information
                   </h2>
                   <p className="mt-1 text-sm text-neutral-400">
-                    Enter your delivery address to calculate shipping.
+                    {savedAddresses.length > 0
+                      ? "Choose a saved address or enter a new one."
+                      : "Enter your delivery address to calculate shipping."}
                   </p>
                 </div>
+
+                {(isAddressesLoading || savedAddresses.length > 0 || isAddingAddress) && (
+                  <div className="mb-6">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-neutral-700">Saved Addresses</p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAddressError(null);
+                          setIsAddingAddress((current) => !current);
+                        }}
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" />
+                        Add New Address
+                      </Button>
+                    </div>
+
+                    {isAddressesLoading ? (
+                      <p className="flex items-center gap-2 text-sm text-neutral-400">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading saved addresses...
+                      </p>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {savedAddresses.map((address) => (
+                          <AddressCard
+                            key={address.id}
+                            address={address}
+                            isSelected={selectedAddressId === address.id}
+                            onSelect={() => {
+                              setAddressError(null);
+                              setIsAddingAddress(false);
+                              selectSavedAddress(address);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {isAddingAddress && (
+                      <div
+                        ref={newAddressPanelRef}
+                        className="mt-4 scroll-mt-28 rounded-2xl border border-brand-100 bg-brand-50/30 p-4"
+                      >
+                        <p className="mb-4 text-sm font-medium text-neutral-700">New Address</p>
+                        <AddressForm
+                          key="checkout-new-address"
+                          defaultValues={{ name: user?.username ?? "" }}
+                          submitLabel="Save & Use This Address"
+                          isSubmitting={createAddress.isPending}
+                          showDefaultToggle={savedAddresses.length > 0}
+                          onCancel={() => setIsAddingAddress(false)}
+                          onSubmit={handleCreateAddress}
+                        />
+                      </div>
+                    )}
+
+                    {addressError && (
+                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                        {addressError}
+                      </p>
+                    )}
+
+                    {selectedAddressId && (
+                      <button
+                        type="button"
+                        onClick={detachSavedAddress}
+                        className="mt-3 text-xs text-brand-600 underline-offset-4 hover:underline"
+                      >
+                        Enter a different address manually
+                      </button>
+                    )}
+
+                    <div className="mt-5 border-t border-brand-100" />
+                  </div>
+                )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <Label htmlFor="name">Recipient Name</Label>
                     <Input
                       id="name"
-                      {...register("name")}
+                      {...register("name", { onChange: detachSavedAddress })}
                       placeholder="Jane Doe"
                       className="mt-1"
                     />
@@ -370,7 +574,7 @@ function CheckoutContent() {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
-                      {...register("phone")}
+                      {...register("phone", { onChange: detachSavedAddress })}
                       placeholder="01XXXXXXXXX"
                       className="mt-1"
                     />
@@ -383,14 +587,7 @@ function CheckoutContent() {
 
                   <div>
                     <Label>Division</Label>
-                    <Select
-                      value={selectedDivision}
-                      onValueChange={(value) => {
-                        setValue("division", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                        setValue("district", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                        setValue("area", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                      }}
-                    >
+                    <Select value={selectedDivision} onValueChange={handleDivisionChange}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select division" />
                       </SelectTrigger>
@@ -413,10 +610,7 @@ function CheckoutContent() {
                     <Label>District</Label>
                     <Select
                       value={selectedDistrict}
-                      onValueChange={(value) => {
-                        setValue("district", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                        setValue("area", "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                      }}
+                      onValueChange={handleDistrictChange}
                       disabled={!selectedDivision}
                     >
                       <SelectTrigger className="mt-1">
@@ -441,9 +635,7 @@ function CheckoutContent() {
                     <Label>Area / Thana</Label>
                     <Select
                       value={selectedArea}
-                      onValueChange={(value) =>
-                        setValue("area", value, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
-                      }
+                      onValueChange={handleAreaChange}
                       disabled={!selectedDistrict}
                     >
                       <SelectTrigger className="mt-1">
@@ -468,7 +660,7 @@ function CheckoutContent() {
                     <Label htmlFor="address">Detailed Address</Label>
                     <Input
                       id="address"
-                      {...register("address")}
+                      {...register("address", { onChange: detachSavedAddress })}
                       placeholder="House, road, floor"
                       className="mt-1"
                     />
@@ -483,7 +675,7 @@ function CheckoutContent() {
                     <Label htmlFor="landmark">Landmark (optional)</Label>
                     <Input
                       id="landmark"
-                      {...register("landmark")}
+                      {...register("landmark", { onChange: detachSavedAddress })}
                       placeholder="Nearby landmark"
                       className="mt-1"
                     />
@@ -545,8 +737,8 @@ function CheckoutContent() {
                       </div>
                       <span className="shrink-0 font-medium text-neutral-800">
                         {item.catalogStatus === "verified" &&
-                        isPurchasableProduct(item.product) &&
-                        item.quantity <= getPurchasableQuantityLimit(item.product)
+                          isPurchasableProduct(item.product) &&
+                          item.quantity <= getPurchasableQuantityLimit(item.product)
                           ? formatPrice(item.product.price * item.quantity)
                           : "Unavailable"}
                       </span>
