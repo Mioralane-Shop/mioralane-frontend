@@ -93,6 +93,8 @@ type Attempt = {
   method: string;
   url: string;
   csrf: string | undefined;
+  /** Serialised request body, so an idempotency key can be checked across a retry. */
+  body: string | undefined;
 };
 
 type Outcome = {
@@ -125,6 +127,7 @@ const installAdapter = (outcomes: Outcome[]): void => {
       method: (config.method ?? "").toUpperCase(),
       url: config.url ?? "",
       csrf: headerOf(config, CSRF_HEADER),
+      body: typeof config.data === "string" ? config.data : undefined,
     });
 
     if (outcome === undefined) {
@@ -428,6 +431,76 @@ const main = async (): Promise<void> => {
     "clearing really clears",
     (clearCsrfToken(), getCsrfToken() === null),
     "the token survived a clear"
+  );
+
+  /* ── J. checkout idempotency across the CSRF retry (P1.3, R1) ─────── */
+  section("J. A CSRF retry must reuse the checkout idempotency key");
+
+  const CHECKOUT_KEY = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
+  const checkoutPayload = {
+    idempotencyKey: CHECKOUT_KEY,
+    items: [{ itemId: "507f1f77bcf86cd799439011", itemType: "product", quantity: 1 }],
+    paymentMethod: "cash_on_delivery",
+  };
+
+  installAdapter([forbidden(CSRF_REJECTED_BODY), ME_WITH_FRESH_TOKEN, ok({ success: true, order: {} })]);
+  setCsrfToken("stale-token");
+
+  const checkout = await api.post("/orders", checkoutPayload);
+
+  const keyOf = (attempt: Attempt | undefined): string | undefined => {
+    if (attempt?.body === undefined) return undefined;
+
+    try {
+      return (JSON.parse(attempt.body) as { idempotencyKey?: string }).idempotencyKey;
+    } catch {
+      return undefined;
+    }
+  };
+
+  check(
+    "the checkout succeeds after the 403 -> re-sync -> retry sequence",
+    checkout.status === 200,
+    `status ${checkout.status}`
+  );
+  check(
+    "it made exactly two POSTs to /orders: the rejected one and one retry",
+    attempts.filter((attempt) => attempt.url === "/orders").length === 2,
+    attempts.map((attempt) => `${attempt.method} ${attempt.url}`).join(" | ")
+  );
+  check(
+    "the first attempt carried the idempotency key",
+    keyOf(attempts.find((attempt) => attempt.url === "/orders")) === CHECKOUT_KEY,
+    `sent ${String(keyOf(attempts.find((attempt) => attempt.url === "/orders")))}`
+  );
+  check(
+    "NC: the retried request carried the SAME key, so the server returns the existing order",
+    keyOf([...attempts].reverse().find((attempt) => attempt.url === "/orders")) === CHECKOUT_KEY,
+    `retry sent ${String(keyOf([...attempts].reverse().find((attempt) => attempt.url === "/orders")))} — a new key here would create a second order`
+  );
+  check(
+    "and the retry body is otherwise the same request (the payload object is reused, not rebuilt)",
+    attempts.filter((attempt) => attempt.url === "/orders")[0]?.body ===
+      attempts.filter((attempt) => attempt.url === "/orders")[1]?.body,
+    "the payload was rebuilt between attempts"
+  );
+
+  const checkoutPageSource = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "src", "app", "(public)", "checkout", "page.tsx"),
+    "utf8"
+  );
+
+  check(
+    "the checkout page generates the key once per attempt, not per request",
+    (checkoutPageSource.match(/crypto\.randomUUID\(\)/g) ?? []).length === 1,
+    `${(checkoutPageSource.match(/crypto\.randomUUID\(\)/g) ?? []).length} generators`
+  );
+  check(
+    "and passes it in the order payload",
+    /idempotencyKey,/.test(checkoutPageSource) && /idempotencyKey\?: string;/.test(
+      readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "types", "order.ts"), "utf8")
+    ),
+    "the key is not sent (or is not typed on the payload)"
   );
 
   /* ── Result ────────────────────────────────────────────────────────── */

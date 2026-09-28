@@ -93,4 +93,10 @@ export interface CreateOrderPayload {
   paymentMethod?: PaymentMethod;
   couponCode?: string;
   quoteFingerprint?: string;
+  /**
+   * Checkout retry token (P1.3, R1). Generated once per checkout attempt and
+   * reused on every retry of that attempt, so a lost response cannot produce a
+   * second order. Sent from the same release the API starts honouring it.
+   */
+  idempotencyKey?: string;
 }
