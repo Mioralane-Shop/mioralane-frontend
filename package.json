@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify:csrf-client": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-csrf-client.ts"
+    "verify:csrf-client": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-csrf-client.ts",
+    "verify:url-guard": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-url-guard.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

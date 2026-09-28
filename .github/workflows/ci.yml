@@ -65,3 +65,10 @@ jobs:
       # negative control proving a request that never fails is never retried.
       - name: Verify CSRF client
         run: npm run verify:csrf-client
+
+      # P1.4 Block B. The read-side stored-URL guard: the predicate over the same
+      # value table the backend harness uses, the two render sites read from the
+      # source (every href must come out of safeHref), and controls proving those
+      # rules reject the pre-Block-B bindings.
+      - name: Verify stored-URL guard
+        run: npm run verify:url-guard
