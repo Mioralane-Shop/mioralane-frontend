@@ -1,0 +1,52 @@
+# Dependabot — customer storefront
+#
+# Added in P1.5 because the audit found 45 vulnerable packages across the three
+# repos with no automated way to notice the next one. Two deliberate choices:
+#
+#   * MAJORS ARE EXCLUDED for `next`. This repo is on Next 14 with two critical
+#     advisories (GHSA-p293-qw3h-jr36, GHSA-2xp9-vwfh-vxw4) that are only patched
+#     in 15.5.24+/16.3.3+, so the fix IS a major — but it is a migration (React
+#     19, `next lint` removal, async params, middleware -> proxy, Tailwind 4), not
+#     a bot PR. It is tracked as its own block in the P1.6 backlog.
+#   * Security advisories are NOT grouped. `groups` only merges routine version
+#     updates; Dependabot still opens a separate PR per advisory, which is what we
+#     want for anything security-relevant.
+#
+# `npm ci` is the established install path in CI, so a Dependabot PR that only
+# touches package-lock.json is still verifiable by the existing workflow.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      prod-patches:
+        dependency-type: production
+        update-types:
+          - patch
+    ignore:
+      - dependency-name: next
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react-dom
+        update-types:
+          - version-update:semver-major
+      - dependency-name: tailwindcss
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
