@@ -89,3 +89,10 @@ jobs:
       # value — a stored URL may only become an href through safeHref().
       - name: Verify no HTML sinks
         run: npm run verify:no-html-sinks
+
+      # P1.6.5. The vendored bangladesh-geojson data: the four files are present,
+      # parse, and still hash to the upstream revision they were copied from, the
+      # 8/64 division/district counts hold, the ODbL licence and the provenance
+      # README ship with the data, and nothing still imports the removed package.
+      - name: Verify locations data
+        run: npm run verify:locations-data
