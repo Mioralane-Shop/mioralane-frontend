@@ -38,42 +38,38 @@ const nextConfig = {
     ];
   },
   images: {
+    /*
+     * P1.5b — one host, ours, with a path.
+     *
+     * `next/image`'s optimizer fetches whatever URL it is given from a host in
+     * this list, so the list IS an attack surface: GHSA-2xp9-vwfh-vxw4 (CVSS 9.5,
+     * unauthenticated RCE in the image-optimizer path via libheif) is reachable
+     * whenever an attacker can get a crafted image served from an allowed host.
+     *
+     * Seven hosts were allowlisted here and NONE of them is referenced anywhere in
+     * `src/` (verified by grepping every source file, CSS and config): they were
+     * left over from the scaffold's demo content —
+     *   images.unsplash.com, encrypted-tbn0.gstatic.com, **.googleapis.com,
+     *   picsum.photos, example.com, images.squarespace-cdn.com,
+     *   skynellebeauty.com, lavishta.com
+     * Removing them closes that precondition.
+     *
+     * The `pathname` is the other half, and it is not cosmetic: `ik.imagekit.io`
+     * is a multi-tenant CDN, so a hostname-only pattern also allows an attacker's
+     * own ImageKit account (`/_next/image?url=https://ik.imagekit.io/<theirs>/x.avif`).
+     * Pinning it to our endpoint id (the same value as IMAGEKIT_URL_ENDPOINT)
+     * limits the optimizer to media we uploaded.
+     *
+     * Consequence, accepted deliberately: an image URL stored on one of the
+     * removed hosts now renders `ProductImage`'s placeholder instead of loading.
+     * Live data comes from ImageKit, so this is expected to be empty — see the
+     * P1.6 backlog item to audit stored image URLs before the next deploy.
+     */
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "encrypted-tbn0.gstatic.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.googleapis.com",
-      },
-      {
-        protocol: "https",
-        hostname: "picsum.photos",
-      },
-      {
-        protocol: "https",
-        hostname: "example.com",
-      },
-      {
-        protocol: "https",
-        hostname: "images.squarespace-cdn.com",
-      },
-      {
-        protocol: "https",
-        hostname: "skynellebeauty.com",
-      },
-      {
-        protocol: "https",
-        hostname: "lavishta.com",
-      },
-      {
-        protocol: "https",
         hostname: "ik.imagekit.io",
+        pathname: "/7sz3r4tou/**",
       },
     ],
   },
