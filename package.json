@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "verify:csrf-client": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-csrf-client.ts",
-    "verify:url-guard": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-url-guard.ts"
+    "verify:url-guard": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-url-guard.ts",
+    "verify:headers": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-headers.ts",
+    "verify:no-html-sinks": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-no-html-sinks.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

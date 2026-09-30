@@ -72,3 +72,20 @@ jobs:
       # rules reject the pre-Block-B bindings.
       - name: Verify stored-URL guard
         run: npm run verify:url-guard
+
+      # P1.4 Block C. The security headers and the content security policy: the
+      # real `buildCsp(nonce, options)` over its production and development
+      # shapes, the nonce's randomness and uniqueness, the static headers read
+      # from next.config.mjs, the middleware read from src/middleware.ts, that
+      # the policy still covers the fonts/ImageKit/Google origins the app
+      # actually loads, and controls proving a nonce-less policy is rejected.
+      - name: Verify security headers
+        run: npm run verify:headers
+
+      # P1.4 Block D. The XSS-sink invariant: the agreed grep set
+      # (dangerouslySetInnerHTML, innerHTML, insertAdjacentHTML, document.write,
+      # outerHTML, srcdoc/srcDoc, eval(, new Function(, string-body timers) is
+      # asserted absent from src/, and no `href={…}` may read a URL-carrying
+      # value — a stored URL may only become an href through safeHref().
+      - name: Verify no HTML sinks
+        run: npm run verify:no-html-sinks
