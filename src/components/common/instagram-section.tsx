@@ -78,7 +78,7 @@ export function InstagramSection() {
           href="https://www.instagram.com/mioralane/"
           target="_blank"
           rel="noopener noreferrer"
-          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-md text-gold transition-colors duration-200 hover:text-accent"
+          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-base text-gold transition-colors duration-200 hover:text-accent"
           aria-label="Visit Mioralane on Instagram"
         >
           <span>@mioralane</span>
