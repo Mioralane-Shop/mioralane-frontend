@@ -36,7 +36,7 @@ export function NewToKBeautySection() {
               <Link
                 key={card.title}
                 href={card.href}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow"
+                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow-card"
               >
                 <div className="relative h-48 overflow-hidden bg-surface-soft sm:h-44 md:h-48">
                   <Image

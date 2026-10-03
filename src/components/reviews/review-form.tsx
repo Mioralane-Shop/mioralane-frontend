@@ -213,7 +213,7 @@ export function ReviewForm({
                                     rows={5}
                                     maxLength={2000}
                                     placeholder="What did you think of this product?"
-                                    className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-neutral-700 outline-none transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+                                    className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-neutral-700 outline-hidden transition-colors focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                                 />
                                 <p className="text-right text-xs text-neutral-400">{comment.length}/2000</p>
                             </div>

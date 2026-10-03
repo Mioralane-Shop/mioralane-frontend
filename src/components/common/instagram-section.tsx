@@ -106,7 +106,7 @@ export function InstagramSection() {
                   href={post.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative aspect-[9/16] w-[148px] flex-shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
+                  className="group relative aspect-[9/16] w-[148px] shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
                 >
                   <Image
                     src={post.image}

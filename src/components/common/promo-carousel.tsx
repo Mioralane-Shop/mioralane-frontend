@@ -62,7 +62,7 @@ export function PromoCarousel() {
                   </span>
                 </span>
               </div>
-              <div className="relative h-[78px] w-[78px] flex-shrink-0 overflow-hidden rounded-xl md:h-[80px] md:w-[80px]">
+              <div className="relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-xl md:h-[80px] md:w-[80px]">
                 <Image
                   src={promo.img}
                   alt={promo.title.replace("\n", " ")}

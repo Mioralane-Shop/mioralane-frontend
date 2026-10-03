@@ -111,7 +111,7 @@ function SortControl({
           value={sort}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value as WishlistSort)}
-          className="h-11 min-w-[152px] appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-none transition-colors focus:border-accent/40 disabled:cursor-wait disabled:opacity-60"
+          className="h-11 min-w-[152px] appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-hidden transition-colors focus:border-accent/40 disabled:cursor-wait disabled:opacity-60"
         >
           {WISHLIST_SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
