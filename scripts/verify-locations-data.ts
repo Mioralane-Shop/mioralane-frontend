@@ -72,6 +72,25 @@ const readJson = (name: string): unknown => {
 
 const readText = (path: string): string => readFileSync(path, "utf8");
 
+/**
+ * Reads a vendored data file with line endings normalised to LF.
+ *
+ * The integrity canaries below hash and measure these files, and the first version of
+ * this harness read raw working-tree bytes. That made the result depend on the
+ * CHECKOUT rather than on the committed content: on Windows (`core.autocrlf=true`)
+ * `dhaka-city.json` is checked out CRLF while its blob is LF, so the harness passed
+ * locally with the CRLF hash recorded and failed in CI, where the same blob is checked
+ * out LF. `git status` was clean either way, because the clean filter normalises CRLF
+ * back to LF — the worktree looked consistent with the index while its bytes were not.
+ *
+ * Normalising here means the canaries measure what was committed, so they hold on any
+ * checkout. The repository's `.gitattributes` (`* text=auto eol=lf`) keeps future
+ * checkouts consistent too, but this must not DEPEND on that: a control that only works
+ * under one machine's git config is not a control.
+ */
+const readNormalised = (name: string): string =>
+  readFileSync(join(dataDir, name), "utf8").replace(/\r\n/g, "\n");
+
 /** `src/constants/bangladesh-locations.ts` with comment-only lines blanked. */
 const blankComments = (source: string): string =>
   source
@@ -220,15 +239,16 @@ check(
 // Cheap integrity canary: the byte size of each file. A truncated copy is the
 // realistic failure mode here, and it would still parse as JSON if the cut landed
 // between array elements.
+// Sizes are LF-normalised byte counts — see `readNormalised` for why that matters.
 const sizes: Record<string, number> = {
   "bd-divisions.json": 1198,
   "bd-districts.json": 11464,
   "bd-upazilas.json": 64090,
-  "dhaka-city.json": 32052,
+  "dhaka-city.json": 31055,
 };
 
 for (const file of files) {
-  const bytes = readFileSync(join(dataDir, file)).byteLength;
+  const bytes = Buffer.byteLength(readNormalised(file), "utf8");
   check(
     `${file} is the expected size (${sizes[file]} bytes)`,
     bytes === sizes[file],
@@ -240,11 +260,11 @@ const hashes: Record<string, string> = {
   "bd-divisions.json": "2d1abe211bb26c35446631e408dd2c47bc5778d7e7a1f7b36eb6960449eeba25",
   "bd-districts.json": "deb62efbfa585264b7342e97774e76273cf8962d035a7632414aebbd9740dfb6",
   "bd-upazilas.json": "ae7b5360b5ffac5910e4f6a0e0c533bc1825cded31de3f2b9f1122fca474d2b8",
-  "dhaka-city.json": "f3322244349262dcdce3685918a9c9776ea83b29386da7755cfc8e28167e1484",
+  "dhaka-city.json": "13305ca37571457492b8a7eb4c5133db572047ef6895114b0806a9b79943237e",
 };
 
 for (const file of files) {
-  const digest = createHash("sha256").update(readFileSync(join(dataDir, file))).digest("hex");
+  const digest = createHash("sha256").update(readNormalised(file), "utf8").digest("hex");
   check(
     `${file} matches the revision that was copied in`,
     digest === hashes[file],

@@ -1,0 +1,17 @@
+# Keep text files LF in every checkout, whatever core.autocrlf is on the machine
+# doing the checkout. Added after a CI failure caused by the opposite: a Windows
+# checkout had CRLF in the working tree while the committed blob was LF, and a
+# harness that hashed working-tree bytes passed locally and failed in CI.
+#
+# No renormalisation: every tracked text file is already LF in the index.
+* text=auto eol=lf
+
+# Explicitly binary — never convert.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
