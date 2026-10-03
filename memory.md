@@ -8,7 +8,7 @@ Customer-facing storefront for **Mioralane** — curated Korean skincare and rou
 - **TanStack React Query v5**, **axios** (interceptors in `src/lib/axios.ts`)
 - **zustand** stores (`src/store/`)
 - **react-hook-form** + **zod** validation
-- **Radix UI** (dialog, dropdown-menu, label, select, slot) + **@base-ui/react** + shadcn-style `components/ui`
+- **Radix UI** (dialog, dropdown-menu, label, select, slot) + shadcn-style `components/ui`
 - **@react-oauth/google** for Google sign-in; **lucide-react** icons
 - Path alias `@/*` → `./src/*`
 
@@ -58,4 +58,4 @@ src/
 - `NAV_LINKS`, `BRANDS` (~30 brands), `CATEGORIES`, `DUMMY_PRODUCTS` + `CATALOG_2026_PRODUCTS`.
 
 ## Images
-`next.config.mjs` `images.remotePatterns` allow: images.unsplash.com, encrypted-tbn0.gstatic.com, `**.googleapis.com`, picsum.photos, images.squarespace-cdn.com, skynellebeauty.com, lavishta.com.
+`next.config.mjs` `images.remotePatterns` allows **one** host — `ik.imagekit.io` with `pathname: "/7sz3r4tou/**"` (P1.5b). Eight scaffold-era hosts (images.unsplash.com, encrypted-tbn0.gstatic.com, `**.googleapis.com`, picsum.photos, example.com, images.squarespace-cdn.com, skynellebeauty.com, lavishta.com) were removed: none was referenced anywhere in `src/`, and each one widened the image-optimizer attack surface behind GHSA-2xp9-vwfh-vxw4. The pathname pins the optimizer to our own ImageKit endpoint, because `ik.imagekit.io` is multi-tenant. An image URL stored on a removed host now renders `ProductImage`'s placeholder.
