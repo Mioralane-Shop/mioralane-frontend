@@ -157,9 +157,9 @@ export function ProductReviews({
                     Loading reviews...
                 </div>
                 <div className="mt-5 space-y-3">
-                    <div className="h-4 w-40 animate-pulse rounded bg-ink/[0.06]" />
-                    <div className="h-4 w-full animate-pulse rounded bg-ink/[0.06]" />
-                    <div className="h-4 w-2/3 animate-pulse rounded bg-ink/[0.06]" />
+                    <div className="h-4 w-40 animate-pulse rounded-base bg-ink/[0.06]" />
+                    <div className="h-4 w-full animate-pulse rounded-base bg-ink/[0.06]" />
+                    <div className="h-4 w-2/3 animate-pulse rounded-base bg-ink/[0.06]" />
                 </div>
             </div>
         );
@@ -234,7 +234,7 @@ export function ProductReviews({
                                     setSort(event.target.value as ReviewSort);
                                     setPage(1);
                                 }}
-                                className="h-9 rounded-full border border-ink/15 bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-accent"
+                                className="h-9 rounded-full border border-ink/15 bg-white px-3 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                             >
                                 {SORT_OPTIONS.map((option) => (
                                     <option key={option.value} value={option.value}>

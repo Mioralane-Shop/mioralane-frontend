@@ -44,7 +44,7 @@ export function CartItemRow({ item }: CartItemProps) {
       {canNavigate ? (
         <Link
           href={itemHref}
-          className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24"
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24"
         >
           <ProductImage
             src={product.images[0]}
@@ -57,7 +57,7 @@ export function CartItemRow({ item }: CartItemProps) {
           />
         </Link>
       ) : (
-        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24">
           <ProductImage
             src={product.images[0]}
             alt={product.name}

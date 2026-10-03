@@ -78,7 +78,7 @@ export function InstagramSection() {
           href="https://www.instagram.com/mioralane/"
           target="_blank"
           rel="noopener noreferrer"
-          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-md text-gold transition-colors duration-200 hover:text-accent"
+          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-base text-gold transition-colors duration-200 hover:text-accent"
           aria-label="Visit Mioralane on Instagram"
         >
           <span>@mioralane</span>
@@ -106,7 +106,7 @@ export function InstagramSection() {
                   href={post.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative aspect-[9/16] w-[148px] flex-shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
+                  className="group relative aspect-[9/16] w-[148px] shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
                 >
                   <Image
                     src={post.image}

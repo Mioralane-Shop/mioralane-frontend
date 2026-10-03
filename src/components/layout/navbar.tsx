@@ -594,7 +594,7 @@ export function Navbar() {
             <BrandLogo
               size="lg"
               variant="full"
-              className="flex-shrink-0"
+              className="shrink-0"
               priority
             />
 
@@ -607,7 +607,7 @@ export function Navbar() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onFocus={() => setSearchFocused(true)}
-                  className="w-full rounded-full border-none bg-ink/[0.04] py-3 pl-12 pr-10 text-sm text-ink outline-none transition-all placeholder:text-ink/40 focus:bg-ink/[0.06]"
+                  className="w-full rounded-full border-none bg-ink/[0.04] py-3 pl-12 pr-10 text-sm text-ink outline-hidden transition-all placeholder:text-ink/40 focus:bg-ink/[0.06]"
                 />
                 {searchQuery ? (
                   <button

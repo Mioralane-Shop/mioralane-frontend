@@ -355,7 +355,7 @@ function SortControl({ activeSort, compact = false, onChange }: SortControlProps
           value={activeSort}
           onChange={(event) => onChange(event.target.value)}
           className={cn(
-            "h-11 appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-none transition-colors focus:border-accent/40",
+            "h-11 appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-hidden transition-colors focus:border-accent/40",
             compact ? "w-full" : "min-w-[150px]",
           )}
         >
@@ -682,7 +682,7 @@ function ShopContent() {
                 updateParam("search", searchInput.trim() || null);
               }
             }}
-            className="h-12 w-full rounded-full border border-border bg-white pl-12 pr-11 text-sm text-ink shadow-sm outline-none transition-colors placeholder:text-ink/35 focus:border-accent/40"
+            className="h-12 w-full rounded-full border border-border bg-white pl-12 pr-11 text-sm text-ink shadow-sm outline-hidden transition-colors placeholder:text-ink/35 focus:border-accent/40"
           />
           {searchInput && (
             <button

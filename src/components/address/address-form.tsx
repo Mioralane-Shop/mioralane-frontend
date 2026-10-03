@@ -233,7 +233,7 @@ export function AddressForm({
                 <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/40 p-4 text-sm text-neutral-700">
                     <input
                         type="checkbox"
-                        className="h-4 w-4 shrink-0 rounded border-brand-200 accent-brand-500"
+                        className="h-4 w-4 shrink-0 rounded-base border-brand-200 accent-brand-500"
                         checked={isDefaultChecked}
                         onChange={(event) => setValue("isDefault", event.target.checked)}
                     />
