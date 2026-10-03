@@ -1,0 +1,98 @@
+# P1.0 — build verification for the customer storefront.
+#
+# CI only: no deploy step, no Vercel trigger, no secrets. This app reads
+# `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` at build time, and both
+# are read defensively (`?? ""` and `|| ""`), so an unconfigured build succeeds.
+# Verified locally by building with the gitignored `.env.local` moved out of the
+# way — which is exactly what a fresh checkout looks like.
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'security/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node 24 — the same major the backend workflow runs and the one local
+      # development uses (v24.9.0), so CI and a developer's machine agree.
+      #
+      # This was pinned to the exact release 20.20.2 until the CSRF client
+      # harness existed. That pin is no longer keepable: `verify:csrf-client`
+      # executes the harness as TypeScript, and Node only strips types natively
+      # from 22.18/23.6 — on 20 the step cannot run at all, and a control that
+      # only ever runs on a developer's machine is how a regression reaches main
+      # unnoticed.
+      #
+      # The major line rather than an exact patch, matching the backend workflow:
+      # `'24'` resolves to the newest published 24.x on the runner. This app is on
+      # Next 14, which requires >= 18.17.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      # Drives the real axios instance through a scripted adapter: the CSRF header
+      # on writes, the single bounded retry when a token goes stale, and a
+      # negative control proving a request that never fails is never retried.
+      - name: Verify CSRF client
+        run: npm run verify:csrf-client
+
+      # P1.4 Block B. The read-side stored-URL guard: the predicate over the same
+      # value table the backend harness uses, the two render sites read from the
+      # source (every href must come out of safeHref), and controls proving those
+      # rules reject the pre-Block-B bindings.
+      - name: Verify stored-URL guard
+        run: npm run verify:url-guard
+
+      # P1.4 Block C. The security headers and the content security policy: the
+      # real `buildCsp(nonce, options)` over its production and development
+      # shapes, the nonce's randomness and uniqueness, the static headers read
+      # from next.config.mjs, the middleware read from src/middleware.ts, that
+      # the policy still covers the fonts/ImageKit/Google origins the app
+      # actually loads, and controls proving a nonce-less policy is rejected.
+      - name: Verify security headers
+        run: npm run verify:headers
+
+      # P1.4 Block D. The XSS-sink invariant: the agreed grep set
+      # (dangerouslySetInnerHTML, innerHTML, insertAdjacentHTML, document.write,
+      # outerHTML, srcdoc/srcDoc, eval(, new Function(, string-body timers) is
+      # asserted absent from src/, and no `href={…}` may read a URL-carrying
+      # value — a stored URL may only become an href through safeHref().
+      - name: Verify no HTML sinks
+        run: npm run verify:no-html-sinks
+
+      # P1.6.5. The vendored bangladesh-geojson data: the four files are present,
+      # parse, and still hash to the upstream revision they were copied from, the
+      # 8/64 division/district counts hold, the ODbL licence and the provenance
+      # README ship with the data, and nothing still imports the removed package.
+      - name: Verify locations data
+        run: npm run verify:locations-data

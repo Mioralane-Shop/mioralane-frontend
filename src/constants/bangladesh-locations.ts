@@ -1,7 +1,11 @@
-import divisionsData from "bangladesh-geojson/divisions";
-import districtsData from "bangladesh-geojson/districts";
-import upazilasData from "bangladesh-geojson/upazilas";
-import dhakaCityData from "bangladesh-geojson/dhaka-city";
+// Vendored in P1.6.5 — see `src/data/bangladesh-geojson/README.md` for the upstream
+// commit and the licence (the data is ODbL, the package's MIT is for its code).
+// Previously four subpath imports of `bangladesh-geojson`, a `github:` dependency
+// resolved over `git+ssh` and therefore outside `npm audit`.
+import divisionsData from "@/data/bangladesh-geojson/bd-divisions.json";
+import districtsData from "@/data/bangladesh-geojson/bd-districts.json";
+import upazilasData from "@/data/bangladesh-geojson/bd-upazilas.json";
+import dhakaCityData from "@/data/bangladesh-geojson/dhaka-city.json";
 
 export type LocationOption = {
   id: string;

@@ -1,5 +1,27 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Security: rendering user content
+
+**If you need to render user content as HTML, you cannot.** Use React's text
+rendering — `{value}` inside JSX escapes it, and that is what every screen here
+relies on.
+
+If you truly need HTML, ping the security team first — you're about to add an XSS
+sink that CI will reject.
+
+`npm run verify:no-html-sinks` enforces this. It fails on
+`dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`,
+`document.write`, `srcdoc` / `srcDoc`, `eval(`, `new Function(`, and the string
+forms of `setTimeout` / `setInterval` anywhere under `src/` — and on any
+`href={…}` that reads a URL-carrying value, because a stored URL may only become
+an href through `safeHref()` (`src/lib/safe-href.ts`).
+
+Do not expect the CSP to catch this for you: `src/middleware.ts` ships
+`Content-Security-Policy-Report-Only` **permanently**, by decision — enforcing it
+would break every prerendered route (see the note in that file). A Report-Only
+policy reports a violation *after* the sink has run. This invariant is what stops
+the sink being written.
+
 ## Getting Started
 
 First, run the development server:

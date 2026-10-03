@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Check, Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useActivePromotion } from "@/hooks/use-active-promotion";
+import { safeHref } from "@/lib/safe-href";
 import { cn } from "@/lib/utils";
 
 const excludedPaths = [
@@ -74,6 +75,16 @@ export function PromotionCampaign() {
     Boolean(couponCode) &&
     (activeCampaign.popup.actionType === "coupon" ||
       activeCampaign.popup.actionType === "coupon_link");
+
+  /**
+   * The popup CTA target, vetted before it can reach an `href` (P1.4 Block B).
+   *
+   * `ctaUrl` is admin-authored and `javascript:` values may already be stored —
+   * the API only started refusing them in Block A, which cannot reach rows that
+   * predate it. `safeHref` applies the same allowlist here and returns the
+   * trimmed value, so the href is exactly the string that passed.
+   */
+  const ctaHref = safeHref(activeCampaign.popup.ctaUrl);
 
   async function copyCoupon() {
     if (!couponCode) return;
@@ -225,9 +236,18 @@ export function PromotionCampaign() {
             ) : null}
             {showLink && activeCampaign.popup.ctaUrl ? (
               <Button asChild className="mt-4 w-full" onClick={() => setIsOpen(false)}>
-                <Link href={activeCampaign.popup.ctaUrl}>
-                  {activeCampaign.popup.ctaLabel || "Shop Now"}
-                </Link>
+                {ctaHref ? (
+                  <Link href={ctaHref}>
+                    {activeCampaign.popup.ctaLabel || "Shop Now"}
+                  </Link>
+                ) : (
+                  // A stored URL outside the allowlist (P1.4 Block B): the same
+                  // button, no link. `asChild` puts the button's own classes on the
+                  // span, so the CTA keeps its shape and simply does not navigate —
+                  // never `href="#"`, which is a link that goes nowhere and still
+                  // looks and behaves like one.
+                  <span>{activeCampaign.popup.ctaLabel || "Shop Now"}</span>
+                )}
               </Button>
             ) : null}
           </div>

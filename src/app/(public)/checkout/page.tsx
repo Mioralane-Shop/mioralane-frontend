@@ -377,6 +377,13 @@ function CheckoutContent() {
     submitLockRef.current = true;
     setIsSubmitting(true);
 
+    // One idempotency key per checkout attempt (P1.3, R1). Deliberately created
+    // here, once, rather than inside the request layer: the axios CSRF retry
+    // re-sends this exact payload, so it carries the SAME key and the server
+    // returns the order it already created instead of creating another. A key
+    // generated per HTTP request would make the whole mechanism useless.
+    const idempotencyKey = crypto.randomUUID();
+
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({
@@ -392,6 +399,7 @@ function CheckoutContent() {
         paymentMethod: "cash_on_delivery",
         couponCode: appliedCoupon || undefined,
         quoteFingerprint: shippingQuote.quoteFingerprint,
+        idempotencyKey,
       });
 
       clearCart();
