@@ -10,6 +10,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // `scripts/verify-csrf-client.ts` runs under Node's type stripping, which
+    // resolves relative imports by their real file name (no extension
+    // rewriting). Legal because this project never emits.
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [

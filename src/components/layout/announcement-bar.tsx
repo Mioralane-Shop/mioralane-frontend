@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { safeHref } from "@/lib/safe-href";
 import { cn } from "@/lib/utils";
 import { useAnnouncementBar } from "@/hooks/use-announcement-bar";
 import type { AnnouncementBar } from "@/types/announcement";
@@ -72,13 +73,18 @@ const clamp = (value: number, min: number, max: number, fallback: number) =>
   Number.isFinite(value) ? Math.min(Math.max(value, min), max) : fallback;
 
 function MessageText({ text, url }: { text: string; url?: string }) {
-  if (!url) {
+  const href = safeHref(url);
+
+  // No link when no URL was supplied, or when the stored URL is outside the
+  // allowlist (P1.4 Block B) — `javascript:` values may predate the API fix.
+  // The message still reads, it is just not clickable.
+  if (!href) {
     return <span>{text}</span>;
   }
 
   return (
     <Link
-      href={url}
+      href={href}
       className="underline underline-offset-2 transition-opacity hover:opacity-80"
     >
       {text}
