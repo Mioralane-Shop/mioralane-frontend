@@ -22,6 +22,7 @@ import { useToastStore } from "@/store/toast.store";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCreateAddress, useMyAddresses } from "@/hooks/use-addresses";
 import { formatPrice, cn } from "@/lib/utils";
+import { isBotProtectionSatisfied } from "@/lib/turnstile";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
 import type { AddressFormValues } from "@/lib/validators/address";
 import type { SavedAddress } from "@/types/address";
@@ -352,6 +353,15 @@ function CheckoutContent() {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (submitLockRef.current || createOrder.isPending) {
+      return;
+    }
+
+    // Cloudflare Turnstile gate: the invisible challenge sets this once it has
+    // solved. It fails open when no site key is configured (see lib/turnstile).
+    if (!isBotProtectionSatisfied()) {
+      setServerError(
+        "Just a moment — we're completing a quick security check. Please try again."
+      );
       return;
     }
 

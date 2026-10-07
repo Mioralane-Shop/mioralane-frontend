@@ -61,6 +61,18 @@ export const IMAGEKIT_ORIGIN = "https://ik.imagekit.io";
  */
 export const GOOGLE_AVATAR_ORIGIN = "https://*.googleusercontent.com";
 
+/**
+ * Cloudflare Turnstile — the bot-protection widget mounted once in the root
+ * layout (`components/providers/bot-protection.tsx`).
+ *
+ * `@marsidev/react-turnstile` injects `…/turnstile/v0/api.js` and renders the
+ * challenge in an iframe on the same host, so the origin appears in three
+ * directives: `script-src` (the injected loader), `frame-src` (the challenge
+ * iframe) and `connect-src` (the library's readiness polling). Dropping any of
+ * them breaks verification, and with it the sign-in / checkout gate.
+ */
+export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
+
 /** 16 bytes of CSPRNG output, base64 — 128 bits, standard `nonce-value` grammar. */
 const NONCE_BYTES = 16;
 
@@ -147,6 +159,7 @@ export const buildCsp = (nonce: string, options: CspOptions = {}): string => {
     "'strict-dynamic'",
     ...(allowEval ? ["'unsafe-eval'"] : []),
     GOOGLE_IDENTITY_ORIGIN,
+    TURNSTILE_ORIGIN,
   ];
 
   const styleSrc = [
@@ -173,8 +186,8 @@ export const buildCsp = (nonce: string, options: CspOptions = {}): string => {
     `style-src ${styleSrc.join(" ")}`,
     `font-src 'self' ${FONTSHARE_FONT_ORIGIN} data:`,
     `img-src 'self' data: blob: ${IMAGEKIT_ORIGIN} ${GOOGLE_AVATAR_ORIGIN}`,
-    `connect-src ${unique(["'self'", ...connectOrigins, GOOGLE_IDENTITY_ORIGIN]).join(" ")}`,
-    `frame-src ${GOOGLE_IDENTITY_ORIGIN}`,
+    `connect-src ${unique(["'self'", ...connectOrigins, GOOGLE_IDENTITY_ORIGIN, TURNSTILE_ORIGIN]).join(" ")}`,
+    `frame-src ${GOOGLE_IDENTITY_ORIGIN} ${TURNSTILE_ORIGIN}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     ...(upgradeInsecureRequests ? ["upgrade-insecure-requests"] : []),

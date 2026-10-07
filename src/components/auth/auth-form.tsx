@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import { GoogleLogin } from "@react-oauth/google";
+import { isBotProtectionSatisfied } from "@/lib/turnstile";
 
 export type AuthMode = "login" | "register";
 
@@ -123,6 +124,15 @@ export function AuthForm({
     setServerError(null);
     setSuccess(null);
     if (Object.keys(nextErrors).length > 0) return;
+
+    // Cloudflare Turnstile gate: the invisible challenge sets this once it has
+    // solved. It fails open when no site key is configured (see lib/turnstile).
+    if (!isBotProtectionSatisfied()) {
+      setServerError(
+        "Just a moment — we're completing a quick security check. Please try again."
+      );
+      return;
+    }
 
     setIsLoading(true);
     try {

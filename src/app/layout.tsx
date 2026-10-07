@@ -3,6 +3,7 @@ import { Lora } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import { StoreHydration } from "@/components/providers/store-hydration";
+import { BotProtection } from "@/components/providers/bot-protection";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -65,6 +66,7 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
+        <BotProtection />
         <GoogleAuthProvider>
           <QueryProvider>
             <StoreHydration />
