@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef } from "react";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import {
   TURNSTILE_SITE_KEY,
+  clearTurnstileToken,
   clearTurnstileVerification,
   markTurnstileVerified,
+  setTurnstileToken,
 } from "@/lib/turnstile";
 
 /**
@@ -59,15 +61,18 @@ export function BotProtection() {
       ref={widgetRef}
       siteKey={TURNSTILE_SITE_KEY}
       options={{ size: "invisible", retry: "never", refreshExpired: "never" }}
-      onSuccess={() => {
+      onSuccess={(token) => {
         retriesRef.current = 0;
+        setTurnstileToken(token);
         markTurnstileVerified();
       }}
       onError={() => {
+        clearTurnstileToken();
         clearTurnstileVerification();
         scheduleRetry();
       }}
       onExpire={() => {
+        clearTurnstileToken();
         clearTurnstileVerification();
         scheduleRetry();
       }}
