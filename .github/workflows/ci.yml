@@ -12,11 +12,17 @@ on:
     branches:
       - main
       - develop
+      # `integration/**` so the storefront's integration branches are verified.
+      # `integration/frontend-develop-test` is where this app is actually built
+      # and reviewed, and it matched none of the filters here — so every push to
+      # it ran no CI at all, silently.
+      - 'integration/**'
       - 'security/**'
   pull_request:
     branches:
       - main
       - develop
+      - 'integration/**'
   workflow_dispatch:
 
 permissions:
