@@ -65,6 +65,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   const st = paramOrNull(params.get("skinType"));
   const cn = paramOrNull(params.get("concern"));
   const skinConcern = paramOrNull(params.get("skinConcern"));
+  const ingredient = paramOrNull(params.get("ingredient"));
   const s = paramOrNull(params.get("search"));
   const sort = normalizeSort(params.get("sort"));
   const minP = params.get("minPrice");
@@ -79,6 +80,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   if (st) api.skinType = st;
   if (skinConcern) api.skinConcern = skinConcern;
   else if (cn) api.skinConcern = cn;
+  if (ingredient) api.ingredient = ingredient;
   if (s) api.search = s;
   if (sort) api.sort = sort;
   if (minP) api.minPrice = minP;
@@ -453,6 +455,7 @@ function ShopContent() {
         "skinType",
         "concern",
         "skinConcern",
+        "ingredient",
         "minPrice",
         "maxPrice",
         "featured",
@@ -536,6 +539,7 @@ function ShopContent() {
     const featured = paramOrNull(searchParams.get("featured"));
     const bestSeller = paramOrNull(searchParams.get("bestSeller"));
     const inStock = paramOrNull(searchParams.get("inStock"));
+    const ingredient = paramOrNull(searchParams.get("ingredient"));
 
     if (brand) {
       chips.push({
@@ -570,6 +574,14 @@ function ShopContent() {
         id: "concern",
         label: findLabel(CONCERNS, selectedConcern),
         remove: () => updateConcern(null),
+      });
+    }
+
+    if (ingredient) {
+      chips.push({
+        id: "ingredient",
+        label: `Ingredient: ${formatParamLabel(ingredient)}`,
+        remove: () => updateParam("ingredient", null),
       });
     }
 
