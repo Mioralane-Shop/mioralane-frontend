@@ -13,6 +13,8 @@ import { SearchModal } from "@/components/search/search-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BRANDS } from "@/constants/site";
 import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
+import { useBrands } from "@/hooks/use-brands";
+import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
@@ -28,9 +30,22 @@ const COMPACT_NAV_TRANSITION =
   "duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
 const COMPACT_NAV_FADE = "duration-[150ms] ease-out";
 
+/** What the brand dropdown renders, from the API or the bundled fallback. */
+type NavBrand = { name: string; logoUrl?: string };
+
 function BrandsNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { brands } = useBrands();
+
+  // Admin-curated brands, or the bundled list while the request is in flight, if
+  // it fails, or before anything has been curated. The fallback is what keeps the
+  // dropdown usable on a cold API; it is removed in the cleanup slice, once the
+  // API is the only source.
+  const entries: NavBrand[] =
+    brands.length > 0
+      ? brands.map((brand) => ({ name: brand.name, logoUrl: brand.logoUrl }))
+      : BRANDS.map((name) => ({ name }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,7 +66,7 @@ function BrandsNavItem() {
       onMouseLeave={() => setOpen(false)}
     >
       <Link
-        href="/shop"
+        href="/brands"
         className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
       >
         Brands
@@ -60,16 +75,29 @@ function BrandsNavItem() {
         <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
           <div className="w-[min(640px,calc(100vw-2rem))] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
-              {BRANDS.map((brand) => (
-                <Link
-                  key={brand}
-                  href={`/shop?brand=${encodeURIComponent(brand)}`}
-                  onClick={() => setOpen(false)}
-                  className="truncate rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
-                >
-                  {brand}
-                </Link>
-              ))}
+              {entries.map((brand) => {
+                // Brand logos are SVGs of very different aspect ratios with no
+                // stored dimensions, so each renders at a fixed CSS height rather
+                // than through next/image — which would need a width and height it
+                // does not have. The guard still runs first: a URL that cannot be
+                // rendered is dropped, leaving the name on its own.
+                const logoSrc = isRenderableImageSrc(brand.logoUrl) ? brand.logoUrl.trim() : null;
+
+                return (
+                  <Link
+                    key={brand.name}
+                    href={`/shop?brand=${encodeURIComponent(brand.name)}`}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
+                  >
+                    {logoSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- these are SVGs, which next/image serves unoptimised anyway, and the API stores no dimensions for them
+                      <img src={logoSrc} alt="" className="h-4 w-auto shrink-0 object-contain" />
+                    ) : null}
+                    <span className="truncate">{brand.name}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
