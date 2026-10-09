@@ -2,16 +2,28 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ComboSection } from "@/components/common/combo-section";
 import { Reveal } from "@/components/common/reveal";
+import { JsonLd } from "@/components/seo/json-ld";
+import { generateBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-    title: "Routines & Bundles - Mioralane",
+export const metadata: Metadata = buildPageMetadata({
+    // No brand suffix: the root template already appends `| Mioralane`, so
+    // "Routines & Bundles - Mioralane" rendered as "… | Mioralane | Mioralane".
+    title: "Routines & Bundles",
     description:
         "Complete Korean skincare routines curated by Mioralane. Save money on bundles, kits, and full routines.",
-};
+    path: "/combo",
+});
 
 export default function ComboPage() {
     return (
         <>
+            <JsonLd
+                data={generateBreadcrumbJsonLd([
+                    { name: "Home", path: "/" },
+                    { name: "Routines & Bundles", path: "/combo" },
+                ])}
+            />
             {/* ── Hero ── */}
             <section className="bg-brand-50 py-8 md:py-16">
                 <div className="container mx-auto px-4 text-center">

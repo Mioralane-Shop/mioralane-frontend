@@ -1,0 +1,214 @@
+/**
+ * SEO Phase 2 — JSON-LD (schema.org) generators.
+ *
+ * Pure functions: no React, no Next, no I/O. That is deliberate — it makes them
+ * callable from `scripts/verify-seo.ts` under Node's type stripping, where the
+ * assertions are about the emitted graph rather than about a page rendering.
+ *
+ * ## Why `serializeJsonLd` escapes `<`
+ *
+ * A JSON-LD block is inlined into the document as `<script type="application/ld+json">`.
+ * The HTML parser ends *any* script element at the first `</script`, regardless of
+ * the element's `type` — so a product description containing `</script><img onerror=…>`
+ * would terminate the data block and the remainder would be parsed as markup. Escaping
+ * `<` as `\u003c` is valid JSON (\u escaping is part of the spec) and makes the
+ * sequence `</script` unrepresentable inside the block.
+ *
+ * `serializeJsonLd` is the ONLY place a JSON-LD payload may be stringified; the
+ * `<JsonLd>` component and this harness both go through it.
+ */
+import type { Product } from "@/types/product";
+import { SITE_DESCRIPTION, SITE_NAME } from "../../constants/site.ts";
+import { SOCIAL_LINKS } from "../../constants/social-links.ts";
+import { absoluteUrl, SITE_ORIGIN } from "./urls.ts";
+
+export const SCHEMA = "https://schema.org";
+
+/** schema.org currency for every price on the storefront. */
+export const PRICE_CURRENCY = "BDT";
+
+/** A node of a JSON-LD graph. Kept loose on purpose — these are plain objects. */
+export type JsonLdNode = Record<string, unknown>;
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Stringify a JSON-LD graph for inline embedding.
+ *
+ * `JSON.stringify` alone is not safe for a `<script>` body: it leaves `<`, `>`
+ * and `/` untouched, so `</script>` in any string value breaks out of the
+ * element. Replacing every `<` with the six-character escape `\u003c` closes
+ * that, and `JSON.parse` on the consumer side decodes it back.
+ */
+export function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+/** Absolute image URLs for a product, de-duplicated, empties dropped. */
+function productImages(product: Product): string[] {
+  const candidates = [
+    ...(product.media?.map((entry) => entry.url) ?? []),
+    ...(product.images ?? []),
+    product.hoverImage,
+  ].filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+
+  return Array.from(new Set(candidates.map((url) => absoluteUrl(url))));
+}
+
+/** The lowest purchasable price, so `offers.price` is the advertised one. */
+function lowestPrice(product: Product): number {
+  const prices = [product.price, ...(product.sizeOptions ?? []).map((option) => option.price)].filter(
+    (value) => typeof value === "number" && Number.isFinite(value) && value > 0,
+  );
+
+  return prices.length ? Math.min(...prices) : 0;
+}
+
+function schemaAvailability(product: Product): string {
+  if (product.availabilityMode === "pre_order") {
+    return `${SCHEMA}/PreOrder`;
+  }
+
+  const inStock = product.stock > 0 || (product.sizeOptions ?? []).some((option) => option.stock > 0);
+  return inStock ? `${SCHEMA}/InStock` : `${SCHEMA}/OutOfStock`;
+}
+
+/**
+ * `Product` node for a product or combo detail page.
+ *
+ * `path` defaults to the product route; the combo page passes `/combo/<slug>`
+ * so the offer URL points at the page that actually renders it.
+ */
+export function generateProductJsonLd(
+  product: Product,
+  options: { path?: string } = {},
+): JsonLdNode {
+  const path = options.path ?? `/product/${product.slug}`;
+  const url = absoluteUrl(path);
+  const images = productImages(product);
+  const description = product.longDescription?.trim() || product.description?.trim() || undefined;
+
+  const node: JsonLdNode = {
+    "@context": SCHEMA,
+    "@type": "Product",
+    "@id": `${url}#product`,
+    name: product.name,
+    description,
+    image: images.length ? images : undefined,
+    sku: product.sku || product.id,
+    category: product.category,
+    brand: { "@type": "Brand", name: product.brand },
+    url,
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: PRICE_CURRENCY,
+      price: lowestPrice(product).toFixed(2),
+      availability: schemaAvailability(product),
+      itemCondition: `${SCHEMA}/NewCondition`,
+    },
+  };
+
+  // An AggregateRating with a zero rating is invalid and gets a manual action, so
+  // it is only emitted once real review data exists.
+  if (product.rating > 0 && product.reviewCount > 0) {
+    node.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: String(product.rating),
+      reviewCount: String(product.reviewCount),
+      bestRating: "5",
+      worstRating: "1",
+    };
+  }
+
+  return node;
+}
+
+/** `BreadcrumbList` node. Positions are 1-based, as the spec requires. */
+export function generateBreadcrumbJsonLd(items: readonly BreadcrumbItem[]): JsonLdNode {
+  return {
+    "@context": SCHEMA,
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  };
+}
+
+/**
+ * `Organization` node — the site-wide identity Google uses for the knowledge
+ * panel. WhatsApp is a messaging link, not a profile, so it is excluded from
+ * `sameAs`.
+ */
+export function generateOrganizationJsonLd(): JsonLdNode {
+  return {
+    "@context": SCHEMA,
+    "@type": "Organization",
+    "@id": `${SITE_ORIGIN}/#organization`,
+    name: SITE_NAME,
+    url: SITE_ORIGIN,
+    description: SITE_DESCRIPTION,
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl("/logo/logo_icon.svg"),
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "BD",
+      addressLocality: "Dhaka",
+    },
+    sameAs: SOCIAL_LINKS.filter((link) => link.icon !== "whatsapp").map((link) => link.href),
+  };
+}
+
+/**
+ * `WebSite` node with a `SearchAction`, which is what enables the sitelinks
+ * search box. The target matches what `/shop` actually reads (`?search=`).
+ */
+export function generateWebSiteJsonLd(): JsonLdNode {
+  return {
+    "@context": SCHEMA,
+    "@type": "WebSite",
+    "@id": `${SITE_ORIGIN}/#website`,
+    name: SITE_NAME,
+    url: SITE_ORIGIN,
+    description: SITE_DESCRIPTION,
+    inLanguage: "en",
+    publisher: { "@id": `${SITE_ORIGIN}/#organization` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${absoluteUrl("/shop")}?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/** `FAQPage` node built from the same list the accordion renders. */
+export function generateFaqJsonLd(faqs: readonly FaqEntry[]): JsonLdNode {
+  return {
+    "@context": SCHEMA,
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}

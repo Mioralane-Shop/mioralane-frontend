@@ -1,4 +1,7 @@
-import { SITE_WHATSAPP } from "@/constants/site";
+// Explicit .ts extension: `src/lib/seo/json-ld.ts` (and therefore
+// `scripts/verify-seo.ts`, which runs under Node's type stripping) imports this
+// module, and Node resolves relative specifiers by their real file name.
+import { SITE_WHATSAPP } from "./site.ts";
 
 /**
  * Social profiles shown in the storefront footer.

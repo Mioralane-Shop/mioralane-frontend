@@ -1,5 +1,8 @@
 import type { Product } from "@/types/product";
-import { CATALOG_2026_PRODUCTS } from "./catalog-2026";
+// Explicit .ts extension: `scripts/verify-seo.ts` imports this module (and its
+// consumers in `src/lib/seo/`) directly under Node's type stripping, which
+// resolves relative specifiers by their real file name.
+import { CATALOG_2026_PRODUCTS } from "./catalog-2026.ts";
 
 export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =

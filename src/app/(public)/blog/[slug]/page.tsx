@@ -4,6 +4,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getBlogPost } from "@/constants/blog";
+import { JsonLd } from "@/components/seo/json-ld";
+import { generateBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -12,10 +15,23 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getBlogPost(slug);
-  return {
-    title: post?.title ?? "Blog Post",
-    description: post?.excerpt,
-  };
+
+  if (!post) {
+    return buildPageMetadata({
+      title: "Article not found",
+      description: "We could not find that article on the Mioralane blog.",
+      path: `/blog/${slug}`,
+      noIndex: true,
+    });
+  }
+
+  return buildPageMetadata({
+    title: post.title,
+    description: post.excerpt,
+    path: `/blog/${post.slug}`,
+    images: [post.image],
+    openGraphType: "article",
+  });
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -25,6 +41,13 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
+      <JsonLd
+        data={generateBreadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: post.title, path: `/blog/${post.slug}` },
+        ])}
+      />
       {/* Breadcrumb */}
       <nav className="mb-8 flex items-center gap-2 text-sm text-ink/50">
         <Link href="/" className="transition-colors hover:text-ink">

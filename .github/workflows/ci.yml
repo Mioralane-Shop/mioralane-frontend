@@ -105,3 +105,13 @@ jobs:
       # leaving the payment and shipping paths with no permanent coverage.
       - name: Verify validators
         run: npm run verify:validators
+
+      # Technical SEO. Nothing else in the pipeline can see this: a page with no
+      # `<title>`, a `robots.txt` that disallows everything, and a route whose
+      # metadata stopped being emitted when someone added `"use client"` all
+      # type-check and build fine. Asserts the sitemap and robots routes, the
+      # JSON-LD graph and its escaping, that each route is wired to a metadata
+      # export and a generator, and controls proving the checks are not vacuous.
+      # No network: `NEXT_PUBLIC_API_URL` is cleared, so it runs on bundled data.
+      - name: Verify SEO
+        run: npm run verify:seo
