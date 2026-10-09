@@ -100,6 +100,7 @@ const ROUTES = {
   sitemap: "src/app/sitemap.ts",
   robots: "src/app/robots.ts",
   rootLayout: "src/app/layout.tsx",
+  ogImage: "src/app/opengraph-image.tsx",
   jsonLdComponent: "src/components/seo/json-ld.tsx",
   jsonLdLib: "src/lib/seo/json-ld.ts",
   metadataLib: "src/lib/seo/metadata.ts",
@@ -163,6 +164,7 @@ for (const [label, path] of [
   ["sitemap entry builder", ROUTES.sitemapLib],
   ["absolute-URL module", ROUTES.urlsLib],
   ["JSON-LD component", ROUTES.jsonLdComponent],
+  ["generated Open Graph image", ROUTES.ogImage],
   ["FAQ content module", ROUTES.faqConstants],
   ["cart noindex layout", ROUTES.cartLayout],
   ["checkout noindex layout", ROUTES.checkoutLayout],
@@ -650,6 +652,25 @@ check(
   absoluteTitle?.absolute === "Mioralane — Premium Korean Skincare",
 );
 
+/* ── F3. Generated Open Graph image ───────────────────────────────────────── */
+
+section("F3. Open Graph image");
+
+const ogImageSource = read(ROUTES.ogImage);
+check("opengraph-image declares a 1200x630 size", /width:\s*1200[\s\S]{0,40}?height:\s*630/.test(ogImageSource));
+check("opengraph-image declares the PNG content type", /contentType\s*=\s*"image\/png"/.test(ogImageSource));
+check("opengraph-image declares alt text", /export\s+const\s+alt\s*=/.test(ogImageSource));
+check("opengraph-image is rendered with ImageResponse", /new\s+ImageResponse\(/.test(ogImageSource));
+check(
+  "the default social card is the generated 1200x630 image",
+  DEFAULT_OG_IMAGE.url === "/opengraph-image" && DEFAULT_OG_IMAGE.width === 1200 && DEFAULT_OG_IMAGE.height === 630,
+  `${DEFAULT_OG_IMAGE.url} ${DEFAULT_OG_IMAGE.width}x${DEFAULT_OG_IMAGE.height}`,
+);
+check(
+  "the root layout points at the generated card",
+  /images:\s*\[DEFAULT_OG_IMAGE\]/.test(rootLayoutSource),
+);
+
 /* ── G. Controls ──────────────────────────────────────────────────────────── */
 
 section("G. Controls");
@@ -690,6 +711,10 @@ check(
 check(
   "control: the noindex predicate rejects a segment that indexes",
   /robots\s*:\s*\{[^}]*index\s*:\s*false/.test("export const metadata: Metadata = { robots: { index: true } };") === false,
+);
+check(
+  "control: the OG-image dimension check rejects a different size",
+  /width:\s*1200[\s\S]{0,40}?height:\s*630/.test("export const size = { width: 1200, height: 628 };") === false,
 );
 
 /* ── Result ───────────────────────────────────────────────────────────────── */
