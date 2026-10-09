@@ -17,7 +17,7 @@ const footerLinks = {
     links: [
       { label: "About Us", href: "/about" },
       { label: "Contact", href: "/contact" },
-      { label: "Brands", href: "/shop" },
+      { label: "Brands", href: "/brands" },
       { label: "Authenticity Policy", href: "/authenticity" },
     ],
   },
