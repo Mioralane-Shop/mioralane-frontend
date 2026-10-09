@@ -283,12 +283,12 @@ function FilterSection({
   }, [hasActive]);
 
   return (
-    <section className="space-y-1.5">
+    <section className="space-y-1.5 lg:space-y-1">
       <button
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75"
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75 lg:min-h-9 lg:py-1"
       >
         <span className="text-[13px] font-semibold text-ink/80">
           {title}
@@ -301,7 +301,7 @@ function FilterSection({
         />
       </button>
 
-      {isOpen && <div className="space-y-1.5 px-1 pb-0.5 pt-1">{children}</div>}
+      {isOpen && <div className="space-y-1.5 px-1 pb-0.5 pt-1 lg:space-y-0.5 lg:pt-0.5">{children}</div>}
     </section>
   );
 }
@@ -320,7 +320,11 @@ function SelectionRow({ label, onSelect, selected }: SelectionRowProps) {
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "flex min-h-11 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors",
+        // 44px is the touch target the mobile drawer needs, and the desktop sidebar can
+        // be far tighter. The breakpoint is enough to tell them apart without threading
+        // a density prop: the drawer is `lg:hidden` and this panel's other home is
+        // `hidden lg:block`, so the two are never on screen together.
+        "flex min-h-11 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors lg:min-h-7",
         selected ? "text-ink" : "text-ink/65 hover:text-ink/85",
       )}
     >
