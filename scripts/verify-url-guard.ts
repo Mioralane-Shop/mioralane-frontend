@@ -46,6 +46,10 @@ const PRODUCT_GALLERY_FILE = join(SRC, "components", "product", "product-gallery
 const PDP_FILE = join(SRC, "app", "(public)", "product", "[slug]", "page.tsx");
 const CAMPAIGN_FILE = join(SRC, "components", "common", "promotion-campaign.tsx");
 const ANNOUNCEMENT_FILE = join(SRC, "components", "layout", "announcement-bar.tsx");
+const BRAND_NAVBAR_FILE = join(SRC, "components", "layout", "navbar.tsx");
+const BRAND_MOBILE_MENU_FILE = join(SRC, "components", "layout", "mobile-menu.tsx");
+const BRAND_CARD_FILE = join(SRC, "components", "brands", "brand-card.tsx");
+const BRAND_MARQUEE_FILE = join(SRC, "components", "common", "brands-marquee.tsx");
 const BACKEND_VALIDATION_FILE = join(
   HERE,
   "..",
@@ -265,6 +269,14 @@ const RENDERABLE_IMAGE_VALUES: { value: string; why: string }[] = [
     why: "ImageKit appends updatedAt; the pattern ignores the query",
   },
   { value: "  /images/hero.jpg  ", why: "trimmed before judging" },
+  {
+    value: "/brands/COSRX.svg",
+    why: "a brand logo: the API stores these as site-relative paths (see the seed)",
+  },
+  {
+    value: "/brands/AXIS-Y.svg",
+    why: "and one whose file name is mixed-case, which is NOT the brand's slug",
+  },
 ];
 
 const main = (): void => {
@@ -412,6 +424,27 @@ const main = (): void => {
     check(`isRenderableImageSrc accepts ${JSON.stringify(value)}`, isRenderableImageSrc(value), why);
   }
 
+  /*
+   * A site-relative path containing `..` is ACCEPTED, and that is intended rather
+   * than a gap. This predicate answers one question — will `next/image`'s loader
+   * throw for this value? — and for any site-relative path the answer is no. It is
+   * not a traversal filter: resolving the path is the browser's job, and it
+   * resolves same-origin, so `/brands/../etc/passwd` becomes a request for
+   * `/etc/passwd` on our own host, which 404s and renders a broken image. Pinned
+   * here so that behaviour is a decision on the record and nobody "fixes" it by
+   * accident.
+   */
+  check(
+    'the guard is a renderability predicate, not a traversal filter: a relative path with ".." passes',
+    isRenderableImageSrc("/brands/../etc/passwd"),
+    "same-origin resolution makes that a 404, not an escape"
+  );
+  check(
+    "case is not the guard's business: the real mixed-case path and a lower-cased one both pass",
+    isRenderableImageSrc("/brands/COSRX.svg") && isRenderableImageSrc("/brands/cosrx.svg"),
+    "so a wrong-cased logoUrl is a filesystem question, not a guard rejection"
+  );
+
   check(
     "non-strings are refused, not coerced",
     !isRenderableImageSrc(undefined) && !isRenderableImageSrc(null) && isRenderableImageSrc("/x"),
@@ -475,6 +508,15 @@ const main = (): void => {
     { label: "product card", file: PRODUCT_CARD_FILE },
     { label: "PDP", file: PDP_FILE },
     { label: "product gallery", file: PRODUCT_GALLERY_FILE },
+    // The brand surface: four more places a server-supplied URL reaches an image.
+    // They render a plain <img> rather than next/image (vector logos, no stored
+    // dimensions), which makes the guard no less necessary — it is what decides
+    // whether the value renders at all, and the marquee and the grid both drop a
+    // value it refuses rather than showing a broken mark.
+    { label: "brand navbar dropdown", file: BRAND_NAVBAR_FILE },
+    { label: "brand mobile drawer", file: BRAND_MOBILE_MENU_FILE },
+    { label: "brand card", file: BRAND_CARD_FILE },
+    { label: "brand marquee", file: BRAND_MARQUEE_FILE },
   ];
 
   for (const { label, file } of IMAGE_SITES) {

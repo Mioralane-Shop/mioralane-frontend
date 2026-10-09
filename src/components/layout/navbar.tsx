@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BRANDS } from "@/constants/site";
 import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
 import { useBrands } from "@/hooks/use-brands";
-import { isRenderableImageSrc } from "@/lib/safe-image-src";
+import { firstRenderableImageSrc, isRenderableImageSrc } from "@/lib/safe-image-src";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
@@ -160,7 +160,7 @@ function ComboNavItem() {
                 >
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
                     <ProductImage
-                      src={product.images?.[0] ?? ""}
+                      src={firstRenderableImageSrc(product.images?.[0])}
                       alt={product.name}
                       fill
                       sizes="48px"
