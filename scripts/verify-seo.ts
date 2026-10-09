@@ -94,13 +94,42 @@ const read = (relativePath: string): string =>
 
 const exists = (relativePath: string): boolean => existsSync(join(APP_ROOT, relativePath));
 
+/** Read a shipped asset as bytes — the card's real PNG header is asserted below. */
+const readBinary = (relativePath: string): Buffer => readFileSync(join(APP_ROOT, relativePath));
+
+/**
+ * Width/height from a PNG's IHDR chunk, or `null` when the bytes are not a PNG.
+ *
+ * Reading the real header is the point: a nominal "1200×630" declared next to an
+ * 1733×908 file is a wrong-sized preview in every scraped card, and nothing else
+ * in the pipeline can see that.
+ */
+function pngDimensions(bytes: Buffer): { width: number; height: number } | null {
+  const isPng = bytes.length > 24 && bytes[0] === 0x89 && bytes.toString("ascii", 1, 4) === "PNG";
+
+  return isPng ? { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) } : null;
+}
+
+/** Whether a declared size matches the file's own header. */
+const dimensionsMatch = (
+  actual: { width: number; height: number } | null,
+  declared: { width: number; height: number },
+): boolean => !!actual && actual.width === declared.width && actual.height === declared.height;
+
+/** Open Graph's nominal ratio: the recommended 1200×630 is 1.9048. */
+const OG_TARGET_RATIO = 1.91;
+
+const ratioWithin = (width: number, height: number, tolerance: number): boolean =>
+  height > 0 && Math.abs(width / height - OG_TARGET_RATIO) / OG_TARGET_RATIO < tolerance;
+
 /* ── Route segment paths, named once so the report and §F agree ─────────────── */
 
 const ROUTES = {
   sitemap: "src/app/sitemap.ts",
   robots: "src/app/robots.ts",
   rootLayout: "src/app/layout.tsx",
-  ogImage: "src/app/opengraph-image.tsx",
+  ogImage: "public/og_default.png",
+  ogImageRoute: "src/app/opengraph-image.tsx",
   jsonLdComponent: "src/components/seo/json-ld.tsx",
   jsonLdLib: "src/lib/seo/json-ld.ts",
   metadataLib: "src/lib/seo/metadata.ts",
@@ -167,7 +196,7 @@ for (const [label, path] of [
   ["sitemap entry builder", ROUTES.sitemapLib],
   ["absolute-URL module", ROUTES.urlsLib],
   ["JSON-LD component", ROUTES.jsonLdComponent],
-  ["generated Open Graph image", ROUTES.ogImage],
+  ["Open Graph image asset", ROUTES.ogImage],
   ["contact metadata layout", ROUTES.contactLayout],
   ["FAQ content module", ROUTES.faqConstants],
   ["cart noindex layout", ROUTES.cartLayout],
@@ -668,22 +697,36 @@ check(
   absoluteTitle?.absolute === "Mioralane — Premium Korean Skincare",
 );
 
-/* ── F3. Generated Open Graph image ───────────────────────────────────────── */
+/* ── F3. The Open Graph image ─────────────────────────────────────────────── */
 
 section("F3. Open Graph image");
 
-const ogImageSource = read(ROUTES.ogImage);
-check("opengraph-image declares a 1200x630 size", /width:\s*1200[\s\S]{0,40}?height:\s*630/.test(ogImageSource));
-check("opengraph-image declares the PNG content type", /contentType\s*=\s*"image\/png"/.test(ogImageSource));
-check("opengraph-image declares alt text", /export\s+const\s+alt\s*=/.test(ogImageSource));
-check("opengraph-image is rendered with ImageResponse", /new\s+ImageResponse\(/.test(ogImageSource));
+const ogImageBytes = readBinary(ROUTES.ogImage);
+const ogImageSize = pngDimensions(ogImageBytes);
+
+check("the card is a real PNG", ogImageSize !== null, `${ogImageBytes.length} bytes`);
 check(
-  "the default social card is the generated 1200x630 image",
-  DEFAULT_OG_IMAGE.url === "/opengraph-image" && DEFAULT_OG_IMAGE.width === 1200 && DEFAULT_OG_IMAGE.height === 630,
-  `${DEFAULT_OG_IMAGE.url} ${DEFAULT_OG_IMAGE.width}x${DEFAULT_OG_IMAGE.height}`,
+  "the declared dimensions match the file's own PNG header",
+  dimensionsMatch(ogImageSize, DEFAULT_OG_IMAGE),
+  `file ${ogImageSize ? `${ogImageSize.width}x${ogImageSize.height}` : "?"} vs declared ${DEFAULT_OG_IMAGE.width}x${DEFAULT_OG_IMAGE.height}`,
 );
 check(
-  "the root layout points at the generated card",
+  "the card's aspect ratio is within 1% of Open Graph's 1.91:1",
+  ogImageSize !== null && ratioWithin(ogImageSize.width, ogImageSize.height, 0.01),
+  ogImageSize ? (ogImageSize.width / ogImageSize.height).toFixed(4) : "?",
+);
+check(
+  "the card is served from public/ under the declared URL",
+  DEFAULT_OG_IMAGE.url.startsWith("/") && !DEFAULT_OG_IMAGE.url.startsWith("//"),
+  DEFAULT_OG_IMAGE.url,
+);
+check(
+  "there is only ONE social-card mechanism (no generated route beside it)",
+  !exists(ROUTES.ogImageRoute),
+  "app/opengraph-image.tsx would auto-inject og:image for any segment that sets none",
+);
+check(
+  "the root layout points at the card",
   /images:\s*\[DEFAULT_OG_IMAGE\]/.test(rootLayoutSource),
 );
 
@@ -733,8 +776,18 @@ check(
   /canonical\s*:\s*"\/blog"/.test("export const metadata: Metadata = { title: 'Blog' };") === false,
 );
 check(
-  "control: the OG-image dimension check rejects a different size",
-  /width:\s*1200[\s\S]{0,40}?height:\s*630/.test("export const size = { width: 1200, height: 628 };") === false,
+  "control: the dimension check rejects a mismatched declaration",
+  dimensionsMatch({ width: 1733, height: 908 }, { width: 1200, height: 630 }) === false &&
+    dimensionsMatch({ width: 1733, height: 908 }, { width: 1733, height: 908 }) === true
+);
+check(
+  "control: the dimension check rejects a missing/non-PNG asset",
+  dimensionsMatch(null, DEFAULT_OG_IMAGE) === false
+);
+check(
+  "control: the ratio check rejects a square asset",
+  ratioWithin(1000, 1000, 0.01) === false && ratioWithin(1200, 630, 0.01) === true,
+  "1200x630 is the reference the tolerance is measured against"
 );
 
 /* ── Result ───────────────────────────────────────────────────────────────── */
