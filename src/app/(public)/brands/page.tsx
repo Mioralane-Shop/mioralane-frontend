@@ -26,15 +26,17 @@ import type { Brand } from "@/types/brand";
  *
  * It lives in this file because the page is its only consumer. A second server
  * caller should move it to `src/lib/brands.ts` rather than import from a page.
+ *
+ * ## Why the fetch is uncached
+ *
+ * `no-store`, not ISR. The response was cached for an hour, which let this page
+ * keep listing brands that had already been deleted — logo and all — for up to 60
+ * minutes, while the navbar dropdown and the marquee dropped them immediately. The
+ * detail is on the fetch itself.
  */
 
 /** Abort a page fetch after this long; a render must never hang. */
 const FETCH_TIMEOUT_MS = 4000;
-
-/** How long a successful fetch stays warm — matches `lib/seo/data.ts`. */
-const REVALIDATE_SECONDS = 3600;
-
-type NextFetchInit = RequestInit & { next?: { revalidate?: number } };
 
 /** Read lazily so a build with no env configured is still a successful build. */
 function apiBase(): string {
@@ -68,10 +70,28 @@ async function getBrands(): Promise<Brand[]> {
 
   try {
     const response = await fetch(`${base}/brands`, {
+      // `no-store`, deliberately, rather than the hour-long ISR window this used to
+      // use (`next: { revalidate: 3600 }`). With that cache in place, a brand
+      // deleted in the admin — or straight from the database — kept rendering here,
+      // with its logo, for up to 60 minutes, while the navbar dropdown and the
+      // homepage marquee (client components reading `useBrands()`) dropped it at
+      // once. The page contradicted its own header.
+      //
+      // The cost is one API call per view instead of one per hour, which is close
+      // to free in practice: the navbar already calls this same endpoint from the
+      // browser on every page view, so a cached server render was not saving
+      // anything the page did not spend elsewhere anyway. For a hand-curated list
+      // that changes whenever an admin edits it, being correct beats being cached.
+      //
+      // Trade-off, stated plainly: this page can no longer be served from the CDN as
+      // a static document, so `next build` reports it as dynamic. If that ever
+      // matters, the fix is on-demand revalidation triggered by the admin's brand
+      // writes — not a longer or shorter TTL, which only narrows the window in which
+      // the page is wrong.
+      cache: "no-store",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: { Accept: "application/json" },
-      next: { revalidate: REVALIDATE_SECONDS },
-    } as NextFetchInit);
+    });
 
     if (!response.ok) {
       return [];
