@@ -9,6 +9,8 @@ import { NavigationItem } from "@/components/layout/navigation-item";
 import { PRIMARY_NAV } from "@/constants/navigation";
 import { BRANDS } from "@/constants/site";
 import { useCombos } from "@/hooks/use-combos";
+import { useMegaMenu } from "@/hooks/use-mega-menu";
+import { megaMenuTargetHref } from "@/lib/mega-menu";
 import { cn, formatPrice } from "@/lib/utils";
 
 const SORTED_BRANDS = [...BRANDS].sort((a, b) => a.localeCompare(b));
@@ -31,6 +33,8 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const { data: combos = [] } = useCombos();
+  const { data: megaMenu } = useMegaMenu();
+  const menuTabs = megaMenu?.tabs ?? [];
 
   const close = () => setOpen(false);
   const toggle = (id: string) =>
@@ -94,30 +98,49 @@ export function MobileMenu() {
 
                 {isOpen && entry.kind === "mega" && (
                   <div className="mb-3 ml-2 space-y-3 border-l border-brand-100 pl-2">
-                    {entry.columns.map((column) => (
-                      <div key={column.id}>
-                        <NavigationItem
-                          label={column.label}
-                          href={column.href}
-                          comingSoon={column.comingSoon}
-                          onClick={close}
-                          className={columnLabelClassName}
-                        />
-                        <ul className="mt-0.5 space-y-0.5">
-                          {column.links.map((link) => (
-                            <li key={link.label}>
-                              <NavigationItem
-                                label={link.label}
-                                href={link.href}
-                                comingSoon={link.comingSoon}
-                                onClick={close}
-                                className={childClassName}
-                              />
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+                    {menuTabs.length > 0
+                      ? menuTabs.map((tab) => (
+                          <div key={tab.id}>
+                            <p className={columnLabelClassName}>{tab.label}</p>
+                            <ul className="mt-0.5 space-y-0.5">
+                              {tab.items.map((item) => (
+                                <li key={item.id}>
+                                  <Link
+                                    href={megaMenuTargetHref(item.target)}
+                                    onClick={close}
+                                    className={childClassName}
+                                  >
+                                    {item.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))
+                      : entry.columns.map((column) => (
+                          <div key={column.id}>
+                            <NavigationItem
+                              label={column.label}
+                              href={column.href}
+                              comingSoon={column.comingSoon}
+                              onClick={close}
+                              className={columnLabelClassName}
+                            />
+                            <ul className="mt-0.5 space-y-0.5">
+                              {column.links.map((link) => (
+                                <li key={link.label}>
+                                  <NavigationItem
+                                    label={link.label}
+                                    href={link.href}
+                                    comingSoon={link.comingSoon}
+                                    onClick={close}
+                                    className={childClassName}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
                   </div>
                 )}
 

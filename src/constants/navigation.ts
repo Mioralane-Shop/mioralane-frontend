@@ -4,6 +4,11 @@
  * The desktop rows, the compact desktop bar and the mobile drawer all render
  * this same model, so items, labels, hierarchy and destinations can never drift
  * apart between breakpoints. Only the *layout* changes per screen size.
+ *
+ * The `mega` entry's columns below are now a FALLBACK: the live panel is
+ * admin-curated and fetched from `/api/mega-menu` (see `useMegaMenu`). These
+ * values are what renders if that request fails, so the navbar always has a
+ * usable Shop menu.
  */
 
 export type NavLeaf = {
@@ -140,7 +145,7 @@ const MEGA_MENU_COLUMNS: MegaMenuColumn[] = [
 ];
 
 export type PrimaryNavEntry =
-    /** Row with a mega panel (columns of links). */
+    /** Row with a tabbed mega panel (items fetched from the admin-curated API). */
     | { id: string; kind: "mega"; label: string; href: string; columns: MegaMenuColumn[] }
     /** Row with a panel listing every brand. */
     | { id: string; kind: "brands"; label: string; href: string }
@@ -154,9 +159,9 @@ export type PrimaryNavEntry =
 /** Top-level menu, in desktop order. Desktop is the source of truth. */
 export const PRIMARY_NAV: PrimaryNavEntry[] = [
     {
-        id: "skin-care",
+        id: "shop",
         kind: "mega",
-        label: "Skin Care",
+        label: "Shop",
         href: "/shop",
         columns: MEGA_MENU_COLUMNS,
     },
