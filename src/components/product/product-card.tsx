@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import { useAuthStore } from "@/store/auth.store";
 import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
+import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { getProductAvailability } from "@/lib/pre-order";
 import type { Product } from "@/types/product";
 
@@ -66,9 +67,22 @@ const UI_COLORS = {
 
 const PRODUCT_CARD_IMAGEKIT_LOADER = createImageKitLoader({ preset: "productCard" });
 
+/**
+ * The stored image URLs `next/image` can actually render.
+ *
+ * `onError` cannot cover this: `next/image`'s default loader *throws* for a host
+ * absent from `images.remotePatterns`, so the fallback chain below would never
+ * run. Filtering here means a row pointing at a removed host falls through to
+ * the card's placeholder. See `lib/safe-image-src.ts`.
+ */
+function renderableImages(product: Product): string[] {
+  return (product.images ?? []).filter(isRenderableImageSrc);
+}
+
 export function ProductCard({ product, onNavigate, combo, compactImage }: ProductCardProps) {
   const router = useRouter();
-  const [mainImgSrc, setMainImgSrc] = useState<string>(product.images?.[0] ?? "");
+  const availableImages = renderableImages(product);
+  const [mainImgSrc, setMainImgSrc] = useState<string>(availableImages[0] ?? "");
   const [mainFailed, setMainFailed] = useState<boolean>(false);
 
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
@@ -219,8 +233,8 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
               loading="lazy"
               onError={() => {
-                const idx = product.images?.indexOf(mainImgSrc) ?? -1;
-                const nextImg = idx >= 0 ? product.images?.[idx + 1] : undefined;
+                const idx = availableImages.indexOf(mainImgSrc);
+                const nextImg = idx >= 0 ? availableImages[idx + 1] : undefined;
                 if (nextImg && nextImg !== mainImgSrc) {
                   setMainImgSrc(nextImg);
                 } else {
@@ -370,8 +384,8 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
             loading="lazy"
             onError={() => {
-              const idx = product.images?.indexOf(mainImgSrc) ?? -1;
-              const nextImg = idx >= 0 ? product.images?.[idx + 1] : undefined;
+              const idx = availableImages.indexOf(mainImgSrc);
+              const nextImg = idx >= 0 ? availableImages[idx + 1] : undefined;
               if (nextImg && nextImg !== mainImgSrc) {
                 setMainImgSrc(nextImg);
               } else {

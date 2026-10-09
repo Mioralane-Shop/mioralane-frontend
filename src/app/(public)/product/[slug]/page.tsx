@@ -36,6 +36,7 @@ import {
   getProductAvailability,
   isPreOrderProduct,
 } from "@/lib/pre-order";
+import { firstRenderableImageSrc, isRenderableImageSrc } from "@/lib/safe-image-src";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
@@ -206,6 +207,31 @@ function clampQuantityToStock(quantity: number, stock: number) {
 
 function getErrorStatus(error: unknown) {
   return (error as { response?: { status?: number } } | undefined)?.response?.status;
+}
+
+/**
+ * Related-product thumbnail.
+ *
+ * `p.images[0]` is a stored URL, and `next/image`'s default loader **throws** for
+ * a host absent from `images.remotePatterns` — which removes this page, not just
+ * the thumbnail. `lib/safe-image-src.ts` has the guard and the reasoning.
+ */
+function RelatedThumb({ product }: { product: Product }) {
+  const src = firstRenderableImageSrc(...(product.images ?? []), product.hoverImage);
+
+  if (!src) {
+    return <div className="absolute inset-0 bg-[#FAF9F7]" aria-hidden="true" />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={product.name}
+      fill
+      className="object-cover"
+      sizes="(max-width: 1024px) 50vw, 25vw"
+    />
+  );
 }
 
 export default function ProductPage() {
@@ -396,11 +422,12 @@ export default function ProductPage() {
     return null;
   }
 
-  const images = product.images?.filter(Boolean).length
-    ? product.images.filter(Boolean)
-    : product.hoverImage
-      ? [product.hoverImage]
-      : [];
+  // Only URLs `next/image` can render: the default loader throws for a host that
+  // is not in `images.remotePatterns`, and a throw here removes the whole page.
+  const storedImages = (product.images ?? []).filter(isRenderableImageSrc);
+  const images = storedImages.length
+    ? storedImages
+    : [product.hoverImage].filter(isRenderableImageSrc);
   const selectedImageSrc = images[selectedImage] ?? images[0];
   const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
   const benefitChips = getBenefitChips(product);
@@ -1001,7 +1028,7 @@ export default function ProductPage() {
             <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex h-full flex-col">
-                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
+                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><RelatedThumb product={p} /></Link>
                   <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
                     <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
