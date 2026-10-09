@@ -6,6 +6,7 @@ import { BLOG_POSTS } from "@/constants/blog";
 export const metadata: Metadata = {
   title: "Blog",
   description: "Skincare guides, tips and K-beauty insights from Mioralane.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {

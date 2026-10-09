@@ -114,6 +114,9 @@ const ROUTES = {
   comboIndex: "src/app/(public)/combo/page.tsx",
   shopPage: "src/app/(public)/shop/page.tsx",
   shopLayout: "src/app/(public)/shop/layout.tsx",
+  blogIndex: "src/app/(public)/blog/page.tsx",
+  aboutPage: "src/app/(public)/about/page.tsx",
+  contactLayout: "src/app/(public)/contact/layout.tsx",
   blogPage: "src/app/(public)/blog/[slug]/page.tsx",
   homePage: "src/app/(public)/page.tsx",
   faqPage: "src/app/(public)/faq/page.tsx",
@@ -165,6 +168,7 @@ for (const [label, path] of [
   ["absolute-URL module", ROUTES.urlsLib],
   ["JSON-LD component", ROUTES.jsonLdComponent],
   ["generated Open Graph image", ROUTES.ogImage],
+  ["contact metadata layout", ROUTES.contactLayout],
   ["FAQ content module", ROUTES.faqConstants],
   ["cart noindex layout", ROUTES.cartLayout],
   ["checkout noindex layout", ROUTES.checkoutLayout],
@@ -574,6 +578,18 @@ check(
   !/title:\s*"[^"]*Mioralane/.test(comboIndexSource),
 );
 
+// Pages that previously had no canonical at all. `/contact` is a client
+// component, so its metadata lives in the route-segment layout.
+const CANONICAL_SEGMENTS: Array<[string, string, string]> = [
+  ["blog listing", ROUTES.blogIndex, "/blog"],
+  ["about page", ROUTES.aboutPage, "/about"],
+  ["contact page", ROUTES.contactLayout, "/contact"],
+];
+
+for (const [label, path, canonical] of CANONICAL_SEGMENTS) {
+  check(`${label} declares canonical ${canonical}`, new RegExp(`canonical\\s*:\\s*"${canonical}"`).test(read(path)));
+}
+
 // Canonical tags: `buildPageMetadata` is the only thing that may set them, so
 // each route must go through it rather than hand-rolling metadata.
 for (const [label, source] of [
@@ -711,6 +727,10 @@ check(
 check(
   "control: the noindex predicate rejects a segment that indexes",
   /robots\s*:\s*\{[^}]*index\s*:\s*false/.test("export const metadata: Metadata = { robots: { index: true } };") === false,
+);
+check(
+  "control: the canonical predicate rejects a page with no canonical",
+  /canonical\s*:\s*"\/blog"/.test("export const metadata: Metadata = { title: 'Blog' };") === false,
 );
 check(
   "control: the OG-image dimension check rejects a different size",
