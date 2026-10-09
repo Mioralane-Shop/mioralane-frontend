@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ScrollProgress } from "@/components/common/scroll-progress";
 import { PromotionCampaign } from "@/components/common/promotion-campaign";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/constants/site";
+import { getAnnouncement } from "@/lib/announcement";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo/metadata";
 import "./globals.css";
 
@@ -90,11 +91,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read here rather than inside the bar: see `lib/announcement.ts`. The value is
+  // handed to the client component as its initial one, so the first paint shows the
+  // campaign that is actually published instead of a stand-in that then changes.
+  const announcement = await getAnnouncement();
+
   return (
     <html lang="en" className={lora.variable}>
       <head>
@@ -109,7 +115,7 @@ export default function RootLayout({
           <QueryProvider>
             <StoreHydration />
             <ScrollProgress />
-            <AnnouncementBar />
+            <AnnouncementBar initial={announcement} />
             <Navbar />
             <CartDrawer />
             <Toaster />
