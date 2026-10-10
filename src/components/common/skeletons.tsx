@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { PRODUCT_GRID_CLASSES } from "@/lib/product-grid";
 
 /**
  * Storefront-shaped skeletons, every one built from the shared `Skeleton`.
@@ -49,7 +50,7 @@ export function PageHeaderSkeleton({ withAction = false }: { withAction?: boolea
 /** The shop grid: image slot plus name and price lines. */
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className={PRODUCT_GRID_CLASSES}>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="space-y-3">
           <Skeleton className={`aspect-[3/4] w-full rounded-2xl ${MEDIA_TINT}`} />
