@@ -104,76 +104,6 @@ function getBestForChips(product: Product) {
   return Array.from(new Set(tokens)).slice(0, 6);
 }
 
-function getIngredientHighlights(product: Product) {
-  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  const highlights = [
-    {
-      name: "Hyaluronic Acid",
-      meta: "Hydration · Plumping",
-      description: /hyalur|plump|hydrat/i.test(text)
-        ? "A moisture-binding humectant that helps draw hydration into the skin for a plumper, smoother feel."
-        : "",
-      match: /hyalur|ha\b|water-fit|moistur/i,
-    },
-    {
-      name: "Centella Asiatica",
-      meta: "Calming · Sensitive Skin Friendly",
-      description: "Helps calm visible redness and keep sensitive skin feeling comfortable.",
-      match: /centella|cica|sooth|calm/i,
-    },
-    {
-      name: "Niacinamide",
-      meta: "Brightening · Tone Support",
-      description: "Supports a more even-looking tone while helping skin appear clearer and balanced.",
-      match: /niacinamide|bright|glow|spot|tone/i,
-    },
-    {
-      name: "Panthenol",
-      meta: "Barrier Support · Comfort",
-      description: "Helps support the skin barrier and reduce feelings of dryness or tightness.",
-      match: /panthenol|barrier|repair/i,
-    },
-    {
-      name: "Snail Mucin",
-      meta: "Repair · Recovery",
-      description: "Helps support recovery while leaving skin feeling supple and cushioned.",
-      match: /snail/i,
-    },
-    {
-      name: "Propolis",
-      meta: "Glow · Support",
-      description: "Helps boost radiance while supporting skin that feels stressed or dull.",
-      match: /propolis/i,
-    },
-    {
-      name: "Ceramide",
-      meta: "Barrier Support · Moisture",
-      description: "Helps lock in moisture and maintain a healthier-feeling skin barrier.",
-      match: /ceramide/i,
-    },
-    {
-      name: "Tea Tree / BHA",
-      meta: "Clarifying · Oil Control",
-      description: "Helps refine excess oil and keep pores feeling fresher and clearer.",
-      match: /bha|tea tree|acne|oil/i,
-    },
-    {
-      name: "Vitamin C",
-      meta: "Brightening · Radiance",
-      description: "Helps improve the look of dullness for a brighter, fresher finish.",
-      match: /vitamin c|ascorb|c-vit/i,
-    },
-    {
-      name: "SPF Filters",
-      meta: "UV Protection · Daily Wear",
-      description: "Helps defend skin against daily UV exposure in a wearable finish.",
-      match: /spf|uv|sunscreen|sun/i,
-    },
-  ];
-
-  return highlights.filter((item) => item.match.test(text)).slice(0, 4);
-}
-
 function getShippingNotes(product: Product) {
   const source = product.source?.toLowerCase() ?? "";
   const authenticity = source
@@ -197,6 +127,17 @@ function getBenefitStatement(product: Product) {
   if (!source) return "Targeted Korean skincare selected for a balanced, healthy-looking routine.";
   return source;
 }
+
+/**
+ * Where a description is long enough to be worth collapsing.
+ *
+ * Approximate on purpose. The clamp is what actually hides text; this only decides whether
+ * the control is worth showing at all, and measuring the rendered height exactly would mean
+ * a ref, an effect and a resize listener for a control that is cosmetic. Descriptions are
+ * capped at 500 characters in the admin, so the longest ones run to roughly eight lines at
+ * the width below, and previewing four of them is a real saving.
+ */
+const DESCRIPTION_PREVIEW_CHARS = 320;
 
 function clampQuantityToStock(quantity: number, stock: number) {
   if (stock <= 0) {
@@ -262,6 +203,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
   const syncItemStock = useCartStore((s) => s.syncItemStock);
   const { data: relatedProducts = [] } = useRelatedProducts(
@@ -432,6 +374,12 @@ export default function ProductPage() {
   const selectedImageSrc = images[selectedImage] ?? images[0];
   const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
   const benefitChips = getBenefitChips(product);
+  const descriptionText = getBenefitStatement(product);
+  const isDescriptionLong = descriptionText.length > DESCRIPTION_PREVIEW_CHARS;
+  const ingredients = (product.ingredients ?? "")
+    .split(",")
+    .map((ingredient) => ingredient.trim())
+    .filter(Boolean);
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
       ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
@@ -457,7 +405,6 @@ export default function ProductPage() {
     });
   };
   const bestForChips = getBestForChips(product);
-  const ingredientHighlights = getIngredientHighlights(product);
   const shippingNotes = getShippingNotes(product);
   const maxThumbnailStart = Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS);
   const visibleThumbnailStart = Math.min(thumbnailStart, maxThumbnailStart);
@@ -789,9 +736,36 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-4">
-              <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
-                {getBenefitStatement(product)}
-              </p>
+              {/*
+                `max-w-prose` keeps the measure near 65 characters, which is the readable
+                range. It replaces a `max-w-[42ch]` cap — worth knowing if this ever needs to
+                go the other way, because 42ch was the NARROWER of the two.
+
+                The whole block is capped rather than the paragraph alone so the Read More
+                control below sits on the same left edge as the text it belongs to.
+              */}
+              <div className="max-w-prose">
+                <p
+                  id="product-description"
+                  className={cn(
+                    "text-sm leading-relaxed text-ink/75",
+                    isDescriptionLong && !isDescriptionExpanded && "line-clamp-4",
+                  )}
+                >
+                  {descriptionText}
+                </p>
+                {isDescriptionLong ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescriptionExpanded((current) => !current)}
+                    aria-expanded={isDescriptionExpanded}
+                    aria-controls="product-description"
+                    className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-accent underline-offset-4 hover:underline"
+                  >
+                    {isDescriptionExpanded ? "Read Less" : "Read More"}
+                  </button>
+                ) : null}
+              </div>
               {benefitChips.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {benefitChips.map((chip) => (
@@ -971,35 +945,26 @@ export default function ProductPage() {
             )}
 
             {activeTab === "ingredients" && (
-              <div className="space-y-8">
-                <section className="max-w-2xl space-y-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Key Ingredient</p>
-                  {ingredientHighlights[0] ? (
-                    <div className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
-                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{ingredientHighlights[0].name}</h3>
-                      <p className="mt-1 text-sm font-medium text-[#8A8581]">{ingredientHighlights[0].meta}</p>
-                      {ingredientHighlights[0].description ? (
-                        <p className="mt-3 max-w-[58ch] text-sm leading-7 text-[#5F5A57]">
-                          {ingredientHighlights[0].description}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="text-sm leading-7 text-[#5F5A57]">
-                      Ingredient details are not listed in the current catalog entry for this product.
-                    </p>
-                  )}
-                </section>
-
-                <details className="group border-t border-[#E6E0DA] pt-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-[#1F1F1F]">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Full Ingredient List</span>
-                    <span className="text-lg leading-none text-[#8A8581] transition-transform group-open:rotate-45">+</span>
-                  </summary>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[#5F5A57]">
-                    {product.ingredients || "Full INCI ingredient list is not available in the current product data."}
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                  Full Ingredient List
+                </h3>
+                {ingredients.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2" aria-label="Product ingredients">
+                    {ingredients.map((ingredient, index) => (
+                      <li
+                        key={`${ingredient}-${index}`}
+                        className="rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-700"
+                      >
+                        {ingredient}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm leading-7 text-[#5F5A57]">
+                    Full INCI ingredient list is not available in the current product data.
                   </p>
-                </details>
+                )}
               </div>
             )}
 
