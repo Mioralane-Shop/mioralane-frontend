@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Heart, Search, ShoppingBag, User, X } from "lucide-react";
 import { MobileMenu } from "@/components/layout/mobile-menu";
@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BRANDS } from "@/constants/site";
 import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
 import { useBrands } from "@/hooks/use-brands";
+import { isActiveNavPath, navLinkClass } from "@/lib/nav-active";
+import { productShortName } from "@/lib/product-name";
 import { firstRenderableImageSrc } from "@/lib/safe-image-src";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
@@ -37,6 +39,8 @@ function BrandsNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { brands } = useBrands();
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, "/brands");
 
   // Admin-curated brands, or the bundled list while the request is in flight, if
   // it fails, or before anything has been curated. The fallback is what keeps the
@@ -67,7 +71,8 @@ function BrandsNavItem() {
     >
       <Link
         href="/brands"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
         Brands
       </Link>
@@ -102,6 +107,8 @@ function ComboNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { data: combos = [] } = useCombos();
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, "/combo");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,7 +130,8 @@ function ComboNavItem() {
     >
       <Link
         href="/combo"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
         Combo
       </Link>
@@ -153,7 +161,7 @@ function ComboNavItem() {
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
                     <ProductImage
                       src={firstRenderableImageSrc(product.images?.[0])}
-                      alt={product.name}
+                      alt={productShortName(product)}
                       fill
                       sizes="48px"
                       className="object-cover"
@@ -163,7 +171,7 @@ function ComboNavItem() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">
-                      {product.name}
+                      {productShortName(product)}
                     </p>
                     {product.includedItems?.length ? (
                       <p className="truncate text-xs text-ink-muted">
@@ -404,6 +412,8 @@ function ShopNavItem({
   fallbackColumns: MegaMenuColumn[];
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, href);
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | null>(null);
 
@@ -470,7 +480,8 @@ function ShopNavItem({
     >
       <Link
         href={href}
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
         {label}
       </Link>
@@ -502,6 +513,8 @@ function ShopNavItem({
 }
 
 function DesktopNavLinks({ panelTop }: { panelTop: number }) {
+  const pathname = usePathname();
+
   return (
     <>
       {PRIMARY_NAV.map((entry) => {
@@ -525,13 +538,16 @@ function DesktopNavLinks({ panelTop }: { panelTop: number }) {
           return <ComboNavItem key={entry.id} />;
         }
 
+        const isActive = isActiveNavPath(pathname, entry.kind === "link" ? entry.href : undefined);
+
         return (
           <NavigationItem
             key={entry.id}
             label={entry.label}
             href={entry.kind === "link" ? entry.href : undefined}
             comingSoon={entry.kind === "soon"}
-            className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+            active={isActive}
+            className={navLinkClass(isActive)}
           />
         );
       })}
