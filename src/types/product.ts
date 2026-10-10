@@ -2,6 +2,12 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
+  /**
+   * The name for cards, grids, search results, cart and wishlist rows. Optional:
+   * blank means "use `name`", which the API also resolves server-side. Readers go
+   * through `lib/product-name.ts` rather than reading the field directly.
+   */
+  shortName?: string;
   description: string;
   longDescription?: string;
   price: number;

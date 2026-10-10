@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
 import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { getProductAvailability } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -131,7 +132,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
 
     try {
       const nextState = await toggleWishlist(product.id, itemType);
-      addToast(nextState ? `${product.name} added to wishlist` : "Removed from wishlist", "info");
+      addToast(nextState ? `${productShortName(product)} added to wishlist` : "Removed from wishlist", "info");
     } catch {
       addToast("Could not update wishlist. Please try again.", "error");
     }
@@ -146,7 +147,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
       },
       1
     );
-    addToast(`${product.name} added to cart`, "success");
+    addToast(`${productShortName(product)} added to cart`, "success");
   };
 
   const handleViewCart = (e: React.MouseEvent) => {
@@ -225,7 +226,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {!mainFailed && mainImgSrc ? (
             <Image
               src={mainImgSrc}
-              alt={product.name}
+              alt={productShortName(product)}
               fill
               referrerPolicy="no-referrer"
               loader={productCardImageLoader}
@@ -257,7 +258,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
 
             {/* Reserve two lines so the rows below line up across cards */}
             <h3 className="line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]">
-              {product.name}
+              {productShortName(product)}
             </h3>
 
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-semibold uppercase tracking-wider sm:text-xs">
@@ -376,7 +377,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
         {!mainFailed && mainImgSrc ? (
           <Image
             src={mainImgSrc}
-            alt={product.name}
+            alt={productShortName(product)}
             fill
             referrerPolicy="no-referrer"
             loader={productCardImageLoader}
@@ -430,7 +431,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               "line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]"
             )}
           >
-            {product.name}
+            {productShortName(product)}
           </h3>
 
           {/* Combo included items */}

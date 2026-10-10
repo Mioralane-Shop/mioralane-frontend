@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ProductImage } from "@/components/common/product-image";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { productShortName } from "@/lib/product-name";
 
 const TRENDING = [
   "Snail Mucin",
@@ -159,7 +160,7 @@ export function SearchModal({
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-ink/[0.04]">
                     <ProductImage
                       src={p.images[0]}
-                      alt={p.name}
+                      alt={productShortName(p)}
                       fallbackId={p.id}
                       fill
                       className="object-cover"
@@ -169,7 +170,7 @@ export function SearchModal({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">
-                      {p.name}
+                      {productShortName(p)}
                     </p>
                     <p className="text-xs text-ink/50">
                       {p.brand} Â· à§³{p.price.toLocaleString()}

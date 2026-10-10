@@ -30,6 +30,7 @@ import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict, withSavedO
 import { shippingService } from "@/services/shipping.service";
 import type { ShippingQuoteResponse } from "@/types/shipping";
 import { formatPreOrderDate, getCartPreOrderReadiness, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 
 export default function CheckoutPage() {
   return (
@@ -746,7 +747,7 @@ function CheckoutContent() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 font-medium text-neutral-700">
-                          {item.product.name}
+                          {productShortName(item.product)}
                         </p>
                         <p className="text-xs text-neutral-400">
                           Qty {item.quantity}

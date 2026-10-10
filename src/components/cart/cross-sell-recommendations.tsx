@@ -8,6 +8,7 @@ import { ProductImage } from "@/components/common/product-image";
 import { useCartRecommendations } from "@/hooks/use-products";
 import { getProductAvailability } from "@/lib/pre-order";
 import { formatPrice } from "@/lib/utils";
+import { productShortName } from "@/lib/product-name";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import type { CartItem, Product } from "@/types/product";
@@ -36,7 +37,7 @@ function RecommendationRow({ product }: { product: Product }) {
     if (isAdding || isInCart || !availability.isAvailable) return;
     setIsAdding(true);
     addItem({ ...product, itemType: "product" }, 1);
-    addToast(`${product.name} added to cart`, "success");
+    addToast(`${productShortName(product)} added to cart`, "success");
     window.setTimeout(() => setIsAdding(false), 300);
   }
 
@@ -48,7 +49,7 @@ function RecommendationRow({ product }: { product: Product }) {
       >
         <ProductImage
           src={product.images?.[0]}
-          alt={product.name}
+          alt={productShortName(product)}
           fallbackId={product.id}
           fill
           className="object-cover"
@@ -60,7 +61,7 @@ function RecommendationRow({ product }: { product: Product }) {
       <div className="min-w-0 flex-1">
         <Link href={`/product/${product.slug}`}>
           <h4 className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
-            {product.name}
+            {productShortName(product)}
           </h4>
         </Link>
         <p className="mt-1 text-sm font-semibold text-brand-600">

@@ -15,6 +15,7 @@ import {
 import { ShoppingBag, MessageCircle } from "lucide-react";
 import { SITE_WHATSAPP } from "@/constants/site";
 import { getCartPreOrderReadiness, getPurchasableQuantityLimit, isPurchasableProduct, formatPreOrderDate } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 
 export function CartDrawer() {
   const {
@@ -39,7 +40,7 @@ export function CartDrawer() {
   const orderText = `Hello Mioralane! I'd like to place an order:\n${purchasableItems
     .map(
       (item) =>
-        `- ${item.product.name} x ${item.quantity} - ${formatPrice(
+        `- ${productShortName(item.product)} x ${item.quantity} - ${formatPrice(
           item.product.price * item.quantity,
         )}`,
     )
