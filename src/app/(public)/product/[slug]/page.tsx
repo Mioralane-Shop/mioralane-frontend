@@ -37,6 +37,7 @@ import {
   isPreOrderProduct,
 } from "@/lib/pre-order";
 import { firstRenderableImageSrc, isRenderableImageSrc } from "@/lib/safe-image-src";
+import { productFullName } from "@/lib/product-name";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
@@ -226,7 +227,7 @@ function RelatedThumb({ product }: { product: Product }) {
   return (
     <Image
       src={src}
-      alt={product.name}
+      alt={productFullName(product)}
       fill
       className="object-cover"
       sizes="(max-width: 1024px) 50vw, 25vw"
@@ -325,7 +326,7 @@ export default function ProductPage() {
       },
       quantityToAdd,
     );
-    addToast(`${product.name} added to cart`);
+    addToast(`${productFullName(product)} added to cart`);
     setQuantity(1);
   };
 
@@ -344,7 +345,7 @@ export default function ProductPage() {
         product.category === "combo" ? "combo" : "product",
       );
       addToast(
-        nextState ? `${product.name} added to wishlist` : "Removed from wishlist",
+        nextState ? `${productFullName(product)} added to wishlist` : "Removed from wishlist",
         "info",
       );
     } catch {
@@ -482,7 +483,7 @@ export default function ProductPage() {
           </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="line-clamp-1 normal-case tracking-normal text-ink/60">
-            {product.name}
+            {productFullName(product)}
           </span>
         </nav>
 
@@ -505,7 +506,7 @@ export default function ProductPage() {
                     >
                       <Image
                         src={image}
-                        alt={`${product.name} thumbnail ${actualIndex + 1}`}
+                        alt={`${productFullName(product)} thumbnail ${actualIndex + 1}`}
                         fill
                         className="object-contain p-2.5"
                         sizes="72px"
@@ -588,7 +589,7 @@ export default function ProductPage() {
                 {selectedImageSrc ? (
                   <Image
                     src={selectedImageSrc}
-                    alt={product.name}
+                    alt={productFullName(product)}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                     sizes="(max-width: 1024px) 100vw, 48vw"
@@ -656,7 +657,7 @@ export default function ProductPage() {
                       <>
                         <Image
                           src={image}
-                          alt={`${product.name} image ${index + 1}`}
+                          alt={`${productFullName(product)} image ${index + 1}`}
                           fill
                           className="object-cover"
                           sizes="100vw"
@@ -719,19 +720,38 @@ export default function ProductPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
                 {SITE_NAME}
               </p>
-              <h1 className="max-w-[14ch] break-words text-[2rem] font-serif font-medium leading-[1.05] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
-                {product.name}
+              {/*
+                `max-w-2xl`, not the `max-w-[12ch]` / `sm:max-w-[12ch]` this used to
+                carry. Twelve CHARACTERS is barely wider than "Skin1004", so a normal
+                product name broke into five or six lines and shoved the price and the
+                buy button below the fold. The 3.6rem size made it worse, but the width
+                cap was the cause.
+
+                At `text-4xl` the info column (about 540px, from the grid at 490) fits
+                roughly thirty characters per line, so a name of this length lands on
+                two or three lines. `leading-tight` rather than the old `leading-[0.98]`:
+                at 0.98 the lines nearly collide once the size drops.
+              */}
+              <h1 className="max-w-2xl break-words text-2xl font-serif font-medium leading-tight text-ink sm:text-3xl lg:text-4xl">
+                {productFullName(product)}
               </h1>
             </div>
 
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
+                {/*
+                  The price steps down with the title rather than staying at a fixed
+                  2rem. At 32px it was larger than the reduced title on mobile, which
+                  would have made the price the loudest thing on the page — the
+                  opposite of the title leading. Now 20/24 against the title's
+                  24/30/36, so it stays the most prominent text at every width.
+                */}
                 {compareAtPrice && compareAtPrice > displayPrice && (
-                  <span className="text-xl text-ink/35 line-through">
+                  <span className="text-base text-ink/35 line-through sm:text-lg">
                     {formatPrice(compareAtPrice)}
                   </span>
                 )}
-                <span className="text-[2rem] font-semibold tracking-tight text-ink">
+                <span className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
                   {formatPrice(displayPrice)}
                 </span>
                 {discountPercent > 0 && (
@@ -1015,7 +1035,7 @@ export default function ProductPage() {
             )}
 
             {activeTab === "reviews" && (
-              <ProductReviews productId={product.id} productName={product.name} />
+              <ProductReviews productId={product.id} productName={productFullName(product)} />
             )}
           </div>
         </div>
@@ -1085,7 +1105,7 @@ export default function ProductPage() {
             {selectedImageSrc ? (
               <Image
                 src={selectedImageSrc}
-                alt={product.name}
+                alt={productFullName(product)}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 48rem"
