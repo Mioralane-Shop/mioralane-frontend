@@ -10,10 +10,10 @@ import type { Brand } from "@/types/brand";
  * duplicate — "Anua" under an Anua mark — on a surface whose whole job is to
  * show the artwork.
  *
- * The name is still rendered as the fallback rather than dropped, because only
- * six of the 33 brands have a logo: a tile that rendered nothing for the other
- * 27 would leave two-thirds of the grid blank. A text tile and a logo tile are
- * the same height and the same shape, so the grid keeps its rhythm either way.
+ * The name is still rendered as the fallback rather than dropped: `logoUrl` is
+ * optional, so a brand created without artwork would render a blank tile
+ * instead. A text tile and a logo tile are the same height and the same shape,
+ * so the grid keeps its rhythm either way.
  *
  * `alt` carries the name for that reason. It used to be `alt=""`, on the
  * reasoning that the visible name beside it made the image decorative — with the
