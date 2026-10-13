@@ -7,7 +7,7 @@ import { CATALOG_2026_PRODUCTS } from "./catalog-2026.ts";
 export const SITE_NAME = "Mioralane";
 export const SITE_DESCRIPTION =
   "Curated Korean skincare and routine bundles for everyday care. COSRX, Beauty of Joseon, ANUA, Purito, and more.";
-export const SITE_URL = "https://mioralane.com";
+export const SITE_URL = "https://www.mioralane.com";
 
 // WhatsApp order number (international format, digits only — replace with the real number)
 export const SITE_WHATSAPP = "8801700000000";
