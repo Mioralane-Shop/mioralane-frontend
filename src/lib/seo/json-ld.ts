@@ -147,6 +147,93 @@ export function generateBreadcrumbJsonLd(items: readonly BreadcrumbItem[]): Json
 }
 
 /**
+ * `Article` input. Deliberately narrow — the blog constants are the only caller.
+ */
+export interface ArticleInput {
+  slug: string;
+  title: string;
+  description?: string;
+  /** Site-relative or absolute. */
+  image?: string;
+  /** A human-readable date, as the blog constants store it (`March 12, 2026`). */
+  date?: string;
+}
+
+/**
+ * An ISO-8601 timestamp, or `undefined` when the input cannot be parsed.
+ *
+ * `new Date("garbage").toISOString()` THROWS, so a caller must never pass an
+ * unvalidated value straight through.
+ */
+function isoDate(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+}
+
+/**
+ * The publishing Organization, INLINED rather than referenced by `@id` alone.
+ *
+ * The full `Organization` node lives on the homepage. A bare
+ * `{"@id": "…/#organization"}` on a blog post would be a dangling reference —
+ * Google resolves `@id` within the document, and this document does not contain
+ * that node. The `@id` is still set, so the node is identifiable and merges if the
+ * homepage graph is ever inlined here too.
+ *
+ * `logo` is not decoration: Google's Article guidance requires `publisher.logo`, and
+ * an Article without it can be dropped from rich results rather than degraded.
+ */
+function publisherNode(): JsonLdNode {
+  return {
+    "@type": "Organization",
+    "@id": `${SITE_ORIGIN}/#organization`,
+    name: SITE_NAME,
+    url: SITE_ORIGIN,
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl("/logo/logo_icon.svg"),
+    },
+  };
+}
+
+/**
+ * `BlogPosting` node for a blog post page.
+ *
+ * `dateModified` mirrors `datePublished` on purpose: the blog constants carry no
+ * `updatedAt`, and inventing a modification date is worse than repeating the one
+ * date that is actually known. An unparsable `date` is OMITTED rather than guessed.
+ */
+export function generateArticleJsonLd(input: ArticleInput): JsonLdNode {
+  const url = absoluteUrl(`/blog/${input.slug}`);
+  const published = isoDate(input.date);
+  const image = input.image?.trim() ? absoluteUrl(input.image) : undefined;
+
+  const node: JsonLdNode = {
+    "@context": SCHEMA,
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    headline: input.title,
+    description: input.description?.trim() || undefined,
+    image: image ? [image] : undefined,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    url,
+    inLanguage: "en",
+    author: publisherNode(),
+    publisher: publisherNode(),
+  };
+
+  if (published) {
+    node.datePublished = published;
+    node.dateModified = published;
+  }
+
+  return node;
+}
+
+/**
  * `Organization` node — the site-wide identity Google uses for the knowledge
  * panel. WhatsApp is a messaging link, not a profile, so it is excluded from
  * `sameAs`.

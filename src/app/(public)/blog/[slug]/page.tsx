@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getBlogPost } from "@/constants/blog";
 import { JsonLd } from "@/components/seo/json-ld";
-import { generateBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { generateArticleJsonLd, generateBreadcrumbJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 interface Props {
@@ -41,6 +41,15 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
+      <JsonLd
+        data={generateArticleJsonLd({
+          slug: post.slug,
+          title: post.title,
+          description: post.excerpt,
+          image: post.image,
+          date: post.date,
+        })}
+      />
       <JsonLd
         data={generateBreadcrumbJsonLd([
           { name: "Home", path: "/" },
