@@ -22,7 +22,7 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+    <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {brands.map((brand) => (
         <li key={brand.id}>
           <BrandCard brand={brand} />

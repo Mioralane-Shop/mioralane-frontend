@@ -167,5 +167,5 @@ export const PRIMARY_NAV: PrimaryNavEntry[] = [
     },
     { id: "brands", kind: "brands", label: "Brands", href: "/shop" },
     { id: "blog", kind: "link", label: "Blog", href: "/blog" },
-    { id: "sales", kind: "soon", label: "Sales" },
+    // { id: "sales", kind: "soon", label: "Sales" },
 ];

@@ -28,6 +28,15 @@ export const PRODUCT_SIDEBAR_CLASSES = "hidden w-64 shrink-0 lg:block";
 /** The centred content column every public page aligns to. */
 export const PLP_CONTENT_COLUMN_CLASSES = "mx-auto w-full max-w-[1200px]";
 
-/** The wider canvas the filter sidebar sits in, outside that column. */
+/**
+ * The wider canvas the filter sidebar sits in, outside that column.
+ *
+ * Horizontal gutters are NOT here: the banner is rendered inside the standard
+ * page box (`PAGE_BOX_CLASSES`) so it is exactly as wide as the hero on every
+ * other page, while the sidebar + grid keep their own gutter below it.
+ */
 export const PLP_FRAME_CLASSES =
-  "mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-10 lg:px-8";
+  "mx-auto w-full max-w-[1600px] py-6 sm:py-10";
+
+/** Horizontal gutter shared by the sidebar and the content column. */
+export const PLP_GUTTER_CLASSES = "px-4 sm:px-6 lg:px-8";

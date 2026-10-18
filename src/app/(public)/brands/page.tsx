@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { PageHero } from "@/components/common/page-hero";
 import { BrandGrid } from "@/components/brands/brand-grid";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PAGE_BOX_CLASSES } from "@/lib/page-layout";
 import type { Brand } from "@/types/brand";
 
 /**
@@ -120,19 +122,12 @@ export default async function BrandsPage() {
   const brands = await getBrands();
 
   return (
-    <div className="mx-auto max-w-[1200px] px-6 py-12">
-      <header className="max-w-3xl">
-        <span className="text-xs font-bold uppercase tracking-widest text-accent">
-          Brands
-        </span>
-        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
-          Every brand we carry
-        </h1>
-        <p className="mt-4 leading-relaxed text-ink/60">
-          Mioralane stocks authentic Korean skincare from the houses you know and
-          the ones worth knowing. Pick a brand to see everything we carry from it.
-        </p>
-      </header>
+    <div className={`${PAGE_BOX_CLASSES} py-12`}>
+      <PageHero
+        watermarkText="Brands"
+        headingText="Every brand we carry"
+        subtitleText="Mioralane stocks authentic Korean skincare from the houses you know and the ones worth knowing. Pick a brand to see everything we carry from it."
+      />
 
       <div className="mt-10">
         <BrandGrid brands={brands} />

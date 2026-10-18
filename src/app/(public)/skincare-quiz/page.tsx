@@ -56,7 +56,7 @@ export default function SkincareQuizPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
       <span className="text-xs font-bold uppercase tracking-widest text-accent">
-        Skincare Quiz
+        Which skincare is right for you?
       </span>
       <h1 className="mt-3 text-3xl font-serif font-medium text-ink">
         Find your Korean skincare match

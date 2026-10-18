@@ -23,6 +23,7 @@
 import type { Product } from "@/types/product";
 import { CATALOG_2026_PRODUCTS } from "../../constants/catalog-2026.ts";
 import { DUMMY_PRODUCTS } from "../../constants/site.ts";
+import { BLOG_POSTS } from "../../constants/blog.ts";
 
 /** Abort a metadata fetch after this long; a page render must never hang. */
 const FETCH_TIMEOUT_MS = 4000;
@@ -140,6 +141,40 @@ export async function getComboBySlug(slug: string): Promise<Product | null> {
 export interface SeoCatalog {
   products: Product[];
   combos: Product[];
+}
+
+interface SeoBlogPost {
+  slug: string;
+  createdAt?: string;
+}
+
+function isBlogSummary(value: unknown): value is { slug: string; publishedAt?: string; createdAt?: string } {
+    const candidate = value as { slug?: unknown } | null | undefined;
+    return !!candidate && typeof candidate.slug === "string" && candidate.slug.length > 0;
+}
+
+/**
+ * The blog slugs for the sitemap.
+ *
+ * Live API when it is reachable; the bundled constants only for the offline CI
+ * path — `verify-seo` clears `NEXT_PUBLIC_API_URL` and asserts the blog rows are
+ * present. The published blog *pages* never use this fallback.
+ */
+export async function getSeoBlogPosts(): Promise<SeoBlogPost[]> {
+    const payload = await fetchJson("/blog");
+    const remote = (payload as { posts?: unknown } | null)?.posts;
+
+    if (Array.isArray(remote)) {
+        const posts = remote
+            .filter(isBlogSummary)
+            .map((post) => ({ slug: post.slug, createdAt: post.publishedAt ?? post.createdAt }));
+
+        if (posts.length > 0) {
+            return posts;
+        }
+    }
+
+    return BLOG_POSTS.map((post) => ({ slug: post.slug, createdAt: post.date }));
 }
 
 /**

@@ -23,7 +23,7 @@ async function fetchRelatedProducts(
 }
 
 async function fetchProductsByTab(
-  tab: "bestseller" | "new" | "trending",
+  tab: "bestseller" | "new",
   limit = 8
 ): Promise<Product[]> {
   const res = await productService.getByTab(tab, limit);
@@ -67,9 +67,9 @@ export function useCartRecommendations(productIds: string[]) {
   });
 }
 
-/** Hook: fetch products by tab - bestsellers, new arrivals, or trending */
+/** Hook: fetch products by tab - bestsellers or new arrivals */
 export function useProductsByTab(
-  tab: "bestseller" | "new" | "trending",
+  tab: "bestseller" | "new",
   limit = 8
 ) {
   return useQuery({

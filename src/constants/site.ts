@@ -26,7 +26,7 @@ export const NAV_LINKS = [
   { label: "Products", href: "/shop" },
   { label: "Combo", href: "/combo" },
   { label: "Offers", comingSoon: true },
-  { label: "New Arrival", href: "/shop?sort=newest" },
+  { label: "New Arrival", href: "/shop?tab=new" },
   { label: "Best Seller", href: "/shop?bestSeller=true" },
 ] as const satisfies readonly NavLinkConfig[];
 

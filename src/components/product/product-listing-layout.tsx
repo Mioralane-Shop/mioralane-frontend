@@ -5,8 +5,10 @@ import { SlidersHorizontal, X } from "lucide-react";
 import {
   PLP_CONTENT_COLUMN_CLASSES,
   PLP_FRAME_CLASSES,
+  PLP_GUTTER_CLASSES,
   PRODUCT_SIDEBAR_CLASSES,
 } from "@/lib/product-grid";
+import { PAGE_BOX_CLASSES } from "@/lib/page-layout";
 
 /**
  * The shell every product-listing page shares: filters, toolbar, grid.
@@ -74,35 +76,37 @@ export function ProductListingLayout({
 
   return (
     <div className={PLP_FRAME_CLASSES}>
-      {banner}
+      {banner ? <div className={PAGE_BOX_CLASSES}>{banner}</div> : null}
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
-        <aside className={PRODUCT_SIDEBAR_CLASSES}>
-          <div className={SIDEBAR_STICKY_TOP}>{filters}</div>
-        </aside>
+      <div className={PLP_GUTTER_CLASSES}>
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+          <aside className={PRODUCT_SIDEBAR_CLASSES}>
+            <div className={SIDEBAR_STICKY_TOP}>{filters}</div>
+          </aside>
 
-        <div className="min-w-0 flex-1">
-          {/* The site's standard centred content box. Everything the customer reads
-              as "the listing" lives inside it, which is what keeps the cards on the
-              same centre line as the rest of the site. */}
-          <div className={PLP_CONTENT_COLUMN_CLASSES}>
-            {toolbar}
+          <div className="min-w-0 flex-1">
+            {/* The site's standard centred content box. Everything the customer reads
+                as "the listing" lives inside it, which is what keeps the cards on the
+                same centre line as the rest of the site. */}
+            <div className={PLP_CONTENT_COLUMN_CLASSES}>
+              {toolbar}
 
-            {/* Mobile is the only case with no sidebar, so it is the only case that
-                needs a way in. */}
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:hidden">
-              <button
-                type="button"
-                onClick={() => setFiltersOpen(true)}
-                className="inline-flex h-11 min-w-[132px] shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters{filterCount > 0 ? ` (${filterCount})` : ""}
-              </button>
-              {mobileToolbar}
+              {/* Mobile is the only case with no sidebar, so it is the only case that
+                  needs a way in. */}
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(true)}
+                  className="inline-flex h-11 min-w-[132px] shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filters{filterCount > 0 ? ` (${filterCount})` : ""}
+                </button>
+                {mobileToolbar}
+              </div>
+
+              {children}
             </div>
-
-            {children}
           </div>
         </div>
       </div>

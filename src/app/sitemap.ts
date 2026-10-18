@@ -10,20 +10,20 @@
  * module directly under Node's type stripping.
  */
 import type { MetadataRoute } from "next";
-import { BLOG_POSTS } from "../constants/blog.ts";
 import { CATEGORIES } from "../constants/site.ts";
-import { getSeoCatalog } from "../lib/seo/data.ts";
+import { getSeoBlogPosts, getSeoCatalog } from "../lib/seo/data.ts";
 import { buildSitemapEntries } from "../lib/seo/sitemap.ts";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { products, combos } = await getSeoCatalog();
+  const posts = await getSeoBlogPosts();
 
   return buildSitemapEntries({
     products,
     combos,
-    posts: BLOG_POSTS,
+    posts,
     categories: CATEGORIES,
   });
 }

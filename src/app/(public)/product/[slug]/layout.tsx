@@ -3,6 +3,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { getProductBySlug } from "@/lib/seo/data";
 import { generateBreadcrumbJsonLd, generateProductJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { decodePathSegment } from "@/lib/utils";
 
 /**
  * SEO for `/product/[slug]`.
@@ -31,14 +32,14 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = decodePathSegment((await params).slug);
   const product = await getProductBySlug(slug);
 
   if (!product) {
     return buildPageMetadata({
       title: "Product not found",
       description: "We could not find that product on Mioralane.",
-      path: `/product/${slug}`,
+      path: `/product/${encodeURIComponent(slug)}`,
       noIndex: true,
     });
   }
@@ -56,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductLayout({ params, children }: Props) {
-  const { slug } = await params;
+  const slug = decodePathSegment((await params).slug);
   const product = await getProductBySlug(slug);
 
   return (

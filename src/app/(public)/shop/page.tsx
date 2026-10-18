@@ -9,6 +9,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { PageHero } from "@/components/common/page-hero";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductListingLayout } from "@/components/product/product-listing-layout";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +46,24 @@ const PRICE_RANGES = [
   { label: "à§³3,500+", min: 3500, max: 99999 },
 ] as const;
 
+/**
+ * The flag-backed listings the homepage cards link to. The `tab` value is passed
+ * through to the API, which applies the matching product flag as a hard filter —
+ * so an empty result stays empty instead of falling back to the whole catalogue.
+ */
+const LISTING_TABS = {
+  new: {
+    title: "New Arrivals",
+    description: "Fresh Korean skincare drops",
+  },
+  popular: {
+    title: "Popular Picks",
+    description: "Customer-favorite skincare essentials",
+  },
+} as const;
+
+type ListingTabKey = keyof typeof LISTING_TABS;
+
 type PriceRange = (typeof PRICE_RANGES)[number];
 
 function paramOrNull(value: string | null): string | null {
@@ -57,6 +76,10 @@ function normalizeSort(value: string | null): string {
   if (!value) return "newest";
   if (value === "popularity") return "popular";
   return value;
+}
+
+function readListingTab(value: string | null): ListingTabKey | null {
+  return value === "new" || value === "popular" ? value : null;
 }
 
 function buildApiParams(params: URLSearchParams): Record<string, string> {
@@ -75,6 +98,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   const featured = paramOrNull(params.get("featured"));
   const bestSeller = paramOrNull(params.get("bestSeller"));
   const inStock = paramOrNull(params.get("inStock"));
+  const tab = readListingTab(params.get("tab"));
 
   if (brand) api.brand = brand;
   if (cat) api.category = cat;
@@ -90,6 +114,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   if (featured) api.featured = featured;
   if (bestSeller) api.bestSeller = bestSeller;
   if (inStock) api.inStock = inStock;
+  if (tab) api.tab = tab;
   api.limit = "12";
 
   return api;
@@ -392,6 +417,8 @@ function ShopContent() {
   const searchQuery = paramOrNull(searchParams.get("search")) || "";
   const activeMinPrice = searchParams.get("minPrice") || "";
   const activeMaxPrice = searchParams.get("maxPrice") || "";
+  const activeListingTab = readListingTab(searchParams.get("tab"));
+  const listingTab = activeListingTab ? LISTING_TABS[activeListingTab] : null;
 
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -644,7 +671,7 @@ function ShopContent() {
   const searchLabel = searchQuery.trim();
   const pageTitle = searchLabel
     ? `Search results for "${searchLabel}"`
-    : "Shop All Products";
+    : listingTab?.title ?? "Shop All Products";
   const isSearchPage = Boolean(searchLabel);
 
   const filterPanelProps: FilterPanelProps = {
@@ -663,28 +690,16 @@ function ShopContent() {
   return (
     <ProductListingLayout
       banner={
-        <div className="relative mb-8 overflow-hidden rounded-3xl bg-surface py-12 md:py-16">
-          <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-warm" />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="font-serif text-7xl font-light uppercase tracking-widest text-ink/5 sm:text-9xl md:text-[180px]">
-              Shop
-            </span>
-          </div>
-          <div className="relative mx-auto max-w-3xl px-4 text-center">
-            <h1 className="font-serif text-3xl font-medium text-ink md:text-4xl">
-              {pageTitle}
-            </h1>
-            {searchLabel ? (
-              <p className="mt-3 text-lg text-ink/50">
-                Refine the search or clear it to browse everything.
-              </p>
-            ) : (
-              <p className="mt-3 text-lg text-ink/50">
-                Batch-verified Korean skincare, directly sourced from Seoul.
-              </p>
-            )}
-          </div>
-        </div>
+        <PageHero
+          watermarkText="Shop"
+          headingText={pageTitle}
+          subtitleText={
+            searchLabel
+              ? "Refine the search or clear it to browse everything."
+              : (listingTab?.description ??
+                "Batch-verified Korean skincare, directly sourced from Seoul.")
+          }
+        />
       }
       filters={<FilterPanel {...filterPanelProps} />}
       filterCount={activeFilterCount}
@@ -823,7 +838,9 @@ function ShopContent() {
                   ? "We don't currently have products matching these filters."
                   : searchLabel
                     ? `We don't currently have products matching "${searchLabel}".`
-                    : "We don't currently have products available here."}
+                    : listingTab
+                      ? `We don't currently have products in ${listingTab.title}.`
+                      : "We don't currently have products available here."}
               </p>
               {hasSearchOrFilters && (
                 <div className="flex flex-wrap items-center justify-center gap-3">

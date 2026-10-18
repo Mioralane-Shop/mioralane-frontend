@@ -8,7 +8,7 @@ const footerLinks = {
     title: "Shop",
     links: [
       { label: "All Products", href: "/shop" },
-      { label: "New Arrivals", href: "/shop?sort=newest" },
+      { label: "New Arrivals", href: "/shop?tab=new" },
       { label: "Bundles", href: "/combo" },
     ],
   },

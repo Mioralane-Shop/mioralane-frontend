@@ -85,6 +85,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
   const availableImages = renderableImages(product);
   const [mainImgSrc, setMainImgSrc] = useState<string>(availableImages[0] ?? "");
   const [mainFailed, setMainFailed] = useState<boolean>(false);
+  const [hoverFailed, setHoverFailed] = useState<boolean>(false);
 
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
@@ -157,6 +158,23 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
 
   /* Combo-specific metadata (only for combo cards) */
   const isCombo = product.category === "combo" || !!combo;
+  /**
+   * The admin-selected hover image. Filtered for the same reason as the main
+   * image: `next/image` throws for a host outside `images.remotePatterns`, and an
+   * `onError` fallback cannot catch that. A URL equal to the visible image is
+   * skipped because the crossfade would show nothing.
+   */
+  const storedHoverImage = product.hoverImage ?? "";
+  const hoverImgSrc =
+    !isCombo &&
+    !hoverFailed &&
+    isRenderableImageSrc(storedHoverImage) &&
+    storedHoverImage !== mainImgSrc
+      ? storedHoverImage
+      : "";
+  const productCardHoverLoader = isImageKitUrl(hoverImgSrc)
+    ? PRODUCT_CARD_IMAGEKIT_LOADER
+    : undefined;
   const comboSavings = isCombo
     ? combo?.savings ??
     (product.compareAtPrice && product.compareAtPrice > product.price
@@ -224,25 +242,41 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           </button>
 
           {!mainFailed && mainImgSrc ? (
-            <Image
-              src={mainImgSrc}
-              alt={productShortName(product)}
-              fill
-              referrerPolicy="no-referrer"
-              loader={productCardImageLoader}
-              sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 320px"
-              className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-              loading="lazy"
-              onError={() => {
-                const idx = availableImages.indexOf(mainImgSrc);
-                const nextImg = idx >= 0 ? availableImages[idx + 1] : undefined;
-                if (nextImg && nextImg !== mainImgSrc) {
-                  setMainImgSrc(nextImg);
-                } else {
-                  setMainFailed(true);
-                }
-              }}
-            />
+            <>
+              <Image
+                src={mainImgSrc}
+                alt={productShortName(product)}
+                fill
+                referrerPolicy="no-referrer"
+                loader={productCardImageLoader}
+                sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 320px"
+                className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+                loading="lazy"
+                onError={() => {
+                  const idx = availableImages.indexOf(mainImgSrc);
+                  const nextImg = idx >= 0 ? availableImages[idx + 1] : undefined;
+                  if (nextImg && nextImg !== mainImgSrc) {
+                    setMainImgSrc(nextImg);
+                  } else {
+                    setMainFailed(true);
+                  }
+                }}
+              />
+              {hoverImgSrc ? (
+                <Image
+                  src={hoverImgSrc}
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  referrerPolicy="no-referrer"
+                  loader={productCardHoverLoader}
+                  sizes="(max-width: 640px) calc((100vw - 24px) / 2), (max-width: 1024px) calc((100vw - 52px) / 3), 320px"
+                  className="pointer-events-none z-10 object-cover opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:scale-[1.02] group-hover:opacity-100"
+                  loading="lazy"
+                  onError={() => setHoverFailed(true)}
+                />
+              ) : null}
+            </>
           ) : (
             <div className="flex h-full w-full items-center justify-center rounded-2xl bg-ink/[0.04]">
               <Sparkles className="h-8 w-8 text-ink-muted/40" />
