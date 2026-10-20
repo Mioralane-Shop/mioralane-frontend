@@ -109,7 +109,7 @@ export default async function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased">
+      <body className="flex min-h-screen flex-col bg-surface text-ink font-sans antialiased" suppressHydrationWarning>
         <BotProtection />
         <GoogleAuthProvider>
           <QueryProvider>
