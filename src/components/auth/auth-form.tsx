@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useMemo, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { formatApiError } from "@/lib/api-errors";
 import {
   AlertCircle,
@@ -24,7 +27,10 @@ import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import { GoogleLogin } from "@react-oauth/google";
 import { isBotProtectionSatisfied } from "@/lib/turnstile";
-import { meetsPasswordPolicy, PASSWORD_POLICY_HINT } from "@/lib/password-strength";
+import {
+  PasswordRequirementsChecklist,
+  PasswordStrengthMeter,
+} from "@/components/auth/password-feedback";
 
 export type AuthMode = "login" | "register";
 
@@ -37,13 +43,100 @@ interface AuthFormProps {
   className?: string;
 }
 
-interface FieldErrors {
-  username?: string;
-  password?: string;
-  confirmPassword?: string;
+interface FormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
 const USERNAME_MIN = 3;
+const PASSWORD_MIN = 8;
+const REMEMBERED_USERNAME_KEY = "mioralane:remembered-username";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * The schema is built per mode because login keeps a presence-only password
+ * rule: existing accounts may predate the eight-character minimum. Registration
+ * uses the relaxed rule shared with the API: length only, no character classes.
+ */
+const buildAuthSchema = (isRegister: boolean) =>
+  z
+    .object({
+      username: z.string(),
+      email: z.string(),
+      password: z.string(),
+      confirmPassword: z.string(),
+    })
+    .superRefine((values, ctx) => {
+      const username = values.username.trim();
+
+      if (!username) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["username"],
+          message: "Username or email is required",
+        });
+      } else if (isRegister && username.length < USERNAME_MIN) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["username"],
+          message: `Username must be at least ${USERNAME_MIN} characters`,
+        });
+      }
+
+      if (!values.password) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["password"],
+          message: "Password is required",
+        });
+      } else if (isRegister && values.password.length < PASSWORD_MIN) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["password"],
+          message: `Password must be at least ${PASSWORD_MIN} characters`,
+        });
+      }
+
+      if (!isRegister) {
+        return;
+      }
+
+      const email = values.email.trim();
+
+      if (!email) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: "Email is required",
+        });
+      } else if (!EMAIL_PATTERN.test(email)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: "Enter a valid email address",
+        });
+      }
+
+      if (!values.confirmPassword) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["confirmPassword"],
+          message: "Please confirm your password",
+        });
+      } else if (values.confirmPassword !== values.password) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["confirmPassword"],
+          message: "Passwords do not match",
+        });
+      }
+    });
+
+const inputBase =
+  "h-11 rounded-lg border-gray-300 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-gray-900 focus-visible:ring-2 focus-visible:ring-gray-900/10 focus-visible:ring-offset-0";
+const inputError = "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500/10";
 
 export function AuthForm({
   initialMode = "login",
@@ -53,6 +146,7 @@ export function AuthForm({
 }: AuthFormProps) {
   const router = useRouter();
   const { login } = useAuthStore();
+  const isRegister = initialMode === "register";
 
   // Only allow same-origin internal paths (avoids open-redirect via ?redirect=).
   const redirectTo = useMemo(() => {
@@ -67,68 +161,70 @@ export function AuthForm({
     return "/";
   }, [redirect]);
 
-  const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const schema = useMemo(() => buildAuthSchema(isRegister), [isRegister]);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [rememberMe, setRememberMe] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(successMessage ?? null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const isRegister = mode === "register";
+  const username = watch("username");
+  const email = watch("email");
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
 
-  /** Client-side validation — empty fields + minimum lengths + match check. */
-  const validate = (): FieldErrors => {
-    const next: FieldErrors = {};
+  const usernameValid =
+    !errors.username && username.trim().length >= (isRegister ? USERNAME_MIN : 1);
+  const emailValid = !errors.email && EMAIL_PATTERN.test(email.trim());
+  const passwordValid =
+    !errors.password && password.length >= (isRegister ? PASSWORD_MIN : 1);
+  const confirmPasswordValid =
+    !errors.confirmPassword && confirmPassword.length > 0 && confirmPassword === password;
 
-    if (!username.trim()) {
-      next.username = "Username is required";
-    } else if (username.trim().length < USERNAME_MIN) {
-      next.username = `Username must be at least ${USERNAME_MIN} characters`;
+  // A reset redirect can arrive while the form is already mounted.
+  useEffect(() => {
+    if (successMessage) {
+      setSuccess(successMessage);
     }
+  }, [successMessage]);
 
-    if (!password) {
-      next.password = "Password is required";
-    } else if (isRegister && !meetsPasswordPolicy(password)) {
-      // Same policy as the backend (and as password resets). Login has no
-      // client-side length rule, so existing accounts keep signing in.
-      next.password = PASSWORD_POLICY_HINT;
-    }
+  // "Remember me" is frontend-only: it remembers the identifier, never a password.
+  useEffect(() => {
+    if (isRegister) return;
 
-    if (isRegister) {
-      if (!confirmPassword) {
-        next.confirmPassword = "Please confirm your password";
-      } else if (confirmPassword !== password) {
-        next.confirmPassword = "Passwords do not match";
+    try {
+      const remembered = window.localStorage.getItem(REMEMBERED_USERNAME_KEY);
+
+      if (remembered) {
+        setValue("username", remembered, { shouldValidate: true });
+        setRememberMe(true);
       }
+    } catch {
+      // Private mode can block storage; the checkbox still works in memory.
     }
+  }, [isRegister, setValue]);
 
-    return next;
-  };
-
-  const switchMode = (next: AuthMode) => {
-    if (next === mode) return;
-    setMode(next);
-    // Keep the username; reset sensitive/error state for a seamless switch.
-    setPassword("");
-    setConfirmPassword("");
-    setShowPassword(false);
-    setErrors({});
+  const onSubmit = async (values: FormValues) => {
     setServerError(null);
     setSuccess(null);
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const nextErrors = validate();
-    setErrors(nextErrors);
-    setServerError(null);
-    setSuccess(null);
-    if (Object.keys(nextErrors).length > 0) return;
 
     // Cloudflare Turnstile gate: the invisible challenge sets this once it has
     // solved. It fails open when no site key is configured (see lib/turnstile).
@@ -139,15 +235,32 @@ export function AuthForm({
       return;
     }
 
-    setIsLoading(true);
     try {
-      const payload = { username: username.trim(), password, email: email.trim() };
       const { user, message } = isRegister
-        ? await authService.register(payload.username, payload.email, payload.password)
-        : await authService.login(payload.username, payload.password);
+        ? await authService.register(
+            values.username.trim(),
+            values.email.trim(),
+            values.password
+          )
+        : await authService.login(values.username.trim(), values.password);
 
       if (user) {
         login(user);
+      }
+
+      if (!isRegister) {
+        try {
+          if (rememberMe) {
+            window.localStorage.setItem(
+              REMEMBERED_USERNAME_KEY,
+              values.username.trim()
+            );
+          } else {
+            window.localStorage.removeItem(REMEMBERED_USERNAME_KEY);
+          }
+        } catch {
+          // Storage is best-effort; authentication has already succeeded.
+        }
       }
 
       setSuccess(
@@ -157,17 +270,11 @@ export function AuthForm({
       // Give the user a moment to register the success state before redirecting.
       window.setTimeout(() => router.push(redirectTo), 900);
     } catch (error) {
-      // The bespoke ERR_NETWORK copy is kept: `error.message` for a dropped
-      // connection is "Network Error", which is less helpful than this sentence.
-      // Everything else goes through the shared formatter so a Zod rejection shows
-      // the failing field instead of the bare "Validation failed".
       setServerError(
         (error as { code?: string } | undefined)?.code === "ERR_NETWORK"
           ? "Unable to reach the server. Please check your connection and try again."
           : formatApiError(error, "Something went wrong. Please try again.")
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -175,7 +282,7 @@ export function AuthForm({
   const handleGoogleSuccess = async (response: { credential?: string }) => {
     if (!response.credential) return;
 
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     setServerError(null);
     setSuccess(null);
 
@@ -191,37 +298,38 @@ export function AuthForm({
       setSuccess(message || "Signed in with Google successfully!");
       window.setTimeout(() => router.push(redirectTo), 900);
     } catch (error) {
-      setServerError(formatApiError(error, "Google sign-in failed. Please try again."));
+      setServerError(
+        formatApiError(error, "Google sign-in failed. Please try again.")
+      );
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
+  const disabled = isSubmitting || isGoogleLoading;
+
   return (
-    <div
-      className={cn(
-        "w-full max-w-[440px]",
-        className
-      )}
-    >
-      <section className="rounded-xl border border-border bg-white/90 px-4 py-7 shadow-lg shadow-brand-100/30 backdrop-blur sm:px-10 sm:py-10">
+    <div className={cn("w-full max-w-[440px]", className)}>
+      <section className="rounded-2xl border border-gray-200 bg-white px-6 py-8 shadow-sm sm:px-8 sm:py-10">
         <Link
           href="/"
-          className="mb-6 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-brand-500"
+          className="mb-6 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to shop
         </Link>
 
-        <div className="mb-8">
-          <BrandLogo size="md" priority className="mb-6" />
-          <h1 className="font-serif text-[26px] text-ink">
-            {isRegister ? "Create your account" : "Welcome back"}
+        <div className="mb-8 text-center">
+          <div className="mb-6 flex justify-center">
+            <BrandLogo size="lg" priority />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            {isRegister ? "Create your account" : "Log in to your account"}
           </h1>
-          <p className="mt-2 text-sm leading-6 text-ink-soft">
+          <p className="mt-2 text-sm text-gray-500">
             {isRegister
               ? "Join the Glow Club and start your K-beauty ritual."
-              : "Sign in to continue your skincare journey."}
+              : "Welcome back. Enter your details to continue."}
           </p>
         </div>
 
@@ -251,41 +359,42 @@ export function AuthForm({
 
         <form
           id="panel-auth"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="space-y-4"
+          className="space-y-5"
         >
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-[13px] text-ink">
+            <Label htmlFor="username" className="text-sm font-medium text-gray-700">
               Username
             </Label>
             <div className="relative">
-              <UserIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <UserIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 id="username"
-                name="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. glowqueen"
+                placeholder={isRegister ? "Choose a username" : "Username or email"}
                 autoComplete="username"
-                disabled={isLoading}
+                disabled={disabled}
                 aria-invalid={Boolean(errors.username)}
                 aria-describedby={errors.username ? "username-error" : undefined}
-                className={cn(
-                  "h-11 rounded-lg border-border bg-surface-warm pl-10 focus-visible:ring-brand-200",
-                  errors.username && "border-red-300"
-                )}
+                className={cn(inputBase, "pl-10 pr-10", errors.username && inputError)}
+                {...register("username")}
               />
+              {usernameValid && (
+                <CheckCircle2
+                  className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
+                  aria-hidden="true"
+                />
+              )}
             </div>
             {errors.username && (
               <p
                 id="username-error"
                 role="alert"
-                className="flex items-center gap-1.5 text-xs text-red-500"
+                className="flex items-center gap-1.5 text-xs text-red-600"
               >
                 <AlertCircle className="h-3.5 w-3.5" />
-                {errors.username}
+                {errors.username.message}
               </p>
             )}
           </div>
@@ -293,196 +402,233 @@ export function AuthForm({
           {/* Email (register only) */}
           {isRegister && (
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[13px] text-ink">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </Label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   id="email"
-                  name="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. you@example.com"
+                  placeholder="you@example.com"
                   autoComplete="email"
-                  disabled={isLoading}
-                  className="h-11 rounded-lg border-border bg-surface-warm pl-10 focus-visible:ring-brand-200"
+                  disabled={disabled}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  className={cn(inputBase, "pl-10 pr-10", errors.email && inputError)}
+                  {...register("email")}
                 />
+                {emailValid && (
+                  <CheckCircle2
+                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
+                    aria-hidden="true"
+                  />
+                )}
               </div>
+              {errors.email && (
+                <p
+                  id="email-error"
+                  role="alert"
+                  className="flex items-center gap-1.5 text-xs text-red-600"
+                >
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {errors.email.message}
+                </p>
+              )}
             </div>
           )}
 
           {/* Password */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-[13px] text-ink">
-                Password
-              </Label>
-              {!isRegister && (
-                <Link
-                  href="/forgot-password"
-                  className="text-[13px] font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
-                >
-                  Forgot?
-                </Link>
-              )}
-            </div>
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              Password
+            </Label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 id="password"
-                name="password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder={isRegister ? "At least 8 characters" : "Enter your password"}
                 autoComplete={isRegister ? "new-password" : "current-password"}
-                disabled={isLoading}
+                disabled={disabled}
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? "password-error" : undefined}
-                className={cn(
-                  "h-11 rounded-lg border-border bg-surface-warm pl-10 pr-11 focus-visible:ring-brand-200",
-                  errors.password && "border-red-300"
-                )}
+                className={cn(inputBase, "pl-10 pr-20", errors.password && inputError)}
+                {...register("password")}
               />
+              {passwordValid && (
+                <CheckCircle2
+                  className="pointer-events-none absolute right-11 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
+                  aria-hidden="true"
+                />
+              )}
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
+                onClick={() => setShowPassword((previous) => !previous)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 aria-pressed={showPassword}
-                disabled={isLoading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
+                disabled={disabled}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
               <p
                 id="password-error"
                 role="alert"
-                className="flex items-center gap-1.5 text-xs text-red-500"
+                className="flex items-center gap-1.5 text-xs text-red-600"
               >
                 <AlertCircle className="h-3.5 w-3.5" />
-                {errors.password}
+                {errors.password.message}
               </p>
+            )}
+            {isRegister && (
+              <>
+                <PasswordStrengthMeter password={password} />
+                <PasswordRequirementsChecklist password={password} />
+              </>
             )}
           </div>
 
           {/* Confirm password (register only) */}
           {isRegister && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-[13px] text-ink">
-                Confirm Password
+              <Label
+                htmlFor="confirmPassword"
+                className="text-sm font-medium text-gray-700"
+              >
+                Confirm password
               </Label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your password"
                   autoComplete="new-password"
-                  disabled={isLoading}
+                  disabled={disabled}
                   aria-invalid={Boolean(errors.confirmPassword)}
                   aria-describedby={
                     errors.confirmPassword ? "confirm-password-error" : undefined
                   }
                   className={cn(
-                    "h-11 rounded-lg border-border bg-surface-warm pl-10 pr-11 focus-visible:ring-brand-200",
-                    errors.confirmPassword && "border-red-300"
+                    inputBase,
+                    "pl-10 pr-20",
+                    errors.confirmPassword && inputError
                   )}
+                  {...register("confirmPassword")}
                 />
+                {confirmPasswordValid && (
+                  <CheckCircle2
+                    className="pointer-events-none absolute right-11 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
+                    aria-hidden="true"
+                  />
+                )}
                 <button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() => setShowPassword((previous) => !previous)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
-                  disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
+                  disabled={disabled}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {errors.confirmPassword && (
                 <p
                   id="confirm-password-error"
                   role="alert"
-                  className="flex items-center gap-1.5 text-xs text-red-500"
+                  className="flex items-center gap-1.5 text-xs text-red-600"
                 >
                   <AlertCircle className="h-3.5 w-3.5" />
-                  {errors.confirmPassword}
+                  {errors.confirmPassword.message}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Remember me + forgot password (login only) */}
+          {!isRegister && (
+            <div className="flex items-center justify-between gap-4">
+              <label
+                htmlFor="rememberMe"
+                className="flex cursor-pointer items-center gap-2 text-sm text-gray-600"
+              >
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 accent-gray-900"
+                />
+                Remember me
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
           )}
 
           <Button
             type="submit"
             size="lg"
-            disabled={isLoading}
-            aria-busy={isLoading}
-            className="mt-2 h-11 w-full rounded-full bg-brand-500 text-sm shadow-sm hover:bg-brand-600"
+            disabled={disabled}
+            aria-busy={isSubmitting}
+            className="mt-2 h-11 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:ring-gray-900/20 disabled:opacity-60"
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait...
               </>
             ) : isRegister ? (
-              "Create Account"
+              "Create account"
             ) : (
-              "Sign In"
+              "Log in"
             )}
           </Button>
 
           {/* Google Sign-In */}
           <div className="relative py-2">
-            <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+            <div className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
             <div className="relative flex justify-center">
-              <span className="bg-white px-2 text-[13px] text-ink-muted">
+              <span className="bg-white px-3 text-xs font-medium uppercase tracking-wide text-gray-400">
                 or continue with
               </span>
             </div>
           </div>
-          <div className="flex min-w-0 justify-center overflow-hidden">
+          <div
+            className={cn(
+              "flex w-full min-w-0 justify-center overflow-hidden rounded-lg",
+              disabled && "pointer-events-none opacity-60"
+            )}
+          >
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() =>
                 setServerError("Google sign-in failed. Please try again.")
               }
               size="large"
-              text="signin_with"
-              shape="pill"
+              text={isRegister ? "signup_with" : "signin_with"}
+              shape="rectangular"
               theme="outline"
-              width="100%"
+              width="280"
             />
           </div>
 
-          <p className="text-center text-xs leading-relaxed text-ink-muted">
-            By continuing, you agree to Mioralane&apos;s Terms of Service &
-            Privacy Policy.
-          </p>
-
-          <p className="text-center text-[13px] text-ink-soft">
+          <p className="text-center text-sm text-gray-500">
             {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => switchMode(isRegister ? "login" : "register")}
-              className="font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
+            <Link
+              href={isRegister ? "/login" : "/register"}
+              className="font-semibold text-gray-900 transition-colors hover:underline"
             >
               {isRegister ? "Sign in" : "Create one"}
-            </button>
+            </Link>
           </p>
         </form>
       </section>

@@ -4,9 +4,9 @@ import zxcvbn, { type ZXCVBNResult } from "zxcvbn";
  * Password strength + policy, shared by the register and reset-password forms.
  *
  * The strength label comes from zxcvbn (character variety, common passwords,
- * sequences and repetitions — not just class counts). The policy checklist is
- * a storefront UX policy: it is stricter than the API's eight-character
- * minimum, so it gates submission in the forms rather than mirroring server validation.
+ * sequences and repetitions — not just class counts). The policy checklist
+ * mirrors the API's eight-character minimum, so the same rule gates both the
+ * form and the server.
  */
 
 export type StrengthLevel = 0 | 1 | 2 | 3;
@@ -39,20 +39,19 @@ export interface PasswordRequirement {
   test: (password: string) => boolean;
 }
 
+/**
+ * The API's only password rule is eight characters. Keep this list in sync with
+ * `registerUserSchema.password` and `resetPasswordSchema.newPassword`.
+ */
 export const PASSWORD_REQUIREMENTS: readonly PasswordRequirement[] = [
   { id: "length", label: "At least 8 characters", test: (p) => p.length >= 8 },
-  { id: "uppercase", label: "At least one uppercase letter (A–Z)", test: (p) => /[A-Z]/.test(p) },
-  { id: "lowercase", label: "At least one lowercase letter (a–z)", test: (p) => /[a-z]/.test(p) },
-  { id: "number", label: "At least one number (0–9)", test: (p) => /\d/.test(p) },
-  { id: "special", label: "At least one special character (! @ # $ % & *)", test: (p) => /[!@#$%&*]/.test(p) },
 ];
 
 /** True when every policy requirement passes — the submit gate. */
 export const meetsPasswordPolicy = (password: string): boolean =>
   PASSWORD_REQUIREMENTS.every((requirement) => requirement.test(password));
 
-export const PASSWORD_POLICY_HINT =
-  "At least 8 characters, with an uppercase letter, a lowercase letter, a number and a special character.";
+export const PASSWORD_POLICY_HINT = "At least 8 characters.";
 
 /* ── zxcvbn (lazy-loaded once; keeps the big dictionary out of the first paint) ── */
 

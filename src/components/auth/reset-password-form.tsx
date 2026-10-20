@@ -54,7 +54,7 @@ export function ResetPasswordForm() {
       next.password = "Password is required";
     } else if (!meetsPasswordPolicy(password)) {
       next.password =
-        "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a special character";
+        "Password must be at least 8 characters";
     }
 
     if (!confirmPassword) {

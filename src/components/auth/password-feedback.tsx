@@ -51,7 +51,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
               key={segment}
               className={cn(
                 "h-1.5 flex-1 rounded-full transition-colors duration-200",
-                segment <= meta.level ? meta.barClass : "bg-border"
+                segment <= meta.level ? meta.barClass : "bg-gray-200"
               )}
             />
           ))}
@@ -60,7 +60,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
           {meta.label}
         </span>
       </div>
-      {suggestion ? <p className="text-xs text-ink-muted">{suggestion}</p> : null}
+      {suggestion ? <p className="text-xs text-gray-500">{suggestion}</p> : null}
     </div>
   );
 }
@@ -75,7 +75,7 @@ export function PasswordRequirementsChecklist({ password }: { password: string }
             key={requirement.id}
             className={cn(
               "flex items-center gap-2 text-xs transition-colors duration-200",
-              satisfied ? "text-emerald-700" : "text-ink-muted"
+              satisfied ? "text-emerald-700" : "text-gray-500"
             )}
           >
             {satisfied ? (
