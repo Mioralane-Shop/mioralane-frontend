@@ -24,6 +24,7 @@ import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import { GoogleLogin } from "@react-oauth/google";
 import { isBotProtectionSatisfied } from "@/lib/turnstile";
+import { meetsPasswordPolicy, PASSWORD_POLICY_HINT } from "@/lib/password-strength";
 
 export type AuthMode = "login" | "register";
 
@@ -31,6 +32,8 @@ interface AuthFormProps {
   initialMode?: AuthMode;
   /** Internal path to send the user to after a successful login/register. */
   redirect?: string;
+  /** Shown once, e.g. after a password reset redirects back to sign-in. */
+  successMessage?: string;
   className?: string;
 }
 
@@ -41,11 +44,11 @@ interface FieldErrors {
 }
 
 const USERNAME_MIN = 3;
-const PASSWORD_MIN = 6;
 
 export function AuthForm({
   initialMode = "login",
   redirect,
+  successMessage,
   className,
 }: AuthFormProps) {
   const router = useRouter();
@@ -72,7 +75,7 @@ export function AuthForm({
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(successMessage ?? null);
   const [isLoading, setIsLoading] = useState(false);
 
   const isRegister = mode === "register";
@@ -89,8 +92,10 @@ export function AuthForm({
 
     if (!password) {
       next.password = "Password is required";
-    } else if (password.length < PASSWORD_MIN) {
-      next.password = `Password must be at least ${PASSWORD_MIN} characters`;
+    } else if (isRegister && !meetsPasswordPolicy(password)) {
+      // Same policy as the backend (and as password resets). Login has no
+      // client-side length rule, so existing accounts keep signing in.
+      next.password = PASSWORD_POLICY_HINT;
     }
 
     if (isRegister) {
@@ -315,12 +320,12 @@ export function AuthForm({
                 Password
               </Label>
               {!isRegister && (
-                <button
-                  type="button"
+                <Link
+                  href="/forgot-password"
                   className="text-[13px] font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline"
                 >
                   Forgot?
-                </button>
+                </Link>
               )}
             </div>
             <div className="relative">
@@ -331,7 +336,7 @@ export function AuthForm({
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={isRegister ? "Min. 6 characters" : "Enter your password"}
+                placeholder={isRegister ? "At least 8 characters" : "Enter your password"}
                 autoComplete={isRegister ? "new-password" : "current-password"}
                 disabled={isLoading}
                 aria-invalid={Boolean(errors.password)}
