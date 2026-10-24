@@ -88,14 +88,14 @@ export function HeroSection() {
 
           <button
             onClick={prev}
-            className="absolute left-4 top-1/2 z-20 hidden h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-white/90 bg-white/85 text-[#2D2A26] backdrop-blur-sm transition-all hover:bg-white md:flex"
+            className="absolute left-4 top-1/2 z-20 hidden h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-white/90 bg-white/85 text-[#2D2A26] backdrop-blur-xs transition-all hover:bg-white md:flex"
             aria-label="Previous banner"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={next}
-            className="absolute right-4 top-1/2 z-20 hidden h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-white/90 bg-white/85 text-[#2D2A26] backdrop-blur-sm transition-all hover:bg-white md:flex"
+            className="absolute right-4 top-1/2 z-20 hidden h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-full border border-white/90 bg-white/85 text-[#2D2A26] backdrop-blur-xs transition-all hover:bg-white md:flex"
             aria-label="Next banner"
           >
             <ChevronRight className="h-4 w-4" />

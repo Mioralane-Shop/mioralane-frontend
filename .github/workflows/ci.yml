@@ -44,7 +44,7 @@ jobs:
       #
       # The major line rather than an exact patch, matching the backend workflow:
       # `'24'` resolves to the newest published 24.x on the runner. This app is on
-      # Next 14, which requires >= 18.17.
+      # Next 16, which requires >= 20.9.0.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -96,3 +96,12 @@ jobs:
       # README ship with the data, and nothing still imports the removed package.
       - name: Verify locations data
         run: npm run verify:locations-data
+
+      # P1.8c. The two zod validators behind checkout and saved addresses: what
+      # parses, what is rejected, and with exactly which message. `tsc` cannot cover
+      # this — a schema whose constraint was deleted still type-checks, and the
+      # custom messages are plain strings no type knows about. Added because the
+      # Zod 3 → 4 bump was verified with a throwaway probe that was then deleted,
+      # leaving the payment and shipping paths with no permanent coverage.
+      - name: Verify validators
+        run: npm run verify:validators

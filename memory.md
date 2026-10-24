@@ -3,8 +3,10 @@
 Customer-facing storefront for **Mioralane** — curated Korean skincare and routine bundles (COSRX, Beauty of Joseon, ANUA, Purito, SKIN1004, etc.), based in Bangladesh.
 
 ## Tech Stack
-- **Next.js 14.2.35** (App Router) + **React 18** + TypeScript 5
-- **Tailwind CSS 3.4** (config in `tailwind.config.ts`)
+- **Next.js 16.3.7** (App Router, Turbopack) + **React 19** + TypeScript 5
+- **Tailwind CSS 4** — CSS-first. Theme tokens live in the `@theme` block of
+  `src/app/globals.css`; there is NO `tailwind.config.ts` (deleted in P1.8d).
+  PostCSS plugin is `@tailwindcss/postcss`.
 - **TanStack React Query v5**, **axios** (interceptors in `src/lib/axios.ts`)
 - **zustand** stores (`src/store/`)
 - **react-hook-form** + **zod** validation
@@ -38,7 +40,7 @@ src/
 ## Layout & Theme
 - Root layout uses **Lora** (`next/font/google`, `--font-lora`) for serif + **Satoshi** (Fontshare, via `<link>`) for sans. `bg-surface text-ink`.
 - Header stack: `AnnouncementBar` (fixed 36px) → `Navbar` (top row `top-[36px]`, bottom nav `top-[116px]`, scrolled `top-0`); spacer `h-[80px] lg:h-[129px]`.
-- Theme tokens (tailwind.config): `brand`/`accent` pink `#D4637A`, `surface`/`ink` neutrals, `success #6B8F71`, `gold #8B7355`, `peach #E8A69A`. Custom radii (sm 8 / DEFAULT 12 / lg 20 / xl 28) and custom shadows. `twinkle` animation added for combo hero sparkle.
+- Theme tokens (`@theme` in `src/app/globals.css`): `brand`/`accent` pink `#FB6F92`, `surface`/`ink` neutrals, `success #006400`, `gold #8B7355`, `peach #FCA1B8`. Custom radii (`sm` 8 / `base` 12 / `lg` 20 / `xl` 28) and custom shadows (`sm`, `card`, `lg`). `twinkle` animation for the combo hero sparkle. The bare radius/shadow utilities are NOT usable at these values in v4 — a variable or class named exactly `rounded`/`shadow` behaves differently, see the note in `globals.css`.
 - Currency: `formatPrice` → `৳` using `en-IN` locale. Use `formatPrice` from `src/lib/utils.ts`.
 
 ## API / Services

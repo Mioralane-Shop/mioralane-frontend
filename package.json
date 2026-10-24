@@ -6,12 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint",
     "verify:csrf-client": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-csrf-client.ts",
     "verify:url-guard": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-url-guard.ts",
     "verify:headers": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-headers.ts",
     "verify:no-html-sinks": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-no-html-sinks.ts",
-    "verify:locations-data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-locations-data.ts"
+    "verify:locations-data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-locations-data.ts",
+    "verify:validators": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-validators.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
@@ -26,24 +27,25 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.28.0",
-    "next": "^14.2.35",
-    "react": "^18",
-    "react-dom": "^18",
+    "next": "^16.3.7",
+    "react": "^19",
+    "react-dom": "^19",
     "react-hook-form": "^7.84.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.25.76",
+    "zod": "^4.6.5",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.35",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.7",
     "postcss": "^8",
     "shadcn": "^4.16.1",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5"
   }
 }

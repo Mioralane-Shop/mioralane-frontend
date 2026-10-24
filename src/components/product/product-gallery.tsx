@@ -37,7 +37,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
               key={index}
               onClick={() => setSelected(index)}
               className={cn(
-                "relative aspect-square w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 bg-brand-50 transition-all",
+                "relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-brand-50 transition-all",
                 selected === index
                   ? "border-brand-400 ring-2 ring-brand-200"
                   : "border-transparent hover:border-brand-200"

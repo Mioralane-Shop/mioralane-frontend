@@ -109,7 +109,7 @@ export default function ContactPage() {
                   <input
                     id="name"
                     required
-                    className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-accent"
+                    className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                     placeholder="Your name"
                   />
                 </div>
@@ -124,7 +124,7 @@ export default function ContactPage() {
                     id="email"
                     type="email"
                     required
-                    className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-accent"
+                    className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -138,7 +138,7 @@ export default function ContactPage() {
                 </label>
                 <input
                   id="subject"
-                  className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-accent"
+                  className="w-full rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                   placeholder="How can we help?"
                 />
               </div>
@@ -153,7 +153,7 @@ export default function ContactPage() {
                   id="message"
                   required
                   rows={5}
-                  className="w-full resize-none rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-accent"
+                  className="w-full resize-none rounded-xl border border-ink/15 px-4 py-2.5 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                   placeholder="Tell us more..."
                 />
               </div>

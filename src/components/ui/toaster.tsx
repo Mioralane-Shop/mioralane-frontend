@@ -27,7 +27,7 @@ export function Toaster() {
             key={toast.id}
             className="pointer-events-auto flex w-full items-center gap-3 rounded-2xl border border-ink/5 bg-white px-4 py-3 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-300"
           >
-            <Icon className={`h-5 w-5 flex-shrink-0 ${COLORS[toast.type]}`} />
+            <Icon className={`h-5 w-5 shrink-0 ${COLORS[toast.type]}`} />
             <p className="flex-1 text-sm font-medium text-ink">
               {toast.message}
             </p>
