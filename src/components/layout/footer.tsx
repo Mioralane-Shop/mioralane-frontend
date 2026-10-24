@@ -51,7 +51,7 @@ export function Footer() {
           <div className="md:col-span-4">
             <Link
               href="/"
-              className="font-serif text-xl font-medium tracking-tight text-white transition-colors hover:text-white/80"
+              className="font-display text-xl font-medium tracking-tight text-white transition-colors hover:text-white/80"
             >
               {SITE_NAME}
             </Link>

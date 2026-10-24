@@ -23,7 +23,7 @@ export default async function BlogPage() {
 
       {posts.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-ink/10 bg-surface py-16 text-center">
-          <h2 className="text-lg font-serif font-medium text-ink">New articles are on the way</h2>
+          <h2 className="text-lg font-display font-medium text-ink">New articles are on the way</h2>
           <p className="mt-2 text-sm text-ink/50">Check back soon for skincare guides and tips.</p>
         </div>
       ) : (

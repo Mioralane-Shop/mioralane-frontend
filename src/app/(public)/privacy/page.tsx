@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
           their service to us.
         </p>
 
-        <h3 className="pt-1 font-serif text-base font-medium text-ink">
+        <h3 className="pt-1 font-display text-base font-medium text-ink">
           Cloudflare Turnstile
         </h3>
         <p>
@@ -91,7 +91,7 @@ export default function PrivacyPolicyPage() {
           </a>
         </p>
 
-        <h3 className="pt-1 font-serif text-base font-medium text-ink">
+        <h3 className="pt-1 font-display text-base font-medium text-ink">
           ImageKit
         </h3>
         <p>
@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
           images we upload on our behalf.
         </p>
 
-        <h3 className="pt-1 font-serif text-base font-medium text-ink">
+        <h3 className="pt-1 font-display text-base font-medium text-ink">
           Google Sign-In
         </h3>
         <p>

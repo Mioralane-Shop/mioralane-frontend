@@ -219,7 +219,7 @@ function BundleCard({
               <span className="truncate">{label}</span>
             </span>
 
-            <h3 className="mt-[15px] max-w-[15.25rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[17rem] sm:text-[1.65rem] lg:max-w-[19rem]">
+            <h3 className="mt-[15px] max-w-[15.25rem] font-display text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[17rem] sm:text-[1.65rem] lg:max-w-[19rem]">
               {comboName}
             </h3>
 

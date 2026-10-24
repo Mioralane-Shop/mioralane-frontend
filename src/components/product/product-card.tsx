@@ -291,7 +291,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             </div>
 
             {/* Reserve two lines so the rows below line up across cards */}
-            <h3 className="line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]">
+            <h3 className="product-card-name line-clamp-2 min-h-[2.75em] text-[15px] leading-snug text-ink sm:text-[16px]">
               {productShortName(product)}
             </h3>
 
@@ -462,7 +462,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {/* Product name */}
           <h3
             className={cn(
-              "line-clamp-2 min-h-[2.75em] text-[15px] font-semibold leading-snug text-ink sm:text-[16px]"
+              "product-card-name line-clamp-2 min-h-[2.75em] text-[15px] leading-snug text-ink sm:text-[16px]"
             )}
           >
             {productShortName(product)}

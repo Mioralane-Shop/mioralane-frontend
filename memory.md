@@ -38,7 +38,7 @@ src/
 ```
 
 ## Layout & Theme
-- Root layout uses **Lora** (`next/font/google`, `--font-lora`) for serif + **Satoshi** (Fontshare, via `<link>`) for sans. `bg-surface text-ink`.
+- Typography tokens (`@theme` in `src/app/globals.css`), all family names live here — no component hardcodes one: `font-display` = **Lora** (main face: headings, titles; self-hosted via `next/font`, `--font-lora`), `font-sans` = **Satoshi** (secondary English: body, nav, buttons, product names, prices; Fontshare hosted CSS via `<link>` in `src/app/layout.tsx`, weights 400/500/700/900, CSP-allowlisted in `src/lib/csp.ts`), `font-bangla` = **Hind Siliguri** (Bangla; `next/font`, `preload: false` because the shell is English). `h1`–`h6` are Lora 500 via an unlayered rule; Bangla runs use `lang="bn"` (or `font-bangla`), matched by the unlayered `:lang(bn)` rule. `bg-surface text-ink`.
 - Header stack: `AnnouncementBar` (fixed 36px) → `Navbar` (top row `top-[36px]`, bottom nav `top-[116px]`, scrolled `top-0`); spacer `h-[80px] lg:h-[129px]`.
 - Theme tokens (`@theme` in `src/app/globals.css`): `brand`/`accent` pink `#FB6F92`, `surface`/`ink` neutrals, `success #006400`, `gold #8B7355`, `peach #FCA1B8`. Custom radii (`sm` 8 / `base` 12 / `lg` 20 / `xl` 28) and custom shadows (`sm`, `card`, `lg`). `twinkle` animation for the combo hero sparkle. The bare radius/shadow utilities are NOT usable at these values in v4 — a variable or class named exactly `rounded`/`shadow` behaves differently, see the note in `globals.css`.
 - Currency: `formatPrice` → `৳` using `en-IN` locale. Use `formatPrice` from `src/lib/utils.ts`.

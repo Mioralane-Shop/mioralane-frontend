@@ -283,7 +283,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ink/45">
                 {itemTypeLabel}
               </p>
-              <h1 className="mt-2 max-w-xl text-4xl font-serif font-medium leading-[1.05] text-ink sm:text-5xl">
+              <h1 className="mt-2 max-w-xl text-4xl font-display font-medium leading-[1.05] text-ink sm:text-5xl">
                 {displayCombo.name}
               </h1>
               {sizeLabel ? <div className="mt-4 text-sm text-ink/55">{sizeLabel}</div> : null}

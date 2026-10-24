@@ -100,7 +100,7 @@ export default async function BlogPostPage({ params }: Props) {
         ) : null}
       </div>
 
-      <h1 className="text-3xl font-serif font-medium leading-tight text-ink md:text-4xl">
+      <h1 className="text-3xl font-display font-medium leading-tight text-ink md:text-4xl">
         {post.title}
       </h1>
       <p className="mt-4 text-lg text-ink/50">{post.excerpt}</p>
@@ -121,7 +121,7 @@ export default async function BlogPostPage({ params }: Props) {
       <div className="mt-10">{renderBlogContent(post.content)}</div>
 
       <div className="mt-12 rounded-2xl bg-surface p-8 text-center">
-        <h2 className="text-lg font-serif font-medium text-ink">
+        <h2 className="text-lg font-display font-medium text-ink">
           Loved this read?
         </h2>
         <p className="mt-2 text-sm text-ink/50">

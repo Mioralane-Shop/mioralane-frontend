@@ -110,7 +110,7 @@ export function ResetPasswordForm() {
 
         <div className="mb-8">
           <BrandLogo size="md" priority className="mb-6" />
-          <h1 className="font-serif text-[26px] text-ink">Choose a new password</h1>
+          <h1 className="font-display text-[26px] text-ink">Choose a new password</h1>
           <p className="mt-2 text-sm leading-6 text-ink-soft">
             Make it strong — you&apos;ll use it to sign in from now on.
           </p>

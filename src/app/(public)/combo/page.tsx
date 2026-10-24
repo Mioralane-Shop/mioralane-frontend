@@ -31,7 +31,7 @@ export default function ComboPage() {
                         <span className="inline-block animate-twinkle">✦</span>
                         Curated Bundles
                     </span>
-                    <h1 className="mx-auto mt-5 max-w-2xl font-serif text-3xl font-bold tracking-tight text-ink md:text-5xl">
+                    <h1 className="mx-auto mt-5 max-w-2xl font-display text-3xl font-bold tracking-tight text-ink md:text-5xl">
                         Routines &amp; Bundles
                     </h1>
                     <p className="mx-auto mt-4 max-w-xl text-base text-ink/60 md:text-lg">
@@ -58,7 +58,7 @@ export default function ComboPage() {
                 <div className="container mx-auto px-4">
                     <Reveal>
                         <div className="rounded-3xl bg-brand-50 px-6 py-12 text-center md:py-16">
-                            <h2 className="font-serif text-2xl font-bold tracking-tight text-ink md:text-4xl">
+                            <h2 className="font-display text-2xl font-bold tracking-tight text-ink md:text-4xl">
                                 Not sure where to start?
                             </h2>
                             <p className="mx-auto mt-3 max-w-md text-sm text-ink/60 md:text-base">

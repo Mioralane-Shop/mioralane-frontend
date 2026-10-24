@@ -13,7 +13,7 @@ export function PolicyLayout({
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <BrandLogo size="sm" className="mb-4" />
-      <h1 className="mt-3 text-3xl font-serif font-medium text-ink">{title}</h1>
+      <h1 className="mt-3 text-3xl font-display font-medium text-ink">{title}</h1>
       <p className="mt-3 text-ink/50">{intro}</p>
       <div className="mt-10">{children}</div>
     </div>
@@ -29,7 +29,7 @@ export function PolicySection({
 }) {
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-xl font-serif font-medium text-ink">{title}</h2>
+      <h2 className="mb-3 text-xl font-display font-medium text-ink">{title}</h2>
       <div className="space-y-3 text-ink/60 leading-relaxed">{children}</div>
     </section>
   );

@@ -67,7 +67,7 @@ export function ForgotPasswordForm() {
 
         <div className="mb-8">
           <BrandLogo size="md" priority className="mb-6" />
-          <h1 className="font-serif text-[26px] text-ink">Reset your password</h1>
+          <h1 className="font-display text-[26px] text-ink">Reset your password</h1>
           <p className="mt-2 text-sm leading-6 text-ink-soft">
             Enter the email you signed up with and we&apos;ll send you a link to
             choose a new password.

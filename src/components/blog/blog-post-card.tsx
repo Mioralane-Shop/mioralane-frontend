@@ -41,7 +41,7 @@ export function BlogPostCard({ post }: { post: BlogPostSummary }) {
               </>
             ) : null}
           </div>
-          <h2 className="text-lg font-serif font-medium text-ink transition-colors group-hover:text-accent">
+          <h2 className="text-lg font-display font-medium text-ink transition-colors group-hover:text-accent">
             {post.title}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-ink/50">

@@ -207,7 +207,7 @@ export function PromotionCampaign() {
               {activeCampaign.floatingTab.title}
             </p>
             {activeCampaign.floatingTab.subtitle ? (
-              <p className="mt-2 font-serif text-3xl text-ink">
+              <p className="mt-2 font-display text-3xl text-ink">
                 {activeCampaign.floatingTab.subtitle}
               </p>
             ) : null}
