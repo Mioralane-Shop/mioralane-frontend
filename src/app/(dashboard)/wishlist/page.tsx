@@ -272,7 +272,7 @@ export default function WishlistPage() {
               <Heart className="h-5 w-5 fill-brand-500 text-brand-500" />
             </div>
             <div>
-              <h1 className="font-serif text-2xl font-medium text-ink">
+              <h1 className="font-display text-2xl font-medium text-ink">
                 My Wishlist
               </h1>
               <p className="text-sm text-ink/50">

@@ -32,9 +32,9 @@ function textAlign(attrs: Record<string, unknown> | undefined): "left" | "center
 
 const BLOCK_STYLES = {
   paragraph: "my-5 leading-[1.8] text-ink/70",
-  h1: "mt-10 mb-4 font-serif text-3xl font-medium text-ink md:text-4xl",
-  h2: "mt-8 mb-3 font-serif text-2xl font-medium text-ink",
-  h3: "mt-6 mb-2 font-serif text-xl font-medium text-ink",
+  h1: "mt-10 mb-4 font-display text-3xl font-medium text-ink md:text-4xl",
+  h2: "mt-8 mb-3 font-display text-2xl font-medium text-ink",
+  h3: "mt-6 mb-2 font-display text-xl font-medium text-ink",
 } as const;
 
 function wrapMark(markType: string, attrs: Record<string, unknown> | undefined, children: ReactNode): ReactNode {

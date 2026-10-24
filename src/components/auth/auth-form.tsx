@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -27,10 +27,6 @@ import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import { GoogleLogin } from "@react-oauth/google";
 import { isBotProtectionSatisfied } from "@/lib/turnstile";
-import {
-  PasswordRequirementsChecklist,
-  PasswordStrengthMeter,
-} from "@/components/auth/password-feedback";
 
 export type AuthMode = "login" | "register";
 
@@ -185,19 +181,15 @@ export function AuthForm({
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(successMessage ?? null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const googleSlotRef = useRef<HTMLDivElement | null>(null);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(280);
 
   const username = watch("username");
   const email = watch("email");
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
 
   const usernameValid =
     !errors.username && username.trim().length >= (isRegister ? USERNAME_MIN : 1);
   const emailValid = !errors.email && EMAIL_PATTERN.test(email.trim());
-  const passwordValid =
-    !errors.password && password.length >= (isRegister ? PASSWORD_MIN : 1);
-  const confirmPasswordValid =
-    !errors.confirmPassword && confirmPassword.length > 0 && confirmPassword === password;
 
   // A reset redirect can arrive while the form is already mounted.
   useEffect(() => {
@@ -221,6 +213,37 @@ export function AuthForm({
       // Private mode can block storage; the checkbox still works in memory.
     }
   }, [isRegister, setValue]);
+
+  // Google renders its button in an iframe with a fixed pixel width, so it cannot
+  // be stretched with CSS. Measure the slot it sits in and render the widget at
+  // that width instead.
+  const applyGoogleSlotWidth = useCallback((node: HTMLElement) => {
+    const width = Math.round(node.getBoundingClientRect().width);
+    // Google Identity Services accepts 200–400px only.
+    setGoogleButtonWidth(Math.min(400, Math.max(200, width)));
+  }, []);
+
+  // A callback ref rather than an effect: it runs during commit, before the paint
+  // that would show the widget, so the button never renders at the wrong width.
+  // (Effect-based measurement also depends on rAF/ResizeObserver, which a hidden
+  // tab does not run.)
+  const attachGoogleSlot = useCallback(
+    (node: HTMLDivElement | null) => {
+      googleSlotRef.current = node;
+      if (node) applyGoogleSlotWidth(node);
+    },
+    [applyGoogleSlotWidth]
+  );
+
+  // Keep the measured width in step when the card is resized.
+  useEffect(() => {
+    const slot = googleSlotRef.current;
+    if (!slot) return;
+
+    const observer = new ResizeObserver(() => applyGoogleSlotWidth(slot));
+    observer.observe(slot);
+    return () => observer.disconnect();
+  }, [applyGoogleSlotWidth]);
 
   const onSubmit = async (values: FormValues) => {
     setServerError(null);
@@ -361,7 +384,7 @@ export function AuthForm({
           id="panel-auth"
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="space-y-5"
+          className="space-y-4"
         >
           {/* Username */}
           <div className="space-y-2">
@@ -448,20 +471,14 @@ export function AuthForm({
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder={isRegister ? "At least 8 characters" : "Enter your password"}
+                placeholder="At least 8 characters"
                 autoComplete={isRegister ? "new-password" : "current-password"}
                 disabled={disabled}
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? "password-error" : undefined}
-                className={cn(inputBase, "pl-10 pr-20", errors.password && inputError)}
+                className={cn(inputBase, "pl-10 pr-12", errors.password && inputError)}
                 {...register("password")}
               />
-              {passwordValid && (
-                <CheckCircle2
-                  className="pointer-events-none absolute right-11 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
-                  aria-hidden="true"
-                />
-              )}
               <button
                 type="button"
                 onClick={() => setShowPassword((previous) => !previous)}
@@ -482,12 +499,6 @@ export function AuthForm({
                 <AlertCircle className="h-3.5 w-3.5" />
                 {errors.password.message}
               </p>
-            )}
-            {isRegister && (
-              <>
-                <PasswordStrengthMeter password={password} />
-                <PasswordRequirementsChecklist password={password} />
-              </>
             )}
           </div>
 
@@ -514,17 +525,11 @@ export function AuthForm({
                   }
                   className={cn(
                     inputBase,
-                    "pl-10 pr-20",
+                    "pl-10 pr-12",
                     errors.confirmPassword && inputError
                   )}
                   {...register("confirmPassword")}
                 />
-                {confirmPasswordValid && (
-                  <CheckCircle2
-                    className="pointer-events-none absolute right-11 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600"
-                    aria-hidden="true"
-                  />
-                )}
                 <button
                   type="button"
                   onClick={() => setShowPassword((previous) => !previous)}
@@ -579,7 +584,7 @@ export function AuthForm({
             size="lg"
             disabled={disabled}
             aria-busy={isSubmitting}
-            className="mt-2 h-11 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:ring-gray-900/20 disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-full bg-brand-500 text-sm font-semibold text-white shadow-sm hover:bg-brand-600 focus-visible:ring-brand-300 disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
@@ -603,8 +608,9 @@ export function AuthForm({
             </div>
           </div>
           <div
+            ref={attachGoogleSlot}
             className={cn(
-              "flex w-full min-w-0 justify-center overflow-hidden rounded-lg",
+              "flex min-h-10 w-full min-w-0 justify-center overflow-hidden rounded-full",
               disabled && "pointer-events-none opacity-60"
             )}
           >
@@ -615,9 +621,9 @@ export function AuthForm({
               }
               size="large"
               text={isRegister ? "signup_with" : "signin_with"}
-              shape="rectangular"
+              shape="pill"
               theme="outline"
-              width="280"
+              width={googleButtonWidth}
             />
           </div>
 

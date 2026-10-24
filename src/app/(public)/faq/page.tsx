@@ -19,7 +19,7 @@ export default function FaqPage() {
       {/* One list, two consumers: the accordion below and the FAQPage graph.
           Google requires the marked-up questions to be visible on the page. */}
       <JsonLd data={generateFaqJsonLd(FAQS)} />
-      <h1 className="text-3xl font-serif font-medium text-ink">
+      <h1 className="text-3xl font-display font-medium text-ink">
         Frequently Asked Questions
       </h1>
       <p className="mt-3 text-ink/50">
@@ -31,7 +31,7 @@ export default function FaqPage() {
       </div>
 
       <div className="mt-12 rounded-2xl bg-surface p-8 text-center">
-        <h2 className="text-lg font-serif font-medium text-ink">
+        <h2 className="text-lg font-display font-medium text-ink">
           Still have questions?
         </h2>
         <p className="mt-2 text-sm text-ink/50">

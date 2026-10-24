@@ -37,13 +37,13 @@ export function PageHero({ watermarkText, headingText, subtitleText, className }
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
         <span
           aria-hidden="true"
-          className="font-serif text-7xl font-light uppercase tracking-widest text-ink/[0.025] sm:text-9xl md:text-[180px]"
+          className="font-display text-7xl font-light uppercase tracking-widest text-ink/[0.025] sm:text-9xl md:text-[180px]"
         >
           {watermarkText}
         </span>
       </div>
       <div className="relative z-10 w-full max-w-3xl">
-        <h1 className="font-serif text-[26px] font-medium leading-tight text-[#111111] [text-shadow:0_1px_2px_rgba(0,0,0,0.06)] md:text-[31px]">
+        <h1 className="font-display text-[26px] font-medium leading-tight text-[#111111] [text-shadow:0_1px_2px_rgba(0,0,0,0.06)] md:text-[31px]">
           {headingText}
         </h1>
         {subtitleText ? <p className="mt-3 text-base text-[#555555]">{subtitleText}</p> : null}

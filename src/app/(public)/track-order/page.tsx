@@ -15,7 +15,7 @@ export default function TrackOrderPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           Support
         </span>
-        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-display font-medium text-ink sm:text-4xl">
           Track Your Order
         </h1>
         <p className="mt-3 max-w-2xl text-ink/55">

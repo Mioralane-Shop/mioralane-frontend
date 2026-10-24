@@ -318,7 +318,7 @@ export default function ProductPage() {
   if (isError && isNotFound) {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-20 text-center">
-        <h1 className="text-2xl font-serif text-ink">Product Not Found</h1>
+        <h1 className="text-2xl font-display text-ink">Product Not Found</h1>
         <p className="mt-2 text-ink/50">
           The product you&apos;re looking for doesn&apos;t exist.
         </p>
@@ -679,7 +679,7 @@ export default function ProductPage() {
                 two or three lines. `leading-tight` rather than the old `leading-[0.98]`:
                 at 0.98 the lines nearly collide once the size drops.
               */}
-              <h1 className="max-w-2xl break-words text-2xl font-serif font-medium leading-tight text-ink sm:text-3xl lg:text-4xl">
+              <h1 className="max-w-2xl break-words text-2xl font-display font-medium leading-tight text-ink sm:text-3xl lg:text-4xl">
                 {productFullName(product)}
               </h1>
             </div>
@@ -1009,7 +1009,7 @@ export default function ProductPage() {
       {relatedProducts.length > 0 && (
         <section className="bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
+            <h2 className="text-3xl font-display font-medium text-ink sm:text-4xl">You May Also Like</h2>
             <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex h-full flex-col">

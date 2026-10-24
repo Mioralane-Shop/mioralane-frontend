@@ -13,7 +13,7 @@ export default function ContactPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           Contact
         </span>
-        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-display font-medium text-ink sm:text-4xl">
           We&apos;d love to hear from you
         </h1>
         <p className="mt-3 text-ink/50">
@@ -82,7 +82,7 @@ export default function ContactPage() {
           {submitted ? (
             <div className="rounded-2xl border border-ink/10 bg-surface p-10 text-center">
               <p className="text-2xl">✅</p>
-              <h2 className="mt-3 text-xl font-serif font-medium text-ink">
+              <h2 className="mt-3 text-xl font-display font-medium text-ink">
                 Message sent!
               </h2>
               <p className="mt-2 text-sm text-ink/50">

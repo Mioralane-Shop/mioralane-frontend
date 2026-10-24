@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora } from "next/font/google";
+import { Hind_Siliguri, Lora } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import { StoreHydration } from "@/components/providers/store-hydration";
@@ -16,10 +16,36 @@ import { getAnnouncement } from "@/lib/announcement";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo/metadata";
 import "./globals.css";
 
+/**
+ * Typography stack.
+ *
+ * - **Lora** is the main face — headings, page titles, section headings and other
+ *   display type. Self-hosted by `next/font`, which also emits a metric-matched
+ *   fallback face so the swap does not shift layout.
+ * - **Satoshi** is the secondary English face — body copy, navigation, buttons,
+ *   product names, prices and labels. It is served by Fontshare's hosted CSS,
+ *   linked in `<head>` below; its origin is allowlisted in `lib/csp.ts`, so do not
+ *   self-host or duplicate the files. Only the weights the UI actually uses
+ *   (400 / 500 / 700 / 900) are requested.
+ * - **Hind Siliguri** is the Bangla face. Applied through the `--font-bangla` token
+ *   and the `:lang(bn)` rule in `globals.css`, so a component can mix scripts by
+ *   marking the Bangla run with `lang="bn"` (or the `font-bangla` utility).
+ */
 const lora = Lora({
   subsets: ["latin"],
   variable: "--font-lora",
   display: "swap",
+});
+
+const hindSiliguri = Hind_Siliguri({
+  subsets: ["bengali", "latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-hind-siliguri",
+  display: "swap",
+  // The storefront shell is English; Bangla arrives only in long-form CMS copy.
+  // Preloading would make every page fetch the Bengali subsets for glyphs that are
+  // usually never rendered, so the face is fetched on first Bangla glyph instead.
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -101,9 +127,14 @@ export default async function RootLayout({
   // campaign that is actually published instead of a stand-in that then changes.
   const announcement = await getAnnouncement();
 
+  const fontVariables = `${lora.variable} ${hindSiliguri.variable}`;
+
   return (
-    <html lang="en" className={lora.variable}>
+    <html lang="en" className={fontVariables}>
       <head>
+        {/* Warm the TLS connection the stylesheet below is fetched over. Same
+            origin as `style-src` in `lib/csp.ts`, so no policy change is needed. */}
+        <link rel="preconnect" href="https://api.fontshare.com" />
         <link
           href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
           rel="stylesheet"

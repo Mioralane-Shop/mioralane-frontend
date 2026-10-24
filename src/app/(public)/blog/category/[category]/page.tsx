@@ -63,7 +63,7 @@ export default async function BlogCategoryPage({ params }: Props) {
 
       {posts.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-ink/10 bg-surface py-16 text-center">
-          <h2 className="text-lg font-serif font-medium text-ink">
+          <h2 className="text-lg font-display font-medium text-ink">
             {`No ${label.toLowerCase()} articles yet`}
           </h2>
           <p className="mt-2 text-sm text-ink/50">
