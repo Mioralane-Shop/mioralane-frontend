@@ -7,13 +7,15 @@ import {
   ChevronUp,
   Filter,
   Search,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
+import { PageHero } from "@/components/common/page-hero";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductListingLayout } from "@/components/product/product-listing-layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProducts } from "@/hooks/use-products";
 import { CATEGORIES, SORT_OPTIONS, SKIN_TYPES } from "@/constants/site";
+import { PRODUCT_GRID_CLASSES } from "@/lib/product-grid";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/product";
 
@@ -44,6 +46,24 @@ const PRICE_RANGES = [
   { label: "à§³3,500+", min: 3500, max: 99999 },
 ] as const;
 
+/**
+ * The flag-backed listings the homepage cards link to. The `tab` value is passed
+ * through to the API, which applies the matching product flag as a hard filter —
+ * so an empty result stays empty instead of falling back to the whole catalogue.
+ */
+const LISTING_TABS = {
+  new: {
+    title: "New Arrivals",
+    description: "Fresh Korean skincare drops",
+  },
+  popular: {
+    title: "Popular Picks",
+    description: "Customer-favorite skincare essentials",
+  },
+} as const;
+
+type ListingTabKey = keyof typeof LISTING_TABS;
+
 type PriceRange = (typeof PRICE_RANGES)[number];
 
 function paramOrNull(value: string | null): string | null {
@@ -58,6 +78,10 @@ function normalizeSort(value: string | null): string {
   return value;
 }
 
+function readListingTab(value: string | null): ListingTabKey | null {
+  return value === "new" || value === "popular" ? value : null;
+}
+
 function buildApiParams(params: URLSearchParams): Record<string, string> {
   const api: Record<string, string> = {};
   const brand = paramOrNull(params.get("brand"));
@@ -65,6 +89,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   const st = paramOrNull(params.get("skinType"));
   const cn = paramOrNull(params.get("concern"));
   const skinConcern = paramOrNull(params.get("skinConcern"));
+  const ingredient = paramOrNull(params.get("ingredient"));
   const s = paramOrNull(params.get("search"));
   const sort = normalizeSort(params.get("sort"));
   const minP = params.get("minPrice");
@@ -73,12 +98,14 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   const featured = paramOrNull(params.get("featured"));
   const bestSeller = paramOrNull(params.get("bestSeller"));
   const inStock = paramOrNull(params.get("inStock"));
+  const tab = readListingTab(params.get("tab"));
 
   if (brand) api.brand = brand;
   if (cat) api.category = cat;
   if (st) api.skinType = st;
   if (skinConcern) api.skinConcern = skinConcern;
   else if (cn) api.skinConcern = cn;
+  if (ingredient) api.ingredient = ingredient;
   if (s) api.search = s;
   if (sort) api.sort = sort;
   if (minP) api.minPrice = minP;
@@ -87,6 +114,7 @@ function buildApiParams(params: URLSearchParams): Record<string, string> {
   if (featured) api.featured = featured;
   if (bestSeller) api.bestSeller = bestSeller;
   if (inStock) api.inStock = inStock;
+  if (tab) api.tab = tab;
   api.limit = "12";
 
   return api;
@@ -281,12 +309,12 @@ function FilterSection({
   }, [hasActive]);
 
   return (
-    <section className="space-y-1.5">
+    <section className="space-y-1.5 lg:space-y-1">
       <button
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75"
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] bg-white/55 px-2.5 py-1.5 text-left transition-colors hover:bg-white/75 lg:min-h-9 lg:py-1"
       >
         <span className="text-[13px] font-semibold text-ink/80">
           {title}
@@ -299,7 +327,7 @@ function FilterSection({
         />
       </button>
 
-      {isOpen && <div className="space-y-1.5 px-1 pb-0.5 pt-1">{children}</div>}
+      {isOpen && <div className="space-y-1.5 px-1 pb-0.5 pt-1 lg:space-y-0.5 lg:pt-0.5">{children}</div>}
     </section>
   );
 }
@@ -318,7 +346,11 @@ function SelectionRow({ label, onSelect, selected }: SelectionRowProps) {
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "flex min-h-11 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors",
+        // 44px is the touch target the mobile drawer needs, and the desktop sidebar can
+        // be far tighter. The breakpoint is enough to tell them apart without threading
+        // a density prop: the drawer is `lg:hidden` and this panel's other home is
+        // `hidden lg:block`, so the two are never on screen together.
+        "flex min-h-11 w-full items-center gap-2.5 rounded-md px-1 text-left text-[13px] leading-none transition-colors lg:min-h-7",
         selected ? "text-ink" : "text-ink/65 hover:text-ink/85",
       )}
     >
@@ -355,7 +387,7 @@ function SortControl({ activeSort, compact = false, onChange }: SortControlProps
           value={activeSort}
           onChange={(event) => onChange(event.target.value)}
           className={cn(
-            "h-11 appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-none transition-colors focus:border-accent/40",
+            "h-11 appearance-none rounded-full border border-border bg-white pl-4 pr-10 text-sm font-medium text-ink shadow-sm outline-hidden transition-colors focus:border-accent/40",
             compact ? "w-full" : "min-w-[150px]",
           )}
         >
@@ -385,9 +417,10 @@ function ShopContent() {
   const searchQuery = paramOrNull(searchParams.get("search")) || "";
   const activeMinPrice = searchParams.get("minPrice") || "";
   const activeMaxPrice = searchParams.get("maxPrice") || "";
+  const activeListingTab = readListingTab(searchParams.get("tab"));
+  const listingTab = activeListingTab ? LISTING_TABS[activeListingTab] : null;
 
   const [searchInput, setSearchInput] = useState(searchQuery);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const pushParams = useCallback(
@@ -453,6 +486,7 @@ function ShopContent() {
         "skinType",
         "concern",
         "skinConcern",
+        "ingredient",
         "minPrice",
         "maxPrice",
         "featured",
@@ -536,6 +570,7 @@ function ShopContent() {
     const featured = paramOrNull(searchParams.get("featured"));
     const bestSeller = paramOrNull(searchParams.get("bestSeller"));
     const inStock = paramOrNull(searchParams.get("inStock"));
+    const ingredient = paramOrNull(searchParams.get("ingredient"));
 
     if (brand) {
       chips.push({
@@ -570,6 +605,14 @@ function ShopContent() {
         id: "concern",
         label: findLabel(CONCERNS, selectedConcern),
         remove: () => updateConcern(null),
+      });
+    }
+
+    if (ingredient) {
+      chips.push({
+        id: "ingredient",
+        label: `Ingredient: ${formatParamLabel(ingredient)}`,
+        remove: () => updateParam("ingredient", null),
       });
     }
 
@@ -628,7 +671,7 @@ function ShopContent() {
   const searchLabel = searchQuery.trim();
   const pageTitle = searchLabel
     ? `Search results for "${searchLabel}"`
-    : "Shop All Products";
+    : listingTab?.title ?? "Shop All Products";
   const isSearchPage = Boolean(searchLabel);
 
   const filterPanelProps: FilterPanelProps = {
@@ -645,31 +688,24 @@ function ShopContent() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-10">
-      <div className="relative mb-8 overflow-hidden rounded-3xl bg-surface py-12 md:py-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-warm" />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="font-serif text-7xl font-light uppercase tracking-widest text-ink/5 sm:text-9xl md:text-[180px]">
-            Shop
-          </span>
-        </div>
-        <div className="relative mx-auto max-w-3xl px-4 text-center">
-          <h1 className="font-serif text-3xl font-medium text-ink md:text-4xl">
-            {pageTitle}
-          </h1>
-          {searchLabel ? (
-            <p className="mt-3 text-lg text-ink/50">
-              Refine the search or clear it to browse everything.
-            </p>
-          ) : (
-            <p className="mt-3 text-lg text-ink/50">
-              Batch-verified Korean skincare, directly sourced from Seoul.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-6 space-y-4 lg:ml-[272px]">
+    <ProductListingLayout
+      banner={
+        <PageHero
+          watermarkText="Shop"
+          headingText={pageTitle}
+          subtitleText={
+            searchLabel
+              ? "Refine the search or clear it to browse everything."
+              : (listingTab?.description ??
+                "Batch-verified Korean skincare, directly sourced from Seoul.")
+          }
+        />
+      }
+      filters={<FilterPanel {...filterPanelProps} />}
+      filterCount={activeFilterCount}
+      resultCount={totalProducts}
+      toolbar={
+      <div className="mb-6 space-y-4">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink/35" />
           <input
@@ -682,7 +718,7 @@ function ShopContent() {
                 updateParam("search", searchInput.trim() || null);
               }
             }}
-            className="h-12 w-full rounded-full border border-border bg-white pl-12 pr-11 text-sm text-ink shadow-sm outline-none transition-colors placeholder:text-ink/35 focus:border-accent/40"
+            className="h-12 w-full rounded-full border border-border bg-white pl-12 pr-11 text-sm text-ink shadow-sm outline-hidden transition-colors placeholder:text-ink/35 focus:border-accent/40"
           />
           {searchInput && (
             <button
@@ -728,22 +764,6 @@ function ShopContent() {
           <SortControl activeSort={activeSort} onChange={(value) => updateParam("sort", value)} />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 min-[380px]:flex-nowrap lg:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="inline-flex h-11 min-w-[132px] shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters ({activeFilterCount})
-          </button>
-          <SortControl
-            activeSort={activeSort}
-            compact
-            onChange={(value) => updateParam("sort", value)}
-          />
-        </div>
-
         {activeFilterCount > 0 && (
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
             {activeFilterChips.map((chip) => (
@@ -767,15 +787,17 @@ function ShopContent() {
           </div>
         )}
       </div>
-
-      <div className="flex gap-8">
-        <aside className="hidden w-[240px] shrink-0 lg:block">
-          <FilterPanel {...filterPanelProps} />
-        </aside>
-
-        <div className="min-w-0 flex-1">
+      }
+      mobileToolbar={
+        <SortControl
+          activeSort={activeSort}
+          compact
+          onChange={(value) => updateParam("sort", value)}
+        />
+      }
+    >
           {isLoading ? (
-            <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            <div className={PRODUCT_GRID_CLASSES}>
               {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="space-y-3">
                   <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />
@@ -816,7 +838,9 @@ function ShopContent() {
                   ? "We don't currently have products matching these filters."
                   : searchLabel
                     ? `We don't currently have products matching "${searchLabel}".`
-                    : "We don't currently have products available here."}
+                    : listingTab
+                      ? `We don't currently have products in ${listingTab.title}.`
+                      : "We don't currently have products available here."}
               </p>
               {hasSearchOrFilters && (
                 <div className="flex flex-wrap items-center justify-center gap-3">
@@ -846,7 +870,7 @@ function ShopContent() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+              <div className={PRODUCT_GRID_CLASSES}>
                 {products.map((product: Product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -877,39 +901,6 @@ function ShopContent() {
               )}
             </>
           )}
-        </div>
-      </div>
-
-      {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          <div
-            className="absolute inset-0 bg-ink/30"
-            onClick={() => setMobileFiltersOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 flex w-[min(92vw,360px)] flex-col bg-surface px-5 pt-5 shadow-lg">
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(false)}
-              className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/[0.04] hover:text-ink"
-              aria-label="Close filters"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="min-h-0 flex-1 overflow-y-auto pb-5 pr-1">
-              <FilterPanel {...filterPanelProps} variant="mobile" />
-            </div>
-            <div className="sticky bottom-0 -mx-5 border-t border-border-light bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <button
-                type="button"
-                onClick={() => setMobileFiltersOpen(false)}
-                className="flex h-11 w-full items-center justify-center rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
-              >
-                Show {totalProducts} Product{totalProducts !== 1 ? "s" : ""}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showScrollTop && (
         <button
@@ -921,7 +912,7 @@ function ShopContent() {
           <ChevronUp className="h-5 w-5" />
         </button>
       )}
-    </div>
+    </ProductListingLayout>
   );
 }
 
@@ -929,8 +920,8 @@ export default function ShopPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
-          <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
+          <div className={PRODUCT_GRID_CLASSES}>
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="space-y-3">
                 <Skeleton className="aspect-[3/4] w-full rounded-2xl bg-ink/[0.04]" />

@@ -38,7 +38,7 @@ export function ProfileMenu() {
         <button
           type="button"
           aria-label="Account menu"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-500 text-sm font-semibold text-white shadow-sm ring-1 ring-brand-100 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-500 text-sm font-semibold text-white shadow-sm ring-1 ring-brand-100 transition-transform duration-200 hover:scale-105 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           {initial}
         </button>

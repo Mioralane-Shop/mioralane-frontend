@@ -1,55 +1,36 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-
-const MARQUEE_BRANDS = [
-  {
-    name: "COSRX",
-    src: "/brands/COSRX.svg",
-    width: 920,
-    height: 206,
-  },
-  {
-    name: "Beauty of Joseon",
-    src: "/brands/Beauty-of-Joseon.svg",
-    width: 352,
-    height: 23,
-  },
-  {
-    name: "ANUA",
-    src: "/brands/anua.svg",
-    width: 1790,
-    height: 466,
-  },
-  {
-    name: "Purito",
-    src: "/brands/Purito.svg",
-    width: 206,
-    height: 60,
-  },
-  {
-    name: "SKIN1004",
-    src: "/brands/skin1004.svg",
-    width: 1000,
-    height: 82,
-  },
-  {
-    name: "AXIS-Y",
-    src: "/brands/AXIS-Y.svg",
-    width: 361,
-    height: 48,
-  },
-];
+import { useMarqueeBrands } from "@/hooks/use-marquee-brands";
+import { isRenderableImageSrc } from "@/lib/safe-image-src";
 
 export function BrandsMarquee() {
-  // Repeat the brand set enough times so the loop reset stays off-screen.
-  const items = [
-    ...MARQUEE_BRANDS,
-    ...MARQUEE_BRANDS,
-    ...MARQUEE_BRANDS,
-    ...MARQUEE_BRANDS,
-  ];
+  const { brands } = useMarqueeBrands();
+
+  // Guard before the DOM: a logo URL that cannot be rendered is dropped, and if
+  // none survive, the section renders nothing at all. There is no bundled set of
+  // logos to fall back to — a half-empty band is worse than an absent one, and
+  // the API already excludes brands without a logo.
+  const logos = brands.flatMap((brand) => {
+    const src = isRenderableImageSrc(brand.logoUrl) ? brand.logoUrl.trim() : null;
+
+    return src
+      ? [{ key: brand.id, src, alt: brand.logoAlt ?? brand.name, name: brand.name }]
+      : [];
+  });
+
+  if (logos.length === 0) {
+    return null;
+  }
+
+  /*
+   * FOUR copies of the track, and the count is coupled to the animation rather
+   * than to taste: `@keyframes marquee` in `globals.css` translates to -25%, so a
+   * quarter of the track must be exactly one copy or the loop visibly jumps. It is
+   * independent of how many brands are curated — more brands make a longer track,
+   * not a different fraction.
+   */
+  const items = Array.from({ length: 4 }, () => logos).flat();
 
   return (
     <div className="relative overflow-hidden border-y border-ink/5 bg-white py-9">
@@ -59,17 +40,16 @@ export function BrandsMarquee() {
 
       {/* Marquee track */}
       <div className="flex w-max animate-marquee items-center gap-14 will-change-transform hover:[animation-play-state:paused]">
-        {items.map((brand, i) => (
+        {items.map((item, i) => (
           <Link
-            key={`${brand.name}-${i}`}
-            href={`/shop?brand=${encodeURIComponent(brand.name)}`}
+            key={`${item.key}-${i}`}
+            href={`/shop?brand=${encodeURIComponent(item.name)}`}
             className="flex shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-70"
           >
-            <Image
-              src={brand.src}
-              alt={brand.name}
-              width={brand.width}
-              height={brand.height}
+            {/* eslint-disable-next-line @next/next/no-img-element -- SVGs, which next/image serves unoptimised anyway, and the API stores no dimensions for them */}
+            <img
+              src={item.src}
+              alt={item.alt}
               className="h-[12px] w-auto object-contain md:h-[16px]"
             />
           </Link>

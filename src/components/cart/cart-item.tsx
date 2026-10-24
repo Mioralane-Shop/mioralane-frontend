@@ -7,6 +7,7 @@ import { ProductImage } from "@/components/common/product-image";
 import { useCartStore } from "@/store/cart.store";
 import { cn, formatPrice } from "@/lib/utils";
 import { formatPreOrderDate, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 import type { CartItem as CartItemType } from "@/types/product";
 
 interface CartItemProps {
@@ -44,11 +45,11 @@ export function CartItemRow({ item }: CartItemProps) {
       {canNavigate ? (
         <Link
           href={itemHref}
-          className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24"
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24"
         >
           <ProductImage
             src={product.images[0]}
-            alt={product.name}
+            alt={productShortName(product)}
             fallbackId={product.id}
             fill
             className="object-cover"
@@ -57,10 +58,10 @@ export function CartItemRow({ item }: CartItemProps) {
           />
         </Link>
       ) : (
-        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:h-24 sm:w-24">
           <ProductImage
             src={product.images[0]}
-            alt={product.name}
+            alt={productShortName(product)}
             fallbackId={product.id}
             fill
             className="object-cover"
@@ -75,12 +76,12 @@ export function CartItemRow({ item }: CartItemProps) {
           {canNavigate ? (
             <Link href={itemHref}>
               <h4 className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
-                {product.name}
+                {productShortName(product)}
               </h4>
             </Link>
           ) : (
             <h4 className="line-clamp-2 text-sm font-medium text-neutral-800">
-              {product.name}
+              {productShortName(product)}
             </h4>
           )}
           <p className="mt-0.5 text-sm font-semibold text-brand-600">

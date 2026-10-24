@@ -20,7 +20,21 @@
 type ApiErrorPayload = {
     message?: unknown;
     errors?: unknown;
+    /** Stable machine code some refusals carry (the security check's, today). */
+    code?: unknown;
 };
+
+/**
+ * The API's security-check refusals (`TURNSTILE_MISSING` / `TURNSTILE_FAILED`).
+ *
+ * Rendered as one reassuring, actionable sentence instead of the API's terse
+ * "Security check required" / "Security check failed": the visitor did nothing
+ * wrong, the widget is already fetching a fresh challenge, and the only thing
+ * left for them to do is submit again. Deliberately says "try again" rather than
+ * "retrying" — nothing retries by itself.
+ */
+const TURNSTILE_REFUSAL_CODES = new Set(["TURNSTILE_MISSING", "TURNSTILE_FAILED"]);
+const TURNSTILE_REFUSAL_MESSAGE = "Quick security check — please try again.";
 
 /** Reads `error.response.data` without assuming it is an object. */
 const readApiErrorPayload = (error: unknown): ApiErrorPayload | undefined => {
@@ -65,6 +79,10 @@ export function formatApiError(error: unknown, fallback = "Something went wrong"
     }
 
     const message = readMessage(data.message);
+
+    if (TURNSTILE_REFUSAL_CODES.has(String(data.code))) {
+        return TURNSTILE_REFUSAL_MESSAGE;
+    }
 
     // "Validation failed" is the generic envelope wrapper, so the real detail is in
     // `errors` — don't stop at the wrapper.

@@ -108,5 +108,25 @@ export const authService = {
       clearCsrfToken();
     }
   },
+
+  /** Requests a reset link. The API always answers with the generic message. */
+  forgotPassword: async (email: string) => {
+    const { data } = await api.post<{ success: boolean; message: string }>(
+      "/auth/forgot-password",
+      { email }
+    );
+
+    return data;
+  },
+
+  /** Sets a new password using the token from the reset link. */
+  resetPassword: async (token: string, newPassword: string) => {
+    const { data } = await api.post<{ success: boolean; message: string }>(
+      "/auth/reset-password",
+      { token, newPassword }
+    );
+
+    return data;
+  },
 };
 

@@ -25,7 +25,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink outline-none lg:h-auto lg:w-auto lg:gap-2 lg:p-2"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-ink outline-hidden lg:h-auto lg:w-auto lg:gap-2 lg:p-2"
           aria-label="Account menu"
         >
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-100 lg:h-8 lg:w-8">

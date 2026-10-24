@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "About Mioralane — Bangladesh's trusted destination for authentic Korean skincare.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {
@@ -17,7 +18,7 @@ export default function AboutPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-accent">
           About Us
         </span>
-        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-display font-medium text-ink sm:text-4xl">
           Bringing authentic K-beauty to Bangladesh
         </h1>
         <p className="mt-4 text-ink/60 leading-relaxed">
@@ -39,7 +40,7 @@ export default function AboutPage() {
           />
         </div>
         <div>
-          <h2 className="text-2xl font-serif font-medium text-ink">
+          <h2 className="text-2xl font-display font-medium text-ink">
             Our story
           </h2>
           <p className="mt-4 text-ink/60 leading-relaxed">
@@ -64,7 +65,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <div className="mt-20 rounded-3xl bg-surface p-10 text-center">
-        <h2 className="text-2xl font-serif font-medium text-ink">
+        <h2 className="text-2xl font-display font-medium text-ink">
           Ready to start your glow-up?
         </h2>
         <p className="mt-3 text-ink/50">

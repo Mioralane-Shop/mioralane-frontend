@@ -42,6 +42,7 @@ import {
   FONTSHARE_FONT_ORIGIN,
   FONTSHARE_STYLESHEET_ORIGIN,
   IMAGEKIT_ORIGIN,
+  TURNSTILE_ORIGIN,
   buildCsp,
   createNonce,
 } from "../src/lib/csp.ts";
@@ -56,6 +57,7 @@ const NEXT_CONFIG_FILE = join(APP_ROOT, "next.config.mjs");
 const LAYOUT_FILE = join(SRC, "app", "layout.tsx");
 const IMAGEKIT_DELIVERY_FILE = join(SRC, "lib", "imagekit-delivery.ts");
 const GOOGLE_PROVIDER_FILE = join(SRC, "providers", "google-auth-provider.tsx");
+const BOT_PROTECTION_FILE = join(SRC, "components", "providers", "bot-protection.tsx");
 const AXIOS_FILE = join(SRC, "lib", "axios.ts");
 
 const ADMIN_ROOT = join(APP_ROOT, "..", "mioralane-admin");
@@ -623,6 +625,19 @@ const main = (): void => {
     hasSource(production, "script-src", GOOGLE_IDENTITY_ORIGIN) &&
       hasSource(production, "frame-src", GOOGLE_IDENTITY_ORIGIN) &&
       hasSource(production, "connect-src", GOOGLE_IDENTITY_ORIGIN)
+  );
+
+  const botProtection = readSource(BOT_PROTECTION_FILE);
+  check(
+    "the app mounts Cloudflare Turnstile (three directives depend on it)",
+    /@marsidev\/react-turnstile/.test(botProtection),
+    "components/providers/bot-protection.tsx"
+  );
+  check(
+    "Turnstile keeps its script, frame and connect sources",
+    hasSource(production, "script-src", TURNSTILE_ORIGIN) &&
+      hasSource(production, "frame-src", TURNSTILE_ORIGIN) &&
+      hasSource(production, "connect-src", TURNSTILE_ORIGIN)
   );
   check(
     "frame-ancestors is unrelated to frame-src (we are never framed)",

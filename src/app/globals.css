@@ -1,6 +1,171 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/**
+ * P1.8d — Tailwind 3 → 4: the deleted `tailwind.config.ts`, as CSS.
+ *
+ * Tailwind 4 is CSS-first, so this `@theme` block is now the single source of
+ * truth. Every token below carries the exact value that config declared, so the
+ * generated utilities keep their v3 appearance (the bare radius utility stays
+ * 12px, `shadow-sm` stays `0 1px 3px rgba(26,26,26,0.04)`, the brand palette is
+ * untouched).
+ *
+ * Note when editing this file: v4's scanner harvests candidate class names from
+ * raw source text, not from a real parse. `src/components/product/product-reviews.tsx`
+ * has a local variable named after the bare radius utility (`const … =
+ * Math.round(rating)`), and that identifier alone makes v4 emit a dead
+ * `.25rem` radius rule that nothing references. It is harmless — no className
+ * uses it — but it is why the output contains a bare radius rule this app never
+ * asked for. Renaming that variable would remove it; it was left alone because
+ * this phase does not change application code.
+ *
+ * Three things are deliberately absent:
+ *   - `darkMode: "class"` — the config declared it, but `dark:` appears zero
+ *     times in `src/`, so a `@custom-variant dark` would have nothing to switch.
+ *   - `content` — v4 scans automatically, which is what the three v3 globs did.
+ *   - `plugins: [require(...)]` — replaced by the `@plugin` line above.
+ */
+@theme {
+  /* ── Colours ────────────────────────────────────────────────────────────── */
+
+  --color-brand-50: #fff1f4;
+  --color-brand-100: #fee4ea;
+  --color-brand-200: #fdc5d3;
+  --color-brand-300: #fca1b8;
+  --color-brand-400: #fc83a1;
+  --color-brand-500: #fb6f92;
+  --color-brand-600: #e45377;
+  --color-brand-700: #c33c5e;
+  --color-brand-800: #a12b48;
+  --color-brand-900: #811d36;
+
+  --color-secondary-50: #e6f0e6;
+  --color-secondary-100: #cfe2cf;
+  --color-secondary-200: #99c199;
+  --color-secondary-300: #599a59;
+  --color-secondary-400: #247a24;
+  --color-secondary-500: #006400;
+  --color-secondary-600: #005400;
+  --color-secondary-700: #003f00;
+  --color-secondary-800: #003000;
+  --color-secondary-900: #002400;
+
+  --color-accent: #fb6f92;
+  --color-accent-dark: #e45377;
+  --color-accent-light: #fee4ea;
+  --color-accent-pale: #fff1f4;
+
+  /* Add-to-cart CTA */
+  --color-cart: #fb6f92;
+  --color-cart-dark: #e45377;
+
+  --color-surface: #ffffff;
+  --color-surface-warm: #faf8f6;
+  --color-surface-soft: #f5f0ec;
+
+  --color-ink: #1a1a1a;
+  --color-ink-soft: #5a5550;
+  --color-ink-muted: #9a948e;
+
+  --color-border: #eae6e1;
+  --color-border-light: #f2efec;
+
+  --color-success: #006400;
+  --color-gold: #8b7355;
+  --color-peach: #fca1b8;
+
+  /* ── Typography ───────────────────────────────────────────────────────────
+     Two English faces plus the Bangla face, one token each, so no component
+     hardcodes a family name:
+
+       --font-display  Lora     — main face: page titles, section headings and
+                                  other display type.
+       --font-sans     Satoshi  — secondary English face: body copy, navigation,
+                                  buttons, product names, prices, labels.
+       --font-bangla   Hind Siliguri — any Bangla run. `:lang(bn)` below applies it
+                                  automatically; `font-bangla` exists for mixed-
+                                  language markup that cannot declare `lang`.
+
+     Lora and Hind Siliguri are self-hosted by `next/font`, which exposes them as
+     `--font-lora` / `--font-hind-siliguri` on `<html>` and includes a metric-
+     matched fallback face in each value so a slow font swaps without moving text.
+     The inline fallback inside each `var()` keeps the stack valid if the variable
+     is ever not applied. Satoshi comes from Fontshare's hosted CSS
+     (`app/layout.tsx`).
+
+     Hind Siliguri is also part of both stacks on purpose: neither Lora nor Satoshi
+     carries Bengali glyphs, so Bangla characters (and the `৳` sign) resolve to it
+     per-glyph even when the markup forgets `lang="bn"`. */
+  --font-sans: "Satoshi", "Hind Siliguri", "Noto Sans Bengali", ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-display: var(--font-lora, "Lora"), "Hind Siliguri", "Noto Sans Bengali",
+    Georgia, "Times New Roman", serif;
+  --font-bangla: var(--font-hind-siliguri, "Hind Siliguri"), "Noto Sans Bengali",
+    "Nirmala UI", ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Radius ─────────────────────────────────────────────────────────────
+     v3 overrode `sm`/`DEFAULT`/`lg`/`xl` only; `md`/`2xl`/`full` keep the
+     framework defaults, which is why they are not listed.
+
+     `base` is not a v3 name. It carries v3's `borderRadius.DEFAULT` (12px),
+     which has no v4 equivalent — v4's bare radius utility is a static legacy
+     alias that ignores `@theme` and emits `.25rem` (verified). The four sites
+     that relied on it were renamed to `rounded-base`; see the note at the top
+     of this file. */
+  --radius-sm: 8px;
+  --radius-base: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* ── Shadows ─────────────────────────────────────────────────────────────
+     `sm` and `lg` are the v3 overrides. `card` likewise carries v3's
+     `boxShadow.DEFAULT` (`0 4px 20px`), which the bare shadow utility used to
+     resolve to; the eight `hover:shadow` sites were renamed to
+     `hover:shadow-card` for the same reason as the radius above. */
+  --shadow-sm: 0 1px 3px rgba(26, 26, 26, 0.04);
+  --shadow-card: 0 4px 20px rgba(26, 26, 26, 0.06);
+  --shadow-lg: 0 12px 40px rgba(26, 26, 26, 0.1);
+
+  /* ── Animations ─────────────────────────────────────────────────────────── */
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+      opacity: 0.35;
+      transform: scale(1.25) rotate(45deg);
+    }
+  }
+}
 
 @layer base {
   :root {
@@ -30,6 +195,35 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  /* P1.8d — Tailwind 4 changed two preflight defaults this app relied on.
+     Both are restored here rather than at each call site, because they are
+     framework-level defaults, not per-component choices. Base-layer rules lose
+     to utilities, so an explicit `cursor-not-allowed` or a `placeholder:`
+     utility still wins wherever one is set.
+
+     A third v4 preflight change — the default border colour moving from
+     `gray-200` to `currentColor` — needed NO rule here. The `*` rule directly
+     above already sets `border-color: var(--color-border)` (#EAE6E1), so v4
+     emits `*{border-color:var(--color-border)}`, byte-identical in effect to
+     v3's `rgb(234 230 225)`. Adding the upgrade guide's `border-color:
+     var(--color-gray-200)` would have OVERRIDDEN this project's own colour and
+     repainted every border in the app. Verified against the generated CSS. */
+
+  /* v4 uses `cursor: default`; v3 used `pointer`. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* v4 defaults placeholders to the current text colour at 50% opacity, which
+     would shift every unstyled placeholder. `#9ca3af` is v3's `gray-400`, the
+     literal rather than `var(--color-gray-400)` because v4 emits no such
+     variable (its gray scale is oklch-based and not a drop-in match). */
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
   }
 
   body {
@@ -258,14 +452,36 @@
   animation: discount-running-border 4.8s linear infinite;
 }
 
-/* Typography */
+/* Typography — headings use the display face (Lora). Deliberately unlayered so
+   it keeps the cascade position it had before: utilities such as `leading-tight`
+   still lose to this rule, exactly as they did with the previous serif heading. */
 h1,
 h2,
 h3,
-h4 {
-  font-family: var(--font-lora), Georgia, serif;
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
   font-weight: 500;
   line-height: 1.15;
+}
+
+/* Product name inside product / combo cards. The heading rule above is unlayered,
+   so a `font-semibold` utility can never win against it; this class is the opt-in
+   for a heavier card title. Scope stays here on purpose — page and section
+   headings remain at 500. */
+.product-card-name {
+  font-weight: 600;
+}
+
+/* Bangla runs. `lang="bn"` on the element that wraps the Bangla text is the
+   supported way to mix scripts inside one component — it also helps screen
+   readers pick a Bangla voice. Bangla needs more leading than Lora's headings
+   and Satoshi's body text, and the rule is unlayered so it wins over
+   `font-sans`/`font-display` on that element. */
+:lang(bn) {
+  font-family: var(--font-bangla);
+  line-height: 1.7;
 }
 
 /* Scrollbar */

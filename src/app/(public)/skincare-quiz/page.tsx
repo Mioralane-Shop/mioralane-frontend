@@ -56,9 +56,9 @@ export default function SkincareQuizPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
       <span className="text-xs font-bold uppercase tracking-widest text-accent">
-        Skincare Quiz
+        Which skincare is right for you?
       </span>
-      <h1 className="mt-3 text-3xl font-serif font-medium text-ink">
+      <h1 className="mt-3 text-3xl font-display font-medium text-ink">
         Find your Korean skincare match
       </h1>
       <p className="mt-3 text-ink/50">
@@ -69,7 +69,7 @@ export default function SkincareQuizPage() {
       {done ? (
         <div className="mt-12 rounded-3xl border border-ink/10 bg-white p-10 text-center">
           <p className="text-3xl">✨</p>
-          <h2 className="mt-3 text-2xl font-serif font-medium text-ink">
+          <h2 className="mt-3 text-2xl font-display font-medium text-ink">
             Your results are in!
           </h2>
           <p className="mt-3 text-ink/50">
@@ -115,7 +115,7 @@ export default function SkincareQuizPage() {
             </span>
           </div>
 
-          <h2 className="text-2xl font-serif font-medium text-ink">
+          <h2 className="text-2xl font-display font-medium text-ink">
             {current.label}
           </h2>
           <div className="mt-6 grid gap-3">
