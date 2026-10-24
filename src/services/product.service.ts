@@ -53,15 +53,14 @@ export const productService = {
     return data.recommendations;
   },
 
-  /** Fetch products by a specific tab: bestsellers, new arrivals, or trending */
+  /** Fetch products by a specific tab: bestsellers or new arrivals */
   getByTab: async (
-    tab: "bestseller" | "new" | "trending",
+    tab: "bestseller" | "new",
     limit = 8
   ): Promise<PaginatedProductsResponse> => {
     const params: Record<string, string> = { limit: String(limit) };
     if (tab === "bestseller") params.tab = "bestseller";
-    else if (tab === "new") params.tab = "new";
-    else if (tab === "trending") params.tab = "trending";
+    else params.tab = "new";
     const { data } = await api.get<PaginatedProductsResponse>("/products", { params });
     return data;
   },

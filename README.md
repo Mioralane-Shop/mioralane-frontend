@@ -42,6 +42,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment
+
+Copy the template and fill in what you need:
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.example` documents every variable and where it is read. None of them is
+required for `npm run dev`: with no `.env.local` the app falls back to the API on
+`http://localhost:5000` and simply offers no Google sign-in.
+
+All of them are `NEXT_PUBLIC_*`, so Next.js inlines them at build time — a
+deployed change needs a rebuild, not a restart.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

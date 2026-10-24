@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "About Mioralane — Bangladesh's trusted destination for authentic Korean skincare.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

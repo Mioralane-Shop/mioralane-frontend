@@ -34,6 +34,12 @@ import {
   setCsrfToken,
   shouldRetryCsrf,
 } from "../src/lib/csrf.ts";
+import {
+  TURNSTILE_HEADER,
+  clearTurnstileToken,
+  getTurnstileToken,
+  setTurnstileToken,
+} from "../src/lib/turnstile.ts";
 
 const CSRF_REJECTED_BODY = { success: false, message: CSRF_REJECTED_MESSAGE };
 /** What the Origin guard answers. Must never trigger a retry. */
@@ -93,6 +99,7 @@ type Attempt = {
   method: string;
   url: string;
   csrf: string | undefined;
+  turnstile: string | undefined;
   /** Serialised request body, so an idempotency key can be checked across a retry. */
   body: string | undefined;
 };
@@ -127,6 +134,7 @@ const installAdapter = (outcomes: Outcome[]): void => {
       method: (config.method ?? "").toUpperCase(),
       url: config.url ?? "",
       csrf: headerOf(config, CSRF_HEADER),
+      turnstile: headerOf(config, TURNSTILE_HEADER),
       body: typeof config.data === "string" ? config.data : undefined,
     });
 
@@ -502,7 +510,82 @@ const main = async (): Promise<void> => {
     ),
     "the key is not sent (or is not typed on the payload)"
   );
+  /* ── K. The Turnstile token is single-use ─────────────────────────── */
+  section("K. The Turnstile token is attached once, and a spent one is replaced");
 
+  // `refreshTurnstile()` reaches for `window.turnstile.reset()`. Node has no
+  // window, so a minimal stub is installed to observe it, and removed after.
+  let resets = 0;
+
+  (globalThis as { window?: unknown }).window = {
+    turnstile: {
+      reset: () => {
+        resets += 1;
+      },
+    },
+  };
+
+  try {
+    // 1. A read never carries the token, and must not spend it either.
+    resets = 0;
+    clearTurnstileToken();
+    setTurnstileToken("token-read");
+    installAdapter([ok({ success: true })]);
+    await api.get("/auth/me");
+    check(
+      "a GET neither sends nor spends the token",
+      attempts[0]?.turnstile === undefined && getTurnstileToken() === "token-read",
+      `header=${String(attempts[0]?.turnstile)} store=${String(getTurnstileToken())}`
+    );
+    check("and a read does not spin the widget", resets === 0, String(resets));
+
+    // 2. A write sends it, and spends it in the same step. Spending on send is
+    //    what stops a redeemed token being replayed: Cloudflare redeems it the
+    //    moment Siteverify sees it, whatever the route then answers.
+    setTurnstileToken("token-write");
+    installAdapter([ok({ success: true })]);
+    await api.post("/orders", { any: "body" });
+    check(
+      "a POST sends the token",
+      attempts[0]?.turnstile === "token-write",
+      String(attempts[0]?.turnstile)
+    );
+    check(
+      "and the store is empty straight afterwards (single-use)",
+      getTurnstileToken() === null,
+      String(getTurnstileToken())
+    );
+    check("so a spent token asks the widget for a fresh challenge", resets === 1, String(resets));
+
+    // 3. The CSRF retry must re-send the SAME token: that first attempt was
+    //    refused before any route ran, so its token was never redeemed.
+    resets = 0;
+    setTurnstileToken("token-retry");
+    installAdapter([
+      forbidden(CSRF_REJECTED_BODY),
+      ME_WITH_FRESH_TOKEN,
+      ok({ success: true }),
+    ]);
+    await api.post("/orders", { any: "body" });
+
+    const orderAttempts = attempts.filter((attempt) => attempt.url === "/orders");
+
+    check(
+      "a CSRF retry carries the SAME token rather than a missing header",
+      orderAttempts.length === 2 &&
+        orderAttempts[0]?.turnstile === "token-retry" &&
+        orderAttempts[1]?.turnstile === "token-retry",
+      orderAttempts.map((attempt) => String(attempt.turnstile)).join(", ")
+    );
+    check(
+      "and the widget is refreshed exactly once — for the attempt that reached the route",
+      resets === 1,
+      String(resets)
+    );
+  } finally {
+    delete (globalThis as { window?: unknown }).window;
+    clearTurnstileToken();
+  }
   /* ── Result ────────────────────────────────────────────────────────── */
   console.log("\n=== Result ===");
 

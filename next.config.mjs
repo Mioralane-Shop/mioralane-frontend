@@ -60,10 +60,20 @@ const nextConfig = {
      * Pinning it to our endpoint id (the same value as IMAGEKIT_URL_ENDPOINT)
      * limits the optimizer to media we uploaded.
      *
-     * Consequence, accepted deliberately: an image URL stored on one of the
-     * removed hosts now renders `ProductImage`'s placeholder instead of loading.
-     * Live data comes from ImageKit, so this is expected to be empty — see the
-     * P1.6 backlog item to audit stored image URLs before the next deploy.
+     * ⚠️ Corrected: this block used to say that an image URL stored on one of the
+     * removed hosts "now renders ProductImage's placeholder". That was wrong, and
+     * believing it is why the crash below shipped. `next/image`'s default loader
+     * THROWS for a host that is not listed here
+     * ("Invalid src prop (…) on `next/image`, hostname "…" is not configured"),
+     * and a throw inside a client component removes the whole subtree — not just
+     * the thumbnail. `CartDrawer` is mounted in the root layout, so ONE stored
+     * unsplash URL in a cross-sell recommendation took out every route.
+     *
+     * The render path now gates stored image URLs before they reach `next/image`
+     * (`src/lib/safe-image-src.ts`): anything that is not site-relative and not on
+     * our endpoint shows the placeholder. `npm run verify:url-guard` asserts that
+     * module's IMAGE_REMOTE_* constants still match this list, so the two cannot
+     * drift — change them together, and never widen this list to "fix" a bad row.
      */
     remotePatterns: [
       {

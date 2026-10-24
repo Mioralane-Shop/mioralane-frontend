@@ -5,19 +5,19 @@ import { SectionHeading } from "@/components/common/section-heading";
 
 const CARDS = [
   {
-    title: "SKINCARE QUIZ",
+    title: "Confused about skincare?",
     cta: "Take the Quiz",
     href: "/skincare-quiz",
     image: "/images/ig-kbeauty.jpg",
   },
   {
-    title: "Build Your Routine",
+    title: "Find Your Routine",
     cta: "Explore Routines",
-    href: "/blog/korean-skincare-routine-humid-climate",
+    href: "/blog/category/routine",
     image: "/images/promo-routine.jpg",
   },
   {
-    title: "Why K-Beauty?",
+    title: "Why Mioralane?",
     cta: "Learn More",
     href: "/about",
     image: "/images/ig-flatlay.jpg",

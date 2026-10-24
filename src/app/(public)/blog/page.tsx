@@ -1,65 +1,39 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { BLOG_POSTS } from "@/constants/blog";
+import { BlogPostCard } from "@/components/blog/blog-post-card";
+import { PageHero } from "@/components/common/page-hero";
+import { getPublishedBlogPosts } from "@/lib/blog";
+import { PAGE_BOX_CLASSES } from "@/lib/page-layout";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "Skincare guides, tips and K-beauty insights from Mioralane.",
+  alternates: { canonical: "/blog" },
 };
 
-export default function BlogPage() {
-  return (
-    <div className="mx-auto max-w-[1200px] px-6 py-12">
-      <div className="max-w-2xl">
-        <span className="text-xs font-bold uppercase tracking-widest text-accent">
-          The Journal
-        </span>
-        <h1 className="mt-3 text-3xl font-serif font-medium text-ink sm:text-4xl">
-          Mioralane Blog
-        </h1>
-        <p className="mt-3 text-ink/50">
-          Skincare guides, tips and K-beauty insights.
-        </p>
-      </div>
+export default async function BlogPage() {
+  const posts = await getPublishedBlogPosts();
 
-      <div className="mt-12 grid gap-8 sm:grid-cols-2">
-        {BLOG_POSTS.map((post) => (
-          <article
-            key={post.slug}
-            className="group overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm transition-shadow hover:shadow-md"
-          >
-            <Link href={`/blog/${post.slug}`} className="block">
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <Image
-                  src={post.image}
-                  alt={post.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              <div className="p-6">
-                <div className="mb-3 flex items-center gap-2 text-xs text-ink/40">
-                  <span className="font-medium uppercase tracking-wider text-accent">
-                    {post.category}
-                  </span>
-                  <span>•</span>
-                  <span>{post.date}</span>
-                  <span>•</span>
-                  <span>{post.readTime}</span>
-                </div>
-                <h2 className="text-lg font-serif font-medium text-ink transition-colors group-hover:text-accent">
-                  {post.title}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink/50">
-                  {post.excerpt}
-                </p>
-              </div>
-            </Link>
-          </article>
-        ))}
-      </div>
+  return (
+    <div className={`${PAGE_BOX_CLASSES} py-12`}>
+      <PageHero
+        watermarkText="Blog"
+        headingText="The Skincare Journal"
+        subtitleText="Skincare guides, tips and K-beauty insights."
+      />
+
+      {posts.length === 0 ? (
+        <div className="mt-12 rounded-2xl border border-ink/10 bg-surface py-16 text-center">
+          <h2 className="text-lg font-serif font-medium text-ink">New articles are on the way</h2>
+          <p className="mt-2 text-sm text-ink/50">Check back soon for skincare guides and tips.</p>
+        </div>
+      ) : (
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <BlogPostCard key={post.slug} post={post} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+

@@ -8,9 +8,10 @@ import {
   isImageKitUrl,
   type ImageKitImagePreset,
 } from "@/lib/imagekit-delivery";
+import { isRenderableImageSrc } from "@/lib/safe-image-src";
 
 interface ProductImageProps {
-  src: string;
+  src: string | null | undefined;
   alt: string;
   fallbackId?: string;
   fill?: boolean;
@@ -34,8 +35,15 @@ const IMAGEKIT_LOADERS: Record<ImageKitImagePreset, ReturnType<typeof createImag
 };
 
 /**
- * next/image wrapper that shows a neutral placeholder when the source image
- * fails to load or is an unreachable placeholder URL.
+ * next/image wrapper that shows a neutral placeholder when the source is
+ * missing, cannot be rendered, or fails to load.
+ *
+ * The `isRenderableImageSrc` gate is load-bearing, not cosmetic: `next/image`'s
+ * default loader **throws** for a host that is absent from
+ * `images.remotePatterns`, and that throw is not a broken thumbnail — it removes
+ * the whole subtree. This component renders inside the globally-mounted cart
+ * drawer, so one stored URL on a foreign host took out every route. See
+ * `lib/safe-image-src.ts` for why the guard has to run before `next/image`.
  */
 export function ProductImage({
   src,
@@ -53,7 +61,8 @@ export function ProductImage({
   loading,
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
-  const imageKitSource = isImageKitUrl(src);
+  const safeSrc = isRenderableImageSrc(src) ? src.trim() : "";
+  const imageKitSource = isImageKitUrl(safeSrc);
   const imageKitLoader =
     imageKitSource && deliveryWidth
       ? createImageKitLoader({ maxWidth: deliveryWidth, quality })
@@ -61,7 +70,7 @@ export function ProductImage({
         ? IMAGEKIT_LOADERS[deliveryPreset]
         : undefined;
 
-  if (failed || !src) {
+  if (failed || !safeSrc) {
     return (
       <div
         aria-label={alt}
@@ -82,7 +91,7 @@ export function ProductImage({
         className={className}
         sizes={sizes}
         onError={() => setFailed(true)}
-        src={src}
+        src={safeSrc}
         fill
         loader={imageKitLoader}
         priority={priority}
@@ -97,7 +106,7 @@ export function ProductImage({
       className={className}
       sizes={sizes}
       onError={() => setFailed(true)}
-      src={src}
+      src={safeSrc}
       width={width ?? 200}
       height={height ?? 200}
       loader={imageKitLoader}

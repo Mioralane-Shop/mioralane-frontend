@@ -1,22 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Heart, Search, ShoppingBag, User, X } from "lucide-react";
+import { ArrowRight, Heart, Search, ShoppingBag, User, X } from "lucide-react";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { NavigationItem } from "@/components/layout/navigation-item";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ProductImage } from "@/components/common/product-image";
 import { SearchModal } from "@/components/search/search-modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BRANDS } from "@/constants/site";
 import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
+import { useBrands } from "@/hooks/use-brands";
+import { isActiveNavPath, navLinkClass } from "@/lib/nav-active";
+import { productShortName } from "@/lib/product-name";
+import { firstRenderableImageSrc } from "@/lib/safe-image-src";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useCombos } from "@/hooks/use-combos";
+import { useMegaMenu } from "@/hooks/use-mega-menu";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { MEGA_MENU_VIEW_ALL_HREF, megaMenuTargetHref } from "@/lib/mega-menu";
+import type { MegaMenuItem, MegaMenuTab } from "@/types/mega-menu";
 import { formatPrice } from "@/lib/utils";
 
 const COMPACT_NAV_HYSTERESIS = 12;
@@ -24,9 +32,24 @@ const COMPACT_NAV_TRANSITION =
   "duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
 const COMPACT_NAV_FADE = "duration-[150ms] ease-out";
 
+/** What the brand dropdown renders, from the API or the bundled fallback. */
+type NavBrand = { name: string };
+
 function BrandsNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { brands } = useBrands();
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, "/brands");
+
+  // Admin-curated brands, or the bundled list while the request is in flight, if
+  // it fails, or before anything has been curated. The fallback is what keeps the
+  // dropdown usable on a cold API; it is removed in the cleanup slice, once the
+  // API is the only source.
+  const entries: NavBrand[] =
+    brands.length > 0
+      ? brands.map((brand) => ({ name: brand.name }))
+      : BRANDS.map((name) => ({ name }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,8 +70,9 @@ function BrandsNavItem() {
       onMouseLeave={() => setOpen(false)}
     >
       <Link
-        href="/shop"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        href="/brands"
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
         Brands
       </Link>
@@ -56,14 +80,19 @@ function BrandsNavItem() {
         <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
           <div className="w-[min(640px,calc(100vw-2rem))] rounded-2xl border border-border-light bg-white p-4 shadow-lg">
             <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
-              {BRANDS.map((brand) => (
+              {entries.map((brand) => (
+                // Names only. A logo here was inline with the name at a fixed CSS
+                // height, and because the marks have wildly different aspect ratios
+                // and widths it left the three columns ragged — rows shifted
+                // depending on which brands happened to have artwork. The name
+                // alone keeps every row on the same baseline.
                 <Link
-                  key={brand}
-                  href={`/shop?brand=${encodeURIComponent(brand)}`}
+                  key={brand.name}
+                  href={`/shop?brand=${encodeURIComponent(brand.name)}`}
                   onClick={() => setOpen(false)}
-                  className="truncate rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink/70 transition-colors hover:bg-ink/[0.04] hover:text-accent"
                 >
-                  {brand}
+                  <span className="truncate">{brand.name}</span>
                 </Link>
               ))}
             </div>
@@ -78,6 +107,8 @@ function ComboNavItem() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { data: combos = [] } = useCombos();
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, "/combo");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -99,7 +130,8 @@ function ComboNavItem() {
     >
       <Link
         href="/combo"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
         Combo
       </Link>
@@ -128,8 +160,8 @@ function ComboNavItem() {
                 >
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
                     <ProductImage
-                      src={product.images?.[0] ?? ""}
-                      alt={product.name}
+                      src={firstRenderableImageSrc(product.images?.[0])}
+                      alt={productShortName(product)}
                       fill
                       sizes="48px"
                       className="object-cover"
@@ -139,7 +171,7 @@ function ComboNavItem() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">
-                      {product.name}
+                      {productShortName(product)}
                     </p>
                     {product.includedItems?.length ? (
                       <p className="truncate text-xs text-ink-muted">
@@ -167,15 +199,227 @@ function ComboNavItem() {
   );
 }
 
-function SkinCareNavItem({ panelTop, columns }: { panelTop: number; columns: MegaMenuColumn[] }) {
+/** Turns "By Concern" into "Concerns" for the per-tab "View All" link. */
+function pluralizeTabLabel(label: string): string {
+  const base = label.replace(/^\s*by\s+/i, "").trim() || label.trim();
+
+  if (/[^aeiou]y$/i.test(base)) return `${base.slice(0, -1)}ies`;
+  if (/s$/i.test(base)) return base;
+  return `${base}s`;
+}
+
+/** Groups items by their `group` label, preserving the admin's item order. */
+function groupMegaMenuItems(items: MegaMenuItem[]): Array<[string, MegaMenuItem[]]> {
+  const groups: Array<[string, MegaMenuItem[]]> = [];
+
+  for (const item of items) {
+    const key = item.group?.trim() || "More";
+    const existing = groups.find(([label]) => label === key);
+
+    if (existing) {
+      existing[1].push(item);
+    } else {
+      groups.push([key, [item]]);
+    }
+  }
+
+  return groups;
+}
+
+/** Shared link treatment for every item list in the panel. */
+const MEGA_MENU_ITEM_CLASS =
+  "block text-[13px] leading-5 text-ink/70 transition-colors hover:text-accent";
+
+/** Mirrors the three-column layout so the panel does not jump as data lands. */
+function MegaMenuSkeleton() {
+  return (
+    <div aria-hidden="true" className="grid grid-cols-3 gap-x-8 gap-y-7">
+      {[0, 1, 2].map((column) => (
+        <div key={column} className="min-w-0">
+          <Skeleton className="h-3.5 w-28" />
+          <Skeleton className="mt-2.5 h-0.5 w-10" />
+          <div className="mt-3.5 space-y-2">
+            {[0, 1, 2, 3, 4, 5].map((row) => (
+              <Skeleton key={row} className="h-3.5 w-24" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The pre-mega-menu panel. Rendered only when the admin-curated fetch yields
+ * nothing, so the navbar always has a usable Shop menu.
+ */
+function MegaMenuFallback({
+  columns,
+  onNavigate,
+}: {
+  columns: MegaMenuColumn[];
+  onNavigate: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-5 gap-x-6 gap-y-6">
+      {columns.map((column) => (
+        <div key={column.id} className="min-w-0">
+          <NavigationItem
+            label={column.label}
+            href={column.href}
+            comingSoon={column.comingSoon}
+            onClick={onNavigate}
+            className="block text-[13px] font-bold uppercase tracking-[0.14em] text-ink transition-colors hover:text-accent"
+          />
+          <span
+            aria-hidden="true"
+            className="mt-2.5 block h-0.5 w-10 rounded-full bg-accent"
+          />
+          <ul className="mt-3.5 space-y-2">
+            {column.links.map((link) => (
+              <li key={link.label}>
+                <NavigationItem
+                  label={link.label}
+                  href={link.href}
+                  comingSoon={link.comingSoon}
+                  onClick={onNavigate}
+                  className={MEGA_MENU_ITEM_CLASS}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * One fixed column: heading, accent rule, then its own capped item list.
+ *
+ * Self-contained on purpose — every column renders at once, so a heading's
+ * position never depends on how many items a neighbouring section holds.
+ */
+function MegaMenuTabColumn({
+  tab,
+  onNavigate,
+}: {
+  tab: MegaMenuTab;
+  onNavigate: () => void;
+}) {
+  const cap = Math.max(1, tab.maxItems);
+  const shown = tab.items.slice(0, cap);
+  const hasMore = tab.items.length > shown.length;
+  const groups = tab.grouped ? groupMegaMenuItems(shown) : null;
+  const headingId = `mega-menu-heading-${tab.id}`;
+
+  return (
+    <div className="min-w-0">
+      <p
+        id={headingId}
+        className="text-[13px] font-bold uppercase tracking-[0.14em] text-ink"
+      >
+        {tab.label}
+      </p>
+      <span
+        aria-hidden="true"
+        className="mt-2.5 block h-0.5 w-10 rounded-full bg-accent"
+      />
+
+      {groups ? (
+        <div className="mt-3.5 space-y-5">
+          {groups.map(([group, items]) => (
+            <div key={group}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/50">
+                {group}
+              </p>
+              <ul className="mt-2 space-y-2">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <NavigationItem
+                      label={item.label}
+                      href={megaMenuTargetHref(item.target)}
+                      onClick={onNavigate}
+                      className={MEGA_MENU_ITEM_CLASS}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <ul aria-labelledby={headingId} className="mt-3.5 space-y-2">
+          {shown.map((item) => (
+            <li key={item.id}>
+              <NavigationItem
+                label={item.label}
+                href={megaMenuTargetHref(item.target)}
+                onClick={onNavigate}
+                className={MEGA_MENU_ITEM_CLASS}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {hasMore ? (
+        <Link
+          href={MEGA_MENU_VIEW_ALL_HREF}
+          onClick={onNavigate}
+          className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-accent transition-colors hover:text-accent-dark"
+        >
+          View All {pluralizeTabLabel(tab.label)}
+          <ArrowRight className="h-3 w-3" />
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Every section side by side, all visible at once.
+ *
+ * Replaces the tab strip that swapped one section into view at a time: the
+ * three headings now sit in one fixed row and never move, so nothing shifts
+ * when one section holds more items than its neighbours.
+ */
+function MegaMenuColumns({
+  tabs,
+  onNavigate,
+}: {
+  tabs: MegaMenuTab[];
+  onNavigate: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-x-8 gap-y-7">
+      {tabs.map((tab) => (
+        <MegaMenuTabColumn key={tab.id} tab={tab} onNavigate={onNavigate} />
+      ))}
+    </div>
+  );
+}
+
+function ShopNavItem({
+  panelTop,
+  label,
+  href,
+  fallbackColumns,
+}: {
+  panelTop: number;
+  label: string;
+  href: string;
+  fallbackColumns: MegaMenuColumn[];
+}) {
   const [open, setOpen] = useState(false);
-  const [activeCol, setActiveCol] = useState<string | null>(null);
+  const pathname = usePathname();
+  const isActive = isActiveNavPath(pathname, href);
   const containerRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const underlineRef = useRef<HTMLDivElement>(null);
-  const headerRefs = useRef<Record<string, HTMLSpanElement | null>>({});
-  const prevColRef = useRef<string | null>(null);
   const closeTimer = useRef<number | null>(null);
+
+  const { data, isLoading } = useMegaMenu();
+  const tabs = data?.tabs ?? [];
+  const usingFallback = !isLoading && tabs.length === 0;
 
   const scheduleClose = () => {
     if (closeTimer.current) {
@@ -220,38 +464,7 @@ function SkinCareNavItem({ panelTop, columns }: { panelTop: number; columns: Meg
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [open]);
 
-  const positionUnderline = (id: string) => {
-    const header = headerRefs.current[id];
-    const panel = panelRef.current;
-    const underline = underlineRef.current;
-
-    if (!header || !panel || !underline) return;
-
-    const headerRect = header.getBoundingClientRect();
-    const panelRect = panel.getBoundingClientRect();
-    const left = headerRect.left - panelRect.left;
-    const top = headerRect.bottom - panelRect.top + 4;
-    const width = headerRect.width;
-
-    if (prevColRef.current === null) {
-      underline.style.transition = "none";
-      underline.style.left = `${left}px`;
-      underline.style.top = `${top}px`;
-      underline.style.width = `${width}px`;
-      void underline.offsetWidth;
-      underline.style.transition = "";
-    }
-
-    prevColRef.current = id;
-    underline.style.left = `${left}px`;
-    underline.style.top = `${top}px`;
-    underline.style.width = `${width}px`;
-    setActiveCol(id);
-  };
-
   const handlePanelLeave = () => {
-    setActiveCol(null);
-    prevColRef.current = null;
     scheduleClose();
   };
 
@@ -266,73 +479,33 @@ function SkinCareNavItem({ panelTop, columns }: { panelTop: number; columns: Meg
       onMouseLeave={scheduleClose}
     >
       <Link
-        href="/shop"
-        className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+        href={href}
+        aria-current={isActive ? "page" : undefined}
+        className={navLinkClass(isActive)}
       >
-        Skin Care
+        {label}
       </Link>
 
       {open && (
         <div
-          ref={panelRef}
           onMouseEnter={cancelClose}
           onMouseLeave={handlePanelLeave}
-          className="fixed left-1/2 z-[90] w-full max-w-[1400px] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl bg-[#FAF7F4] px-10 py-9 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.18)]"
+          className="fixed left-1/2 z-[90] w-[min(700px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-base border border-border-light bg-white px-8 py-6 shadow-lg"
           style={{
             top: panelTop,
             maxHeight: `calc(100dvh - ${panelTop + 16}px)`,
           }}
         >
-          <div className="grid grid-cols-5 gap-x-10 gap-y-12">
-            {columns.map((column) => (
-              <div
-                key={column.id}
-                onMouseEnter={() => positionUnderline(column.id)}
-                className="min-w-0"
-              >
-                <div className="border-t border-accent/30 pt-4">
-                  <NavigationItem
-                    label={column.label}
-                    href={column.href}
-                    comingSoon={column.comingSoon}
-                    onClick={() => setOpen(false)}
-                    className="block"
-                  >
-                    <span
-                      ref={(element) => {
-                        headerRefs.current[column.id] = element;
-                      }}
-                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1E1B18]"
-                    >
-                      {column.label}
-                    </span>
-                  </NavigationItem>
-                </div>
-                <ul className="mt-5 space-y-3.5">
-                  {column.links.map((link) => (
-                    <li key={link.label}>
-                      <NavigationItem
-                        label={link.label}
-                        href={link.href}
-                        comingSoon={link.comingSoon}
-                        onClick={() => setOpen(false)}
-                        className="text-sm text-[#1E1B18]/70 transition-colors hover:text-accent"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div
-            ref={underlineRef}
-            className="pointer-events-none absolute h-[2px] bg-accent transition-all duration-200"
-            style={{
-              opacity: activeCol ? 1 : 0,
-              transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}
-          />
+          {isLoading && tabs.length === 0 ? (
+            <MegaMenuSkeleton />
+          ) : usingFallback ? (
+            <MegaMenuFallback
+              columns={fallbackColumns}
+              onNavigate={() => setOpen(false)}
+            />
+          ) : (
+            <MegaMenuColumns tabs={tabs} onNavigate={() => setOpen(false)} />
+          )}
         </div>
       )}
     </div>
@@ -340,11 +513,21 @@ function SkinCareNavItem({ panelTop, columns }: { panelTop: number; columns: Meg
 }
 
 function DesktopNavLinks({ panelTop }: { panelTop: number }) {
+  const pathname = usePathname();
+
   return (
     <>
       {PRIMARY_NAV.map((entry) => {
         if (entry.kind === "mega") {
-          return <SkinCareNavItem key={entry.id} panelTop={panelTop} columns={entry.columns} />;
+          return (
+            <ShopNavItem
+              key={entry.id}
+              panelTop={panelTop}
+              label={entry.label}
+              href={entry.href}
+              fallbackColumns={entry.columns}
+            />
+          );
         }
 
         if (entry.kind === "brands") {
@@ -355,13 +538,16 @@ function DesktopNavLinks({ panelTop }: { panelTop: number }) {
           return <ComboNavItem key={entry.id} />;
         }
 
+        const isActive = isActiveNavPath(pathname, entry.kind === "link" ? entry.href : undefined);
+
         return (
           <NavigationItem
             key={entry.id}
             label={entry.label}
             href={entry.kind === "link" ? entry.href : undefined}
             comingSoon={entry.kind === "soon"}
-            className="text-sm font-black uppercase tracking-wider text-ink/80 transition-colors no-underline hover:text-ink"
+            active={isActive}
+            className={navLinkClass(isActive)}
           />
         );
       })}

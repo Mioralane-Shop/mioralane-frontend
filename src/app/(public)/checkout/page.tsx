@@ -22,6 +22,7 @@ import { useToastStore } from "@/store/toast.store";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCreateAddress, useMyAddresses } from "@/hooks/use-addresses";
 import { formatPrice, cn } from "@/lib/utils";
+import { isBotProtectionSatisfied } from "@/lib/turnstile";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
 import type { AddressFormValues } from "@/lib/validators/address";
 import type { SavedAddress } from "@/types/address";
@@ -29,6 +30,7 @@ import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict, withSavedO
 import { shippingService } from "@/services/shipping.service";
 import type { ShippingQuoteResponse } from "@/types/shipping";
 import { formatPreOrderDate, getCartPreOrderReadiness, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 
 export default function CheckoutPage() {
   return (
@@ -352,6 +354,15 @@ function CheckoutContent() {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (submitLockRef.current || createOrder.isPending) {
+      return;
+    }
+
+    // Cloudflare Turnstile gate: the invisible challenge sets this once it has
+    // solved. It fails open when no site key is configured (see lib/turnstile).
+    if (!isBotProtectionSatisfied()) {
+      setServerError(
+        "Just a moment — we're completing a quick security check. Please try again."
+      );
       return;
     }
 
@@ -736,7 +747,7 @@ function CheckoutContent() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 font-medium text-neutral-700">
-                          {item.product.name}
+                          {productShortName(item.product)}
                         </p>
                         <p className="text-xs text-neutral-400">
                           Qty {item.quantity}

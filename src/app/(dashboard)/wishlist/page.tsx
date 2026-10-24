@@ -20,6 +20,7 @@ import { useWishlistStore } from "@/store/wishlist.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useToastStore } from "@/store/toast.store";
 import { cn, formatPrice } from "@/lib/utils";
+import { productShortName } from "@/lib/product-name";
 import type { WishlistEntry, WishlistSort } from "@/types/wishlist";
 
 const WISHLIST_SORT_OPTIONS: Array<{ label: string; value: WishlistSort }> = [
@@ -141,7 +142,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
       const moved = await moveToCart(entry);
 
       if (moved) {
-        addToast(`${product.name} moved to cart`, "success");
+        addToast(`${productShortName(product)} moved to cart`, "success");
         return;
       }
 
@@ -168,7 +169,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
       >
         <ProductImage
           src={product.images?.[0] || "/logo/logo_icon.svg"}
-          alt={product.name}
+          alt={productShortName(product)}
           fallbackId={product.id}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -188,7 +189,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
           href={itemHref}
           className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-ink transition-colors hover:text-accent"
         >
-          {product.name}
+          {productShortName(product)}
         </Link>
 
         <div className="mt-3 flex items-baseline gap-2">
@@ -232,7 +233,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
             onClick={handleRemove}
             disabled={isRemoving || isMoving}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 text-ink/50 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-500 disabled:cursor-wait disabled:opacity-60"
-            aria-label={`Remove ${product.name} from wishlist`}
+            aria-label={`Remove ${productShortName(product)} from wishlist`}
           >
             {isRemoving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
