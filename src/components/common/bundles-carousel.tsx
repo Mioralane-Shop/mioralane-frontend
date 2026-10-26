@@ -219,7 +219,7 @@ function BundleCard({
               <span className="truncate">{label}</span>
             </span>
 
-            <h3 className="mt-[15px] max-w-[15.25rem] font-serif text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[17rem] sm:text-[1.65rem] lg:max-w-[19rem]">
+            <h3 className="mt-[15px] max-w-[15.25rem] font-display text-[1.45rem] font-medium leading-[1.08] tracking-tight text-ink sm:max-w-[17rem] sm:text-[1.65rem] lg:max-w-[19rem]">
               {comboName}
             </h3>
 
@@ -247,7 +247,7 @@ function BundleCard({
         </div>
       </div>
 
-      <div className="border-t border-white/70 bg-white/60 px-4.5 py-3 backdrop-blur-sm sm:px-6">
+      <div className="border-t border-white/70 bg-white/60 px-4.5 py-3 backdrop-blur-xs sm:px-6">
         <div className="space-y-2.5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -286,7 +286,7 @@ function BundleCard({
                 onAddToCart(combo);
               }}
               disabled={combo.stock <= 0}
-              className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full bg-cart px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-cart-dark hover:shadow disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full bg-cart px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-cart-dark hover:shadow-card disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 sm:px-4"
             >
               <span>{combo.stock > 0 ? "Add Bundle" : "Out of Stock"}</span>
               {combo.stock > 0 ? <ArrowRight className="h-4 w-4" /> : null}
@@ -508,7 +508,7 @@ export function BundlesCarousel() {
             {hasMultipleBundles && canScrollPrev ? (
               <button
                 onClick={() => scroll(-1)}
-                className="absolute -left-5 top-[42%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:border-accent/30 hover:text-accent hover:shadow md:flex"
+                className="absolute -left-5 top-[42%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:border-accent/30 hover:text-accent hover:shadow-card md:flex"
                 aria-label="Previous bundle"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -537,7 +537,7 @@ export function BundlesCarousel() {
             {hasMultipleBundles && canScrollNext ? (
               <button
                 onClick={() => scroll(1)}
-                className="absolute -right-5 top-[42%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:border-accent/30 hover:text-accent hover:shadow md:flex"
+                className="absolute -right-5 top-[42%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-white text-ink shadow-sm transition hover:border-accent/30 hover:text-accent hover:shadow-card md:flex"
                 aria-label="Next bundle"
               >
                 <ChevronRight className="h-5 w-5" />

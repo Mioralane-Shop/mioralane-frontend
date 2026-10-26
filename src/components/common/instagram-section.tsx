@@ -1,62 +1,31 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
-import { Play, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { useRef, useState } from "react";
+import { Play, ChevronLeft, ChevronRight, ArrowRight, ExternalLink } from "lucide-react";
 import { SectionHeading } from "@/components/common/section-heading";
+import { useInstagramFeed } from "@/hooks/use-instagram-feed";
+import type { InstagramFeedVideo } from "@/types/instagram";
 
-const IG_POSTS = [
-  {
-    id: "1",
-    image: "/images/ig-sunscreen.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: true,
-  },
-  {
-    id: "2",
-    image: "/images/ig-serums.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: false,
-  },
-  {
-    id: "3",
-    image: "/images/ig-kbeauty.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: true,
-  },
-  {
-    id: "4",
-    image: "/images/ig-roller.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: false,
-  },
-  {
-    id: "5",
-    image: "/images/ig-flatlay.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: false,
-  },
-  {
-    id: "6",
-    image: "/images/ig-pink.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: true,
-  },
-  {
-    id: "7",
-    image: "/images/catalog-serum.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: false,
-  },
-  {
-    id: "8",
-    image: "/images/catalog-cream.jpg",
-    href: "https://www.instagram.com/",
-    isVideo: false,
-  },
-];
-
+/**
+ * "Follow Us on Instagram" homepage showcase.
+ *
+ * Renders ONLY the reels the admin selected (backend `GET /api/instagram/feed`,
+ * which serves the saved selection from MongoDB — no Meta call from the
+ * browser). When nothing is selected yet the whole section is omitted: the
+ * homepage never shows placeholder posts.
+ *
+ * Performance rules kept here on purpose:
+ *  - thumbnails load lazily as plain images (Instagram's CDN is not in the
+ *    next/image allowlist, and this component must never throw on it);
+ *  - a video is mounted only when its play button is pressed, and only ONE
+ *    video can play at a time (`playingId`);
+ *  - direct playback is muted inline `<video>`; when the CDN URL is missing,
+ *    the play action falls back to the Instagram permalink instead of a
+ *    broken player.
+ */
 export function InstagramSection() {
+  const { data: videos } = useInstagramFeed();
+  const [playingId, setPlayingId] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
   const scrollByCards = (dir: number) => {
@@ -66,6 +35,24 @@ export function InstagramSection() {
     const amount = card ? card.offsetWidth + 16 : 300;
     el.scrollBy({ left: dir * amount, behavior: "smooth" });
   };
+
+  const startPlayback = (video: InstagramFeedVideo) => {
+    // No usable video URL → take the visitor to the reel on Instagram instead
+    // of rendering a player that cannot work.
+    if (!video.mediaUrl) {
+      if (video.permalink) {
+        window.open(video.permalink, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+
+    setPlayingId((current) => (current === video.id ? null : video.id));
+  };
+
+  // Graceful fallback: no featured reels configured yet → hide the section.
+  if (!videos || videos.length === 0) {
+    return null;
+  }
 
   return (
     <section className="home-section bg-white">
@@ -78,7 +65,7 @@ export function InstagramSection() {
           href="https://www.instagram.com/mioralane/"
           target="_blank"
           rel="noopener noreferrer"
-          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-md text-gold transition-colors duration-200 hover:text-accent"
+          className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-base text-gold transition-colors duration-200 hover:text-accent"
           aria-label="Visit Mioralane on Instagram"
         >
           <span>@mioralane</span>
@@ -99,29 +86,70 @@ export function InstagramSection() {
               ref={trackRef}
               className="flex gap-4 overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              {IG_POSTS.map((post) => (
-                <a
-                  key={post.id}
-                  data-card
-                  href={post.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative aspect-[9/16] w-[148px] flex-shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
-                >
-                  <Image
-                    src={post.image}
-                    alt="Mioralane Instagram post"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    sizes="(max-width: 640px) 148px, (max-width: 1024px) 192px, 20vw"
-                  />
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_8px_rgba(26,26,26,0.14)] transition-transform duration-200 group-hover:scale-[1.05]">
-                      <Play className="ml-0.5 h-4 w-4 fill-current" />
-                    </span>
-                  </span>
-                </a>
-              ))}
+              {videos.map((video) => {
+                const isPlaying = playingId === video.id;
+
+                return (
+                  <div
+                    key={video.id}
+                    data-card
+                    className="group relative aspect-[9/16] w-[148px] shrink-0 snap-start overflow-hidden rounded-2xl bg-[#F8F6F2] sm:w-[192px] md:w-auto md:basis-[calc((100%-4rem)/5)]"
+                  >
+                    {isPlaying && video.mediaUrl ? (
+                      // Mounted only while this reel is the one playing.
+                      <video
+                        src={video.mediaUrl}
+                        poster={video.thumbnailUrl}
+                        autoPlay
+                        muted
+                        loop
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : (
+                      <>
+                        {video.thumbnailUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={video.thumbnailUrl}
+                            alt={video.caption ?? "Mioralane Instagram reel"}
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-ink/25">
+                            <Play className="h-8 w-8" />
+                          </div>
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => startPlayback(video)}
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_8px_rgba(26,26,26,0.14)] transition-transform duration-200 group-hover:scale-[1.05]"
+                            aria-label={video.mediaUrl ? "Play reel" : "Open reel on Instagram"}
+                          >
+                            <Play className="ml-0.5 h-4 w-4 fill-current" />
+                          </button>
+                        </span>
+                      </>
+                    )}
+
+                    {video.permalink ? (
+                      <a
+                        href={video.permalink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Open reel on Instagram"
+                        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

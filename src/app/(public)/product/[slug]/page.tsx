@@ -36,6 +36,8 @@ import {
   getProductAvailability,
   isPreOrderProduct,
 } from "@/lib/pre-order";
+import { firstRenderableImageSrc, isRenderableImageSrc } from "@/lib/safe-image-src";
+import { productFullName } from "@/lib/product-name";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
@@ -102,76 +104,6 @@ function getBestForChips(product: Product) {
   return Array.from(new Set(tokens)).slice(0, 6);
 }
 
-function getIngredientHighlights(product: Product) {
-  const text = `${product.name} ${product.description} ${product.longDescription ?? ""}`.toLowerCase();
-  const highlights = [
-    {
-      name: "Hyaluronic Acid",
-      meta: "Hydration · Plumping",
-      description: /hyalur|plump|hydrat/i.test(text)
-        ? "A moisture-binding humectant that helps draw hydration into the skin for a plumper, smoother feel."
-        : "",
-      match: /hyalur|ha\b|water-fit|moistur/i,
-    },
-    {
-      name: "Centella Asiatica",
-      meta: "Calming · Sensitive Skin Friendly",
-      description: "Helps calm visible redness and keep sensitive skin feeling comfortable.",
-      match: /centella|cica|sooth|calm/i,
-    },
-    {
-      name: "Niacinamide",
-      meta: "Brightening · Tone Support",
-      description: "Supports a more even-looking tone while helping skin appear clearer and balanced.",
-      match: /niacinamide|bright|glow|spot|tone/i,
-    },
-    {
-      name: "Panthenol",
-      meta: "Barrier Support · Comfort",
-      description: "Helps support the skin barrier and reduce feelings of dryness or tightness.",
-      match: /panthenol|barrier|repair/i,
-    },
-    {
-      name: "Snail Mucin",
-      meta: "Repair · Recovery",
-      description: "Helps support recovery while leaving skin feeling supple and cushioned.",
-      match: /snail/i,
-    },
-    {
-      name: "Propolis",
-      meta: "Glow · Support",
-      description: "Helps boost radiance while supporting skin that feels stressed or dull.",
-      match: /propolis/i,
-    },
-    {
-      name: "Ceramide",
-      meta: "Barrier Support · Moisture",
-      description: "Helps lock in moisture and maintain a healthier-feeling skin barrier.",
-      match: /ceramide/i,
-    },
-    {
-      name: "Tea Tree / BHA",
-      meta: "Clarifying · Oil Control",
-      description: "Helps refine excess oil and keep pores feeling fresher and clearer.",
-      match: /bha|tea tree|acne|oil/i,
-    },
-    {
-      name: "Vitamin C",
-      meta: "Brightening · Radiance",
-      description: "Helps improve the look of dullness for a brighter, fresher finish.",
-      match: /vitamin c|ascorb|c-vit/i,
-    },
-    {
-      name: "SPF Filters",
-      meta: "UV Protection · Daily Wear",
-      description: "Helps defend skin against daily UV exposure in a wearable finish.",
-      match: /spf|uv|sunscreen|sun/i,
-    },
-  ];
-
-  return highlights.filter((item) => item.match.test(text)).slice(0, 4);
-}
-
 function getShippingNotes(product: Product) {
   const source = product.source?.toLowerCase() ?? "";
   const authenticity = source
@@ -196,6 +128,17 @@ function getBenefitStatement(product: Product) {
   return source;
 }
 
+/**
+ * Where a description is long enough to be worth collapsing.
+ *
+ * Approximate on purpose. The clamp is what actually hides text; this only decides whether
+ * the control is worth showing at all, and measuring the rendered height exactly would mean
+ * a ref, an effect and a resize listener for a control that is cosmetic. Descriptions are
+ * capped at 500 characters in the admin, so the longest ones run to roughly eight lines at
+ * the width below, and previewing four of them is a real saving.
+ */
+const DESCRIPTION_PREVIEW_CHARS = 320;
+
 function clampQuantityToStock(quantity: number, stock: number) {
   if (stock <= 0) {
     return 1;
@@ -206,6 +149,31 @@ function clampQuantityToStock(quantity: number, stock: number) {
 
 function getErrorStatus(error: unknown) {
   return (error as { response?: { status?: number } } | undefined)?.response?.status;
+}
+
+/**
+ * Related-product thumbnail.
+ *
+ * `p.images[0]` is a stored URL, and `next/image`'s default loader **throws** for
+ * a host absent from `images.remotePatterns` — which removes this page, not just
+ * the thumbnail. `lib/safe-image-src.ts` has the guard and the reasoning.
+ */
+function RelatedThumb({ product }: { product: Product }) {
+  const src = firstRenderableImageSrc(...(product.images ?? []), product.hoverImage);
+
+  if (!src) {
+    return <div className="absolute inset-0 bg-[#FAF9F7]" aria-hidden="true" />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={productFullName(product)}
+      fill
+      className="object-cover"
+      sizes="(max-width: 1024px) 50vw, 25vw"
+    />
+  );
 }
 
 export default function ProductPage() {
@@ -235,6 +203,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
   const syncItemStock = useCartStore((s) => s.syncItemStock);
   const { data: relatedProducts = [] } = useRelatedProducts(
@@ -299,7 +268,7 @@ export default function ProductPage() {
       },
       quantityToAdd,
     );
-    addToast(`${product.name} added to cart`);
+    addToast(`${productFullName(product)} added to cart`);
     setQuantity(1);
   };
 
@@ -318,7 +287,7 @@ export default function ProductPage() {
         product.category === "combo" ? "combo" : "product",
       );
       addToast(
-        nextState ? `${product.name} added to wishlist` : "Removed from wishlist",
+        nextState ? `${productFullName(product)} added to wishlist` : "Removed from wishlist",
         "info",
       );
     } catch {
@@ -349,7 +318,7 @@ export default function ProductPage() {
   if (isError && isNotFound) {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-20 text-center">
-        <h1 className="text-2xl font-serif text-ink">Product Not Found</h1>
+        <h1 className="text-2xl font-display text-ink">Product Not Found</h1>
         <p className="mt-2 text-ink/50">
           The product you&apos;re looking for doesn&apos;t exist.
         </p>
@@ -396,14 +365,21 @@ export default function ProductPage() {
     return null;
   }
 
-  const images = product.images?.filter(Boolean).length
-    ? product.images.filter(Boolean)
-    : product.hoverImage
-      ? [product.hoverImage]
-      : [];
+  // Only URLs `next/image` can render: the default loader throws for a host that
+  // is not in `images.remotePatterns`, and a throw here removes the whole page.
+  const storedImages = (product.images ?? []).filter(isRenderableImageSrc);
+  const images = storedImages.length
+    ? storedImages
+    : [product.hoverImage].filter(isRenderableImageSrc);
   const selectedImageSrc = images[selectedImage] ?? images[0];
   const mobileGalleryItems: Array<string | null> = images.length ? images : [null];
   const benefitChips = getBenefitChips(product);
+  const descriptionText = getBenefitStatement(product);
+  const isDescriptionLong = descriptionText.length > DESCRIPTION_PREVIEW_CHARS;
+  const ingredients = (product.ingredients ?? "")
+    .split(",")
+    .map((ingredient) => ingredient.trim())
+    .filter(Boolean);
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
       ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
@@ -429,7 +405,6 @@ export default function ProductPage() {
     });
   };
   const bestForChips = getBestForChips(product);
-  const ingredientHighlights = getIngredientHighlights(product);
   const shippingNotes = getShippingNotes(product);
   const maxThumbnailStart = Math.max(0, images.length - DESKTOP_THUMBNAIL_SLOTS);
   const visibleThumbnailStart = Math.min(thumbnailStart, maxThumbnailStart);
@@ -455,7 +430,7 @@ export default function ProductPage() {
           </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="line-clamp-1 normal-case tracking-normal text-ink/60">
-            {product.name}
+            {productFullName(product)}
           </span>
         </nav>
 
@@ -478,7 +453,7 @@ export default function ProductPage() {
                     >
                       <Image
                         src={image}
-                        alt={`${product.name} thumbnail ${actualIndex + 1}`}
+                        alt={`${productFullName(product)} thumbnail ${actualIndex + 1}`}
                         fill
                         className="object-contain p-2.5"
                         sizes="72px"
@@ -561,7 +536,7 @@ export default function ProductPage() {
                 {selectedImageSrc ? (
                   <Image
                     src={selectedImageSrc}
-                    alt={product.name}
+                    alt={productFullName(product)}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                     sizes="(max-width: 1024px) 100vw, 48vw"
@@ -629,7 +604,7 @@ export default function ProductPage() {
                       <>
                         <Image
                           src={image}
-                          alt={`${product.name} image ${index + 1}`}
+                          alt={`${productFullName(product)} image ${index + 1}`}
                           fill
                           className="object-cover"
                           sizes="100vw"
@@ -692,19 +667,38 @@ export default function ProductPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
                 {SITE_NAME}
               </p>
-              <h1 className="max-w-[14ch] break-words text-[2rem] font-serif font-medium leading-[1.05] text-ink sm:max-w-[12ch] sm:text-[3.6rem] sm:leading-[0.98]">
-                {product.name}
+              {/*
+                `max-w-2xl`, not the `max-w-[12ch]` / `sm:max-w-[12ch]` this used to
+                carry. Twelve CHARACTERS is barely wider than "Skin1004", so a normal
+                product name broke into five or six lines and shoved the price and the
+                buy button below the fold. The 3.6rem size made it worse, but the width
+                cap was the cause.
+
+                At `text-4xl` the info column (about 540px, from the grid at 490) fits
+                roughly thirty characters per line, so a name of this length lands on
+                two or three lines. `leading-tight` rather than the old `leading-[0.98]`:
+                at 0.98 the lines nearly collide once the size drops.
+              */}
+              <h1 className="max-w-2xl break-words text-2xl font-display font-medium leading-tight text-ink sm:text-3xl lg:text-4xl">
+                {productFullName(product)}
               </h1>
             </div>
 
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
+                {/*
+                  The price steps down with the title rather than staying at a fixed
+                  2rem. At 32px it was larger than the reduced title on mobile, which
+                  would have made the price the loudest thing on the page — the
+                  opposite of the title leading. Now 20/24 against the title's
+                  24/30/36, so it stays the most prominent text at every width.
+                */}
                 {compareAtPrice && compareAtPrice > displayPrice && (
-                  <span className="text-xl text-ink/35 line-through">
+                  <span className="text-base text-ink/35 line-through sm:text-lg">
                     {formatPrice(compareAtPrice)}
                   </span>
                 )}
-                <span className="text-[2rem] font-semibold tracking-tight text-ink">
+                <span className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
                   {formatPrice(displayPrice)}
                 </span>
                 {discountPercent > 0 && (
@@ -742,9 +736,36 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-4">
-              <p className="max-w-[42ch] text-sm leading-7 text-ink/62">
-                {getBenefitStatement(product)}
-              </p>
+              {/*
+                `max-w-prose` keeps the measure near 65 characters, which is the readable
+                range. It replaces a `max-w-[42ch]` cap — worth knowing if this ever needs to
+                go the other way, because 42ch was the NARROWER of the two.
+
+                The whole block is capped rather than the paragraph alone so the Read More
+                control below sits on the same left edge as the text it belongs to.
+              */}
+              <div className="max-w-prose">
+                <p
+                  id="product-description"
+                  className={cn(
+                    "text-sm leading-relaxed text-ink/75",
+                    isDescriptionLong && !isDescriptionExpanded && "line-clamp-4",
+                  )}
+                >
+                  {descriptionText}
+                </p>
+                {isDescriptionLong ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescriptionExpanded((current) => !current)}
+                    aria-expanded={isDescriptionExpanded}
+                    aria-controls="product-description"
+                    className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-accent underline-offset-4 hover:underline"
+                  >
+                    {isDescriptionExpanded ? "Read Less" : "Read More"}
+                  </button>
+                ) : null}
+              </div>
               {benefitChips.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {benefitChips.map((chip) => (
@@ -924,35 +945,26 @@ export default function ProductPage() {
             )}
 
             {activeTab === "ingredients" && (
-              <div className="space-y-8">
-                <section className="max-w-2xl space-y-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Key Ingredient</p>
-                  {ingredientHighlights[0] ? (
-                    <div className="rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5 py-5">
-                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{ingredientHighlights[0].name}</h3>
-                      <p className="mt-1 text-sm font-medium text-[#8A8581]">{ingredientHighlights[0].meta}</p>
-                      {ingredientHighlights[0].description ? (
-                        <p className="mt-3 max-w-[58ch] text-sm leading-7 text-[#5F5A57]">
-                          {ingredientHighlights[0].description}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="text-sm leading-7 text-[#5F5A57]">
-                      Ingredient details are not listed in the current catalog entry for this product.
-                    </p>
-                  )}
-                </section>
-
-                <details className="group border-t border-[#E6E0DA] pt-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-[#1F1F1F]">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Full Ingredient List</span>
-                    <span className="text-lg leading-none text-[#8A8581] transition-transform group-open:rotate-45">+</span>
-                  </summary>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[#5F5A57]">
-                    {product.ingredients || "Full INCI ingredient list is not available in the current product data."}
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                  Full Ingredient List
+                </h3>
+                {ingredients.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2" aria-label="Product ingredients">
+                    {ingredients.map((ingredient, index) => (
+                      <li
+                        key={`${ingredient}-${index}`}
+                        className="rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-700"
+                      >
+                        {ingredient}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm leading-7 text-[#5F5A57]">
+                    Full INCI ingredient list is not available in the current product data.
                   </p>
-                </details>
+                )}
               </div>
             )}
 
@@ -988,7 +1000,7 @@ export default function ProductPage() {
             )}
 
             {activeTab === "reviews" && (
-              <ProductReviews productId={product.id} productName={product.name} />
+              <ProductReviews productId={product.id} productName={productFullName(product)} />
             )}
           </div>
         </div>
@@ -997,11 +1009,11 @@ export default function ProductPage() {
       {relatedProducts.length > 0 && (
         <section className="bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
-            <h2 className="text-3xl font-serif font-medium text-ink sm:text-4xl">You May Also Like</h2>
+            <h2 className="text-3xl font-display font-medium text-ink sm:text-4xl">You May Also Like</h2>
             <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex h-full flex-col">
-                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" /></Link>
+                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><RelatedThumb product={p} /></Link>
                   <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
                     <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
@@ -1058,7 +1070,7 @@ export default function ProductPage() {
             {selectedImageSrc ? (
               <Image
                 src={selectedImageSrc}
-                alt={product.name}
+                alt={productFullName(product)}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 48rem"

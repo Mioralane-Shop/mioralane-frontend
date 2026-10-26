@@ -2,16 +2,28 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ComboSection } from "@/components/common/combo-section";
 import { Reveal } from "@/components/common/reveal";
+import { JsonLd } from "@/components/seo/json-ld";
+import { generateBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-    title: "Routines & Bundles - Mioralane",
+export const metadata: Metadata = buildPageMetadata({
+    // No brand suffix: the root template already appends `| Mioralane`, so
+    // "Routines & Bundles - Mioralane" rendered as "… | Mioralane | Mioralane".
+    title: "Routines & Bundles",
     description:
         "Complete Korean skincare routines curated by Mioralane. Save money on bundles, kits, and full routines.",
-};
+    path: "/combo",
+});
 
 export default function ComboPage() {
     return (
         <>
+            <JsonLd
+                data={generateBreadcrumbJsonLd([
+                    { name: "Home", path: "/" },
+                    { name: "Routines & Bundles", path: "/combo" },
+                ])}
+            />
             {/* ── Hero ── */}
             <section className="bg-brand-50 py-8 md:py-16">
                 <div className="container mx-auto px-4 text-center">
@@ -19,7 +31,7 @@ export default function ComboPage() {
                         <span className="inline-block animate-twinkle">✦</span>
                         Curated Bundles
                     </span>
-                    <h1 className="mx-auto mt-5 max-w-2xl font-serif text-3xl font-bold tracking-tight text-ink md:text-5xl">
+                    <h1 className="mx-auto mt-5 max-w-2xl font-display text-3xl font-bold tracking-tight text-ink md:text-5xl">
                         Routines &amp; Bundles
                     </h1>
                     <p className="mx-auto mt-4 max-w-xl text-base text-ink/60 md:text-lg">
@@ -46,7 +58,7 @@ export default function ComboPage() {
                 <div className="container mx-auto px-4">
                     <Reveal>
                         <div className="rounded-3xl bg-brand-50 px-6 py-12 text-center md:py-16">
-                            <h2 className="font-serif text-2xl font-bold tracking-tight text-ink md:text-4xl">
+                            <h2 className="font-display text-2xl font-bold tracking-tight text-ink md:text-4xl">
                                 Not sure where to start?
                             </h2>
                             <p className="mx-auto mt-3 max-w-md text-sm text-ink/60 md:text-base">

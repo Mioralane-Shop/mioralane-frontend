@@ -5,19 +5,19 @@ import { SectionHeading } from "@/components/common/section-heading";
 
 const CARDS = [
   {
-    title: "SKINCARE QUIZ",
+    title: "Confused about skincare?",
     cta: "Take the Quiz",
     href: "/skincare-quiz",
     image: "/images/ig-kbeauty.jpg",
   },
   {
-    title: "Build Your Routine",
+    title: "Find Your Routine",
     cta: "Explore Routines",
-    href: "/blog/korean-skincare-routine-humid-climate",
+    href: "/blog/category/routine",
     image: "/images/promo-routine.jpg",
   },
   {
-    title: "Why K-Beauty?",
+    title: "Why Mioralane?",
     cta: "Learn More",
     href: "/about",
     image: "/images/ig-flatlay.jpg",
@@ -36,7 +36,7 @@ export function NewToKBeautySection() {
               <Link
                 key={card.title}
                 href={card.href}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow"
+                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-ink/15 hover:shadow-card"
               >
                 <div className="relative h-48 overflow-hidden bg-surface-soft sm:h-44 md:h-48">
                   <Image

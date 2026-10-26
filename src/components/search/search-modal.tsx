@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ProductImage } from "@/components/common/product-image";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { productShortName } from "@/lib/product-name";
 
 const TRENDING = [
   "Snail Mucin",
@@ -79,13 +80,13 @@ export function SearchModal({
           onSubmit={submit}
           className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-5 sm:px-6"
         >
-          <Search className="h-5 w-5 flex-shrink-0 text-ink/40" />
+          <Search className="h-5 w-5 shrink-0 text-ink/40" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products, brands, categories..."
-            className="flex-1 bg-transparent text-lg text-ink placeholder:text-ink/30 outline-none"
+            className="flex-1 bg-transparent text-lg text-ink placeholder:text-ink/30 outline-hidden"
           />
           <button
             type="button"
@@ -156,10 +157,10 @@ export function SearchModal({
                   onClick={onClose}
                   className="flex items-center gap-4 rounded-xl px-3 py-3 transition-colors hover:bg-ink/[0.04]"
                 >
-                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-ink/[0.04]">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-ink/[0.04]">
                     <ProductImage
                       src={p.images[0]}
-                      alt={p.name}
+                      alt={productShortName(p)}
                       fallbackId={p.id}
                       fill
                       className="object-cover"
@@ -169,7 +170,7 @@ export function SearchModal({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">
-                      {p.name}
+                      {productShortName(p)}
                     </p>
                     <p className="text-xs text-ink/50">
                       {p.brand} Â· à§³{p.price.toLocaleString()}

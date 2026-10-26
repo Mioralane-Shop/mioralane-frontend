@@ -3,20 +3,29 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ANNOUNCEMENT_TEXT } from "@/constants/site";
+import { safeHref } from "@/lib/safe-href";
 import { cn } from "@/lib/utils";
 import { useAnnouncementBar } from "@/hooks/use-announcement-bar";
 import type { AnnouncementBar } from "@/types/announcement";
 
 /**
- * Built-in fallback used until the API answers and whenever no announcement
- * campaign is published, so the bar never flickers or leaves a gap.
+ * Last resort: rendered only when neither the server render nor the browser's own
+ * request produced a campaign.
+ *
+ * It is deliberately NOT a stand-in shown while a campaign loads. It used to be, and
+ * that is what made the bar change under the visitor on every page load: these
+ * built-in messages preceded the real ones, so a visitor saw green "Free delivery on
+ * orders over ৳2,000 in Dhaka" — a promotion the shop had already replaced with its
+ * "coming soon" campaign — and then watched it swap.
+ *
+ * The message is the site's own tagline rather than a commercial promise, because
+ * this bar appears precisely when our data is least trustworthy. An offer stated here
+ * would be an offer the shop may not be making.
  */
 const FALLBACK: AnnouncementBar = {
   enabled: true,
-  messages: [
-    { text: "Free delivery on orders over ৳2,000 in Dhaka" },
-    { text: "Cash on Delivery available" },
-  ],
+  messages: [{ text: ANNOUNCEMENT_TEXT }],
   animation: "slide",
   direction: "rtl",
   background: "sheen",
@@ -72,13 +81,18 @@ const clamp = (value: number, min: number, max: number, fallback: number) =>
   Number.isFinite(value) ? Math.min(Math.max(value, min), max) : fallback;
 
 function MessageText({ text, url }: { text: string; url?: string }) {
-  if (!url) {
+  const href = safeHref(url);
+
+  // No link when no URL was supplied, or when the stored URL is outside the
+  // allowlist (P1.4 Block B) — `javascript:` values may predate the API fix.
+  // The message still reads, it is just not clickable.
+  if (!href) {
     return <span>{text}</span>;
   }
 
   return (
     <Link
-      href={url}
+      href={href}
       className="underline underline-offset-2 transition-opacity hover:opacity-80"
     >
       {text}
@@ -86,12 +100,21 @@ function MessageText({ text, url }: { text: string; url?: string }) {
   );
 }
 
-export function AnnouncementBar() {
+export function AnnouncementBar({ initial }: { initial?: AnnouncementBar | null }) {
   const { data } = useAnnouncementBar();
-  // `undefined` (still loading / request failed) and `null` (no campaign published)
-  // both fall back to the built-in messages; only an explicit `enabled: false`
-  // from a published campaign hides the bar.
-  const config = data ?? FALLBACK;
+
+  // The precedence is the whole reason this component takes a prop:
+  //
+  //   `undefined` from the query means "still loading, or the request failed", so
+  //   the server's answer stands in — that is what the first paint uses, and it is
+  //   already correct because the same value was rendered into the HTML. Only when
+  //   the server could not answer either does the built-in fallback appear.
+  //
+  //   `null` means the API answered "no campaign is published". That is a real
+  //   answer, not a missing one: it must not resurrect a campaign the server happened
+  //   to render minutes ago, so it goes to the built-in messages rather than to
+  //   `initial`.
+  const config = data === undefined ? (initial ?? FALLBACK) : (data ?? FALLBACK);
   const [rotation, setRotation] = useState({ active: 0, previous: null as number | null });
 
   const messages = config.enabled ? config.messages : [];

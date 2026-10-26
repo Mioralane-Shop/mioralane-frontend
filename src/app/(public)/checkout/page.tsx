@@ -22,6 +22,7 @@ import { useToastStore } from "@/store/toast.store";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCreateAddress, useMyAddresses } from "@/hooks/use-addresses";
 import { formatPrice, cn } from "@/lib/utils";
+import { isBotProtectionSatisfied } from "@/lib/turnstile";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validators/checkout";
 import type { AddressFormValues } from "@/lib/validators/address";
 import type { SavedAddress } from "@/types/address";
@@ -29,6 +30,7 @@ import { getDistrictsByDivision, getDivisions, getUpazilasByDistrict, withSavedO
 import { shippingService } from "@/services/shipping.service";
 import type { ShippingQuoteResponse } from "@/types/shipping";
 import { formatPreOrderDate, getCartPreOrderReadiness, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
+import { productShortName } from "@/lib/product-name";
 
 export default function CheckoutPage() {
   return (
@@ -355,6 +357,15 @@ function CheckoutContent() {
       return;
     }
 
+    // Cloudflare Turnstile gate: the invisible challenge sets this once it has
+    // solved. It fails open when no site key is configured (see lib/turnstile).
+    if (!isBotProtectionSatisfied()) {
+      setServerError(
+        "Just a moment — we're completing a quick security check. Please try again."
+      );
+      return;
+    }
+
     setServerError(null);
 
     if (!canProceedToCheckout) {
@@ -377,6 +388,13 @@ function CheckoutContent() {
     submitLockRef.current = true;
     setIsSubmitting(true);
 
+    // One idempotency key per checkout attempt (P1.3, R1). Deliberately created
+    // here, once, rather than inside the request layer: the axios CSRF retry
+    // re-sends this exact payload, so it carries the SAME key and the server
+    // returns the order it already created instead of creating another. A key
+    // generated per HTTP request would make the whole mechanism useless.
+    const idempotencyKey = crypto.randomUUID();
+
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({
@@ -392,6 +410,7 @@ function CheckoutContent() {
         paymentMethod: "cash_on_delivery",
         couponCode: appliedCoupon || undefined,
         quoteFingerprint: shippingQuote.quoteFingerprint,
+        idempotencyKey,
       });
 
       clearCart();
@@ -728,7 +747,7 @@ function CheckoutContent() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 font-medium text-neutral-700">
-                          {item.product.name}
+                          {productShortName(item.product)}
                         </p>
                         <p className="text-xs text-neutral-400">
                           Qty {item.quantity}

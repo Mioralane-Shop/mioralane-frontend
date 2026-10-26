@@ -9,7 +9,7 @@ const PROMOS = [
     title: "New Arrivals",
     desc: "Fresh Korean skincare drops",
     cta: "Explore New",
-    href: "/shop?sort=newest",
+    href: "/shop?tab=new",
     bg: "#E6F0E6",
     img: "/images/promo-arrivals.jpg",
   },
@@ -18,7 +18,7 @@ const PROMOS = [
     title: "Shop by Routine",
     desc: "Build a routine that fits your skin goals",
     cta: "Explore Routines",
-    href: "/combo",
+    href: "/shop",
     bg: "#FEE4EA",
     img: "/images/promo-routine.jpg",
   },
@@ -27,7 +27,7 @@ const PROMOS = [
     title: "Popular Picks",
     desc: "Customer-favorite skincare essentials",
     cta: "Shop Popular",
-    href: "/shop?sort=popular",
+    href: "/shop?tab=popular",
     bg: "#EAE3DA",
     img: "/images/promo-cashback.jpg",
   },
@@ -62,7 +62,7 @@ export function PromoCarousel() {
                   </span>
                 </span>
               </div>
-              <div className="relative h-[78px] w-[78px] flex-shrink-0 overflow-hidden rounded-xl md:h-[80px] md:w-[80px]">
+              <div className="relative h-[78px] w-[78px] shrink-0 overflow-hidden rounded-xl md:h-[80px] md:w-[80px]">
                 <Image
                   src={promo.img}
                   alt={promo.title.replace("\n", " ")}
