@@ -13,9 +13,9 @@ import { megaMenuTargetHref } from "@/lib/mega-menu";
 import { cn, formatPrice } from "@/lib/utils";
 
 const rowClassName =
-  "flex min-h-12 items-center rounded-lg px-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-brand-50 hover:text-brand-600";
+  "flex min-h-12 items-center rounded-lg px-3 text-sm font-medium text-neutral-700";
 const childClassName =
-  "flex min-h-10 items-center rounded-lg px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-brand-50 hover:text-brand-600";
+  "flex min-h-10 items-center rounded-lg px-3 py-2 text-sm text-neutral-600";
 const columnLabelClassName =
   "block px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/70";
 
@@ -56,6 +56,8 @@ export function MobileMenu() {
             const Chevron = isOpen ? ChevronDown : ChevronRight;
 
             // Plain link row (Blog) and the muted "coming soon" row (Sales).
+            // A link is a destination, so it gets no chevron — the arrow reads as
+            // "expands", which only the accordion rows actually do.
             if (entry.kind === "link" || entry.kind === "soon") {
               return (
                 <div key={entry.id} className="border-b border-brand-50">
@@ -64,10 +66,12 @@ export function MobileMenu() {
                     href={entry.kind === "link" ? entry.href : undefined}
                     comingSoon={entry.kind === "soon"}
                     onClick={close}
-                    className={cn(rowClassName, "w-full justify-between")}
+                    className={cn(rowClassName, "w-full", entry.kind === "soon" && "justify-between")}
                   >
                     <span className="flex-1 text-left">{entry.label}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" />
+                    {entry.kind === "soon" ? (
+                      <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" />
+                    ) : null}
                   </NavigationItem>
                 </div>
               );
@@ -101,7 +105,7 @@ export function MobileMenu() {
                     onClick={() => toggle(entry.id)}
                     aria-expanded={isOpen}
                     aria-label={`${isOpen ? "Collapse" : "Expand"} ${entry.label}`}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:text-neutral-700"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-neutral-400"
                   >
                     <Chevron className="h-4 w-4" />
                   </button>
@@ -162,7 +166,7 @@ export function MobileMenu() {
                         key={combo.id}
                         href={`/combo/${combo.slug}`}
                         onClick={close}
-                        className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-brand-50"
+                        className="flex items-center justify-between gap-3 rounded-lg px-3 py-2"
                       >
                         <span className="min-w-0 flex-1 truncate text-sm text-neutral-600">
                           {combo.name}
