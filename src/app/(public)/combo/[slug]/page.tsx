@@ -122,7 +122,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-[1400px] px-5 py-8 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-4">
             <div className="aspect-square w-full animate-pulse rounded-[2rem] bg-ink/[0.04]" />
             <div className="grid grid-cols-4 gap-3">
@@ -153,7 +153,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
           <p className="mt-3 text-neutral-400">
             We could not find that bundle. Please check the bundles page.
           </p>
-          <div className="mt-6 flex justify-center gap-3">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild>
               <Link href="/combo">View Bundles</Link>
             </Button>
@@ -173,7 +173,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
         <p className="mt-3 text-neutral-400">
           We could not load this bundle right now. Please try again.
         </p>
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button onClick={() => refetch()} disabled={isFetching}>
             {isFetching ? "Retrying..." : "Retry"}
           </Button>
@@ -224,7 +224,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
           </span>
         </nav>
 
-        <section className="grid gap-9 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-start lg:gap-12">
+        <section className="grid grid-cols-1 gap-9 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-start lg:gap-12">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-[#F7F8F4]">
@@ -303,7 +303,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
 
             <Card className="border-rose-100">
               <CardContent className="space-y-4 p-5">
-                <div className="grid gap-3 text-sm text-neutral-600 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 text-sm text-neutral-600 sm:grid-cols-2">
                   <div>
                     <p className="text-xs uppercase tracking-wider text-neutral-400">Brand</p>
                     <p className="mt-1 font-medium text-neutral-800">
@@ -362,7 +362,7 @@ function ComboDetailContent({ slug }: { slug: string }) {
               </CardContent>
             </Card>
 
-            <div className="grid gap-3 rounded-3xl border border-rose-100 bg-rose-50/40 p-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 rounded-3xl border border-rose-100 bg-rose-50/40 p-5 sm:grid-cols-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/35">
                   Price

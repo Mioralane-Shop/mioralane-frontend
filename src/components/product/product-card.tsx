@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, ShoppingBag, ShoppingCart, Sparkles } from "lucide-react";
@@ -113,11 +114,10 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
   const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
   const productCardImageLoader = isImageKitUrl(mainImgSrc) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined;
 
-  const handleClick = () => {
+  const handleCardNavigate = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (onNavigate) {
+      event.preventDefault();
       onNavigate(product);
-    } else if (typeof window !== "undefined") {
-      window.location.href = cardHref;
     }
   };
 
@@ -203,16 +203,21 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
   if (!isCombo) {
     return (
       <div
-        onClick={handleClick}
-        className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        className="group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
         id={`product-card-${product.id}`}
       >
+        <Link
+          href={cardHref}
+          onClick={handleCardNavigate}
+          className="absolute inset-0 z-10 rounded-[28px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          aria-label={`View ${productShortName(product)}`}
+        />
         <div
           className={`relative m-2 overflow-hidden rounded-2xl bg-[#FAF8F6] ${compactImage ? "aspect-square" : "aspect-[4/5]"
             }`}
         >
           {discount > 0 && (
-            <div className="absolute right-3 top-3 left-auto z-30">
+            <div className="pointer-events-none absolute right-3 top-3 left-auto z-30">
               <span className={`discount-running-border relative isolate whitespace-nowrap uppercase tracking-wide ${UI_COLORS.discount}`}>
                 <span className="relative z-10">SAVE {discount}%</span>
               </span>
@@ -221,7 +226,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
 
           {!discount && badgeLabel && (
             <div
-              className={`absolute right-3 top-3 z-30 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shadow-sm ${badgeClass}`}
+              className={`pointer-events-none absolute right-3 top-3 z-30 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shadow-sm ${badgeClass}`}
             >
               {badgeLabel}
             </div>
@@ -231,7 +236,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             onClick={handleWishlist}
             disabled={isTogglingWishlist}
             className={cn(
-              "absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-transform duration-150 hover:scale-105",
+              "absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-transform duration-150 after:absolute after:-inset-1.5 after:rounded-full after:content-[''] hover:scale-105 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/60",
               isWishlisted ? "text-accent fill-accent" : "text-ink-muted hover:text-accent",
               isTogglingWishlist && "cursor-wait opacity-70"
             )}
@@ -291,7 +296,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             </div>
 
             {/* Reserve two lines so the rows below line up across cards */}
-            <h3 className="product-card-name line-clamp-2 min-h-[2.75em] text-[15px] leading-snug text-ink sm:text-[16px]">
+            <h3 className="product-card-name line-clamp-2 min-h-[2.75em] break-words text-[14px] leading-snug text-ink sm:text-[16px]">
               {productShortName(product)}
             </h3>
 
@@ -321,8 +326,8 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             </div>
           </div>
 
-          <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
-            <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
+          <div className="relative z-20 mt-4 flex flex-wrap flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
+            <div className="flex min-w-[4.5rem] flex-wrap items-baseline justify-start gap-1.5">
               {displayCompareAt && (
                 <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
                   {formatPrice(displayCompareAt)}
@@ -336,9 +341,9 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
             {isInCart ? (
               <button
                 onClick={handleViewCart}
-                className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow-card active:scale-95 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
+                className="ml-auto flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-success px-3 py-2 text-xs font-semibold text-white shadow-[0_5px_14px_-8px_rgba(0,100,0,0.7)] transition-all duration-150 hover:bg-success/90 hover:shadow-card active:scale-95 max-[359px]:px-2 max-[479px]:w-full sm:h-11 sm:px-5 sm:text-sm"
               >
-                <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
+                <ShoppingCart className="h-3.5 w-3.5 shrink-0 max-[359px]:h-3 max-[359px]:w-3 sm:h-5 sm:w-5" />
                 <span>View Cart</span>
               </button>
             ) : (
@@ -346,13 +351,14 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
                 onClick={handleAddToCart}
                 disabled={!availability.isAvailable}
                 className={cn(
-                  "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
+                  "ml-auto flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition-all duration-150 max-[359px]:px-2 max-[479px]:w-full sm:h-11 sm:px-5 sm:text-sm",
                   !availability.isAvailable
                     ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
-                    : UI_COLORS.cart + " hover:shadow-card active:scale-95"
+                    : UI_COLORS.cart +
+                    " border border-white/25 shadow-[0_5px_14px_-8px_rgba(251,111,146,0.65)] hover:shadow-card hover:brightness-[0.98] active:scale-95"
                 )}
               >
-                <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
+                <ShoppingBag className="h-3.5 w-3.5 shrink-0 max-[359px]:h-3 max-[359px]:w-3 sm:h-5 sm:w-5" />
                 <span>{availability.ctaLabel}</span>
               </button>
             )}
@@ -364,10 +370,15 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
 
   return (
     <div
-      onClick={handleClick}
-      className="group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       id={`product-card-${product.id}`}
     >
+      <Link
+        href={cardHref}
+        onClick={handleCardNavigate}
+        className="absolute inset-0 z-10 rounded-[28px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        aria-label={`View ${productShortName(product)}`}
+      />
       {/* Image container */}
       <div
         className={`relative m-2 overflow-hidden rounded-2xl bg-[#FAF8F6] ${compactImage ? "aspect-square" : "aspect-[4/5]"
@@ -385,7 +396,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
         )}
 
         {comboSavings > 0 && isCombo && discount > 0 && (
-          <div className="absolute right-3 top-3 left-auto z-30">
+          <div className="pointer-events-none absolute right-3 top-3 left-auto z-30">
             <span className={`discount-running-border relative isolate whitespace-nowrap uppercase tracking-wide ${UI_COLORS.discount}`}>
               <span className="relative z-10">
                 SAVE {discount}%
@@ -398,7 +409,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           onClick={handleWishlist}
           disabled={isTogglingWishlist}
           className={cn(
-            "absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-transform duration-150 hover:scale-105",
+            "absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-transform duration-150 after:absolute after:-inset-1.5 after:rounded-full after:content-[''] hover:scale-105 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/60",
             isWishlisted ? "text-accent fill-accent" : "text-ink-muted hover:text-accent",
             isTogglingWishlist && "cursor-wait opacity-70"
           )}
@@ -462,7 +473,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {/* Product name */}
           <h3
             className={cn(
-              "product-card-name line-clamp-2 min-h-[2.75em] text-[15px] leading-snug text-ink sm:text-[16px]"
+              "product-card-name line-clamp-2 min-h-[2.75em] break-words text-[14px] leading-snug text-ink sm:text-[16px]"
             )}
           >
             {productShortName(product)}
@@ -514,9 +525,9 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
         </div>
 
         {/* Footer: Price + Add to Cart */}
-        <div className="mt-4 flex flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
+        <div className="relative z-20 mt-4 flex flex-wrap flex-row items-end justify-between gap-3 border-t border-border pt-3 max-[479px]:flex-col max-[479px]:items-stretch max-[479px]:gap-2.5">
           {/* Price */}
-          <div className="flex min-w-0 flex-wrap items-baseline justify-start gap-1.5">
+          <div className="flex min-w-[4.5rem] flex-wrap items-baseline justify-start gap-1.5">
             {displayCompareAt && (
               <span className="whitespace-nowrap text-sm font-normal line-through text-ink-soft sm:text-base">
                 {formatPrice(displayCompareAt)}
@@ -531,9 +542,9 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
           {isInCart ? (
             <button
               onClick={handleViewCart}
-              className="flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-success px-4 py-2 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-success/90 hover:shadow-card active:scale-95 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm"
+              className="ml-auto flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-success px-3 py-2 text-xs font-semibold text-white shadow-[0_5px_14px_-8px_rgba(0,100,0,0.7)] transition-all duration-150 hover:bg-success/90 hover:shadow-card active:scale-95 max-[359px]:px-2 max-[479px]:w-full sm:h-11 sm:px-5 sm:text-sm"
             >
-              <ShoppingCart className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
+              <ShoppingCart className="h-3.5 w-3.5 shrink-0 max-[359px]:h-3 max-[359px]:w-3 sm:h-5 sm:w-5" />
               <span>View Cart</span>
             </button>
           ) : (
@@ -541,13 +552,14 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
               onClick={handleAddToCart}
               disabled={!availability.isAvailable}
               className={cn(
-                "flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium shadow-sm transition-all duration-150 max-[479px]:w-full sm:px-5 sm:py-2.5 sm:text-sm",
+                "ml-auto flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition-all duration-150 max-[359px]:px-2 max-[479px]:w-full sm:h-11 sm:px-5 sm:text-sm",
                 !availability.isAvailable
                   ? "cursor-not-allowed bg-neutral-200 text-neutral-500 shadow-none"
-                  : UI_COLORS.cart + " hover:shadow-card active:scale-95"
+                  : UI_COLORS.cart +
+                  " border border-white/25 shadow-[0_5px_14px_-8px_rgba(251,111,146,0.65)] hover:shadow-card hover:brightness-[0.98] active:scale-95"
               )}
             >
-              <ShoppingBag className="h-3.5 w-3.5 shrink-0 sm:h-5 sm:w-5" />
+              <ShoppingBag className="h-3.5 w-3.5 shrink-0 max-[359px]:h-3 max-[359px]:w-3 sm:h-5 sm:w-5" />
               <span>{availability.ctaLabel}</span>
             </button>
           )}

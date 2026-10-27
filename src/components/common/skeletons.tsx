@@ -110,7 +110,7 @@ export function FormSkeleton({
   columns?: 1 | 2;
 }) {
   return (
-    <div className={columns === 2 ? "grid gap-5 sm:grid-cols-2" : "grid gap-5"}>
+    <div className={columns === 2 ? "grid grid-cols-1 gap-5 sm:grid-cols-2" : "grid grid-cols-1 gap-5"}>
       {Array.from({ length: fields }).map((_, index) => (
         <div key={index} className="space-y-2.5">
           <Skeleton className="h-3.5 w-24" />
@@ -175,7 +175,7 @@ export function ArticleSkeleton() {
 /** The product detail page: gallery on the left, buy box on the right. */
 export function ProductDetailSkeleton() {
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
       <Skeleton className={`aspect-square w-full rounded-[2rem] ${MEDIA_TINT}`} />
       <div className="space-y-4">
         <Skeleton className="h-5 w-24" />

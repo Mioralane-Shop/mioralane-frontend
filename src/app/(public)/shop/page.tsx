@@ -378,11 +378,11 @@ function SortControl({ activeSort, compact = false, onChange }: SortControlProps
     <label
       className={cn(
         "flex items-center gap-2 text-sm text-ink/60",
-        compact && "w-full justify-end",
+        compact && "shrink-0 justify-end",
       )}
     >
       <span className={cn("whitespace-nowrap", compact && "sr-only")}>Sort by</span>
-      <span className={cn("relative", compact && "min-w-0 flex-1 sm:min-w-[128px]")}>
+      <span className={cn("relative", compact && "min-w-[132px]")}>
         <select
           value={activeSort}
           onChange={(event) => onChange(event.target.value)}
@@ -877,7 +877,7 @@ function ShopContent() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   <button
                     type="button"
                     onClick={() => setPage(currentPageLabel - 1)}

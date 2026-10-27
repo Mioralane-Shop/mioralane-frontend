@@ -31,7 +31,7 @@ export function NewToKBeautySection() {
         <SectionHeading title="NEW TO KOREAN SKINCARE?" />
 
         <div className="mx-auto mt-10 max-w-[1200px]">
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             {CARDS.map((card) => (
               <Link
                 key={card.title}
@@ -52,7 +52,7 @@ export function NewToKBeautySection() {
                   <h3 className="min-h-[48px] text-lg font-bold uppercase tracking-tight text-ink">
                     {card.title}
                   </h3>
-                  <span className="mt-3 inline-flex w-full items-start justify-between rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 group-hover:bg-accent md:mt-auto">
+                  <span className="mt-3 inline-flex min-h-11 w-full items-center justify-between rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 group-hover:bg-accent md:mt-auto">
                     {card.cta}
                     <ArrowRight className="h-4 w-4 shrink-0" />
                   </span>

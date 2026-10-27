@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import { AlertCircle, Loader2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product/product-card";
@@ -36,11 +37,21 @@ export function ComboSection() {
     refetch,
     isFetching,
   } = useCombos();
+  // The navbar shares this query key, so on a hydrated page the cache can already
+  // be warm by the time this component renders. The server always renders the
+  // skeleton, so keep the first client render identical and swap in the cards
+  // only after hydration. (Without this, React reports a hydration mismatch on
+  // /combo.)
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const hasError = isError && (!combos || combos.length === 0);
 
-  if (isLoading) {
+  if (!hydrated || isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
@@ -97,7 +108,7 @@ export function ComboSection() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
       {combos.map((product) => (
         <ProductCard
           key={product.id}

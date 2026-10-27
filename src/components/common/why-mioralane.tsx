@@ -40,7 +40,7 @@ export function WhyMioralane() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
           {TRUST_PILLARS.map((pillar) => (
             <div
               key={pillar.title}

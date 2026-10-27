@@ -27,7 +27,7 @@ export default async function BlogPage() {
           <p className="mt-2 text-sm text-ink/50">Check back soon for skincare guides and tips.</p>
         </div>
       ) : (
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <BlogPostCard key={post.slug} post={post} />
           ))}

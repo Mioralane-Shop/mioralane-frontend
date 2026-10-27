@@ -41,7 +41,7 @@ export function BlogPreviewSection() {
           </h2>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {BLOG_POSTS.map((post) => (
             <Link key={post.title} href="#" className="group">
               <div className="overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow group-hover:shadow-md">

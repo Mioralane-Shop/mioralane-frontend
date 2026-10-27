@@ -91,7 +91,7 @@ export default function OrderSuccessPage() {
 
       <Card className="border-brand-100">
         <CardContent className="p-4 sm:p-6">
-          <div className="grid gap-4 border-b border-border-light pb-5 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 border-b border-border-light pb-5 sm:grid-cols-3">
             <div>
               <p className="text-xs uppercase tracking-wider text-ink-muted">
                 Payment

@@ -62,7 +62,7 @@ export function InstagramSection() {
           titleClassName="text-[22px] md:text-[25px] lg:text-[29px]"
         />
         <a
-          href="https://www.instagram.com/mioralane/"
+          href="https://www.instagram.com/mioralane.bd?cplk=NTk0emxuMWowdWV4"
           target="_blank"
           rel="noopener noreferrer"
           className="instagram-handle group mt-3 inline-flex w-full items-center justify-center gap-2 text-base text-gold transition-colors duration-200 hover:text-accent"
