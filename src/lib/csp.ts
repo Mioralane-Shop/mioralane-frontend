@@ -12,9 +12,10 @@
  * observation window; see `src/middleware.ts` for the wiring and the report
  * format for the directive-by-directive rationale.
  *
- * Every origin below was read out of this app's source rather than guessed — the
- * harness asserts the policy still covers them, and names the file each one came
- * from.
+ * Every origin below is either read out of this app's source or, for the Google
+ * collection hosts that a tag discovers on its own, taken from Google's
+ * documented CSP list. The harness asserts the policy still covers the origins
+ * the app names, and points at the file each of those came from.
  */
 
 /** The header Next.js reads a nonce from, on the *request*. */
@@ -24,7 +25,8 @@ export const CSP_HEADER = "Content-Security-Policy";
 export const CSP_REPORT_ONLY_HEADER = "Content-Security-Policy-Report-Only";
 
 /**
- * Google Identity Services — the only third-party script on the storefront.
+ * Google Identity Services — the sign-in script (Google Analytics is the other
+ * third-party tag; see below).
  *
  * `providers/google-auth-provider.tsx` wraps the app in
  * `GoogleOAuthProvider`, which injects `https://accounts.google.com/gsi/client`.
@@ -72,6 +74,20 @@ export const GOOGLE_AVATAR_ORIGIN = "https://*.googleusercontent.com";
  * them breaks verification, and with it the sign-in / checkout gate.
  */
 export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
+
+/**
+ * Google Analytics 4 — the tag loaded by
+ * `components/analytics/google-analytics.tsx` (ID in `constants/analytics.ts`).
+ *
+ * `www.googletagmanager.com` serves `gtag/js`. GA4 then POSTs its hits to the
+ * property's regional collector (`region1.google-analytics.com`), hence the
+ * `*.google-analytics.com` wildcard, and some transports fall back to a 1×1
+ * image, which is why the same origin appears in `img-src`. The wildcard is a
+ * subdomain wildcard, like the Google avatar host above — never a bare `*`.
+ */
+export const GOOGLE_TAG_MANAGER_ORIGIN = "https://www.googletagmanager.com";
+export const GOOGLE_ANALYTICS_ORIGIN = "https://*.google-analytics.com";
+export const GOOGLE_ANALYTICS_CONNECT_ORIGIN = "https://*.analytics.google.com";
 
 /** 16 bytes of CSPRNG output, base64 — 128 bits, standard `nonce-value` grammar. */
 const NONCE_BYTES = 16;
@@ -160,6 +176,7 @@ export const buildCsp = (nonce: string, options: CspOptions = {}): string => {
     ...(allowEval ? ["'unsafe-eval'"] : []),
     GOOGLE_IDENTITY_ORIGIN,
     TURNSTILE_ORIGIN,
+    GOOGLE_TAG_MANAGER_ORIGIN,
   ];
 
   const styleSrc = [
@@ -185,8 +202,16 @@ export const buildCsp = (nonce: string, options: CspOptions = {}): string => {
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
     `font-src 'self' ${FONTSHARE_FONT_ORIGIN} data:`,
-    `img-src 'self' data: blob: ${IMAGEKIT_ORIGIN} ${GOOGLE_AVATAR_ORIGIN}`,
-    `connect-src ${unique(["'self'", ...connectOrigins, GOOGLE_IDENTITY_ORIGIN, TURNSTILE_ORIGIN]).join(" ")}`,
+    `img-src 'self' data: blob: ${IMAGEKIT_ORIGIN} ${GOOGLE_AVATAR_ORIGIN} ${GOOGLE_ANALYTICS_ORIGIN}`,
+    `connect-src ${unique([
+      "'self'",
+      ...connectOrigins,
+      GOOGLE_IDENTITY_ORIGIN,
+      TURNSTILE_ORIGIN,
+      GOOGLE_TAG_MANAGER_ORIGIN,
+      GOOGLE_ANALYTICS_ORIGIN,
+      GOOGLE_ANALYTICS_CONNECT_ORIGIN,
+    ]).join(" ")}`,
     `frame-src ${GOOGLE_IDENTITY_ORIGIN} ${TURNSTILE_ORIGIN}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",

@@ -10,7 +10,6 @@
  * module directly under Node's type stripping.
  */
 import type { MetadataRoute } from "next";
-import { CATEGORIES } from "../constants/site.ts";
 import { getSeoBlogPosts, getSeoCatalog } from "../lib/seo/data.ts";
 import { buildSitemapEntries } from "../lib/seo/sitemap.ts";
 
@@ -24,6 +23,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     products,
     combos,
     posts,
-    categories: CATEGORIES,
   });
 }

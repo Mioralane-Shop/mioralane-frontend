@@ -444,6 +444,19 @@ export default function ProductPage() {
             Shop
           </Link>
           <ChevronRight className="h-3 w-3" />
+          {/* Mirrors the BreadcrumbList in the segment layout, and is the page's
+              link into the brand's filtered listing. */}
+          {product.brand ? (
+            <>
+              <Link
+                href={`/shop?brand=${encodeURIComponent(product.brand)}`}
+                className="transition-colors hover:text-ink"
+              >
+                {product.brand}
+              </Link>
+              <ChevronRight className="h-3 w-3" />
+            </>
+          ) : null}
           <span className="line-clamp-1 normal-case tracking-normal text-ink/60">
             {productFullName(product)}
           </span>

@@ -17,7 +17,7 @@
  * `serializeJsonLd` is the ONLY place a JSON-LD payload may be stringified; the
  * `<JsonLd>` component and this harness both go through it.
  */
-import type { Product } from "@/types/product";
+import type { Product, ProductMedia } from "@/types/product";
 import { SITE_DESCRIPTION, SITE_NAME } from "../../constants/site.ts";
 import { SOCIAL_LINKS } from "../../constants/social-links.ts";
 import { absoluteUrl, SITE_ORIGIN } from "./urls.ts";
@@ -52,10 +52,21 @@ export function serializeJsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-/** Absolute image URLs for a product, de-duplicated, empties dropped. */
-function productImages(product: Product): string[] {
+/**
+ * Absolute image URLs for a product, primary first, de-duplicated, empties dropped.
+ *
+ * Exported because the product layout's Open Graph images must be the same list:
+ * a card that shows one photo while the JSON-LD advertises another is a mismatch
+ * Google reports as an image inconsistency.
+ */
+export function productImageUrls(product: Product): string[] {
+  const media: ProductMedia[] = [...(product.media ?? [])].sort((a, b) => {
+    if (Boolean(a.isPrimary) !== Boolean(b.isPrimary)) return a.isPrimary ? -1 : 1;
+    return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+  });
+
   const candidates = [
-    ...(product.media?.map((entry) => entry.url) ?? []),
+    ...media.map((entry) => entry.url),
     ...(product.images ?? []),
     product.hoverImage,
   ].filter((value): value is string => typeof value === "string" && value.trim().length > 0);
@@ -63,13 +74,30 @@ function productImages(product: Product): string[] {
   return Array.from(new Set(candidates.map((url) => absoluteUrl(url))));
 }
 
-/** The lowest purchasable price, so `offers.price` is the advertised one. */
-function lowestPrice(product: Product): number {
-  const prices = [product.price, ...(product.sizeOptions ?? []).map((option) => option.price)].filter(
-    (value) => typeof value === "number" && Number.isFinite(value) && value > 0,
-  );
+/**
+ * The price the detail page shows on load.
+ *
+ * `page.tsx` renders `sizeOptions[selectedSize].price` starting at index 0 (and
+ * falls back to `product.price`), so the Offer must use that same value. Taking
+ * the minimum across variants instead could advertise a cheaper size than the
+ * one the visitor — and Google's price check — actually lands on.
+ */
+function displayedPrice(product: Product): number {
+  const firstOption = product.sizeOptions?.[0]?.price;
+  if (typeof firstOption === "number" && Number.isFinite(firstOption) && firstOption > 0) {
+    return firstOption;
+  }
 
-  return prices.length ? Math.min(...prices) : 0;
+  return typeof product.price === "number" && Number.isFinite(product.price) && product.price > 0
+    ? product.price
+    : 0;
+}
+
+/** Stored copy can contain inline HTML; schema.org text must not. */
+function plainText(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const text = value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return text.length > 0 ? text : undefined;
 }
 
 function schemaAvailability(product: Product): string {
@@ -93,8 +121,11 @@ export function generateProductJsonLd(
 ): JsonLdNode {
   const path = options.path ?? `/product/${product.slug}`;
   const url = absoluteUrl(path);
-  const images = productImages(product);
-  const description = product.longDescription?.trim() || product.description?.trim() || undefined;
+  const images = productImageUrls(product);
+  const description = plainText(product.longDescription) ?? plainText(product.description);
+  // A real SKU only. `product.id` is a database key, not something a merchant or
+  // a scraper can reconcile against a supplier, so it is not passed off as one.
+  const sku = typeof product.sku === "string" ? product.sku.trim() : "";
 
   const node: JsonLdNode = {
     "@context": SCHEMA,
@@ -103,7 +134,7 @@ export function generateProductJsonLd(
     name: product.name,
     description,
     image: images.length ? images : undefined,
-    sku: product.sku || product.id,
+    sku: sku.length ? sku : undefined,
     category: product.category,
     brand: { "@type": "Brand", name: product.brand },
     url,
@@ -111,7 +142,7 @@ export function generateProductJsonLd(
       "@type": "Offer",
       url,
       priceCurrency: PRICE_CURRENCY,
-      price: lowestPrice(product).toFixed(2),
+      price: displayedPrice(product).toFixed(2),
       availability: schemaAvailability(product),
       itemCondition: `${SCHEMA}/NewCondition`,
     },
