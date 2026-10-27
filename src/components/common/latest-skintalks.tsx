@@ -20,7 +20,7 @@ export function LatestSkintalks() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-8 md:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
           {posts.map((post) => (
             <Link
               key={post.slug}

@@ -7,24 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { NavigationItem } from "@/components/layout/navigation-item";
 import { PRIMARY_NAV } from "@/constants/navigation";
-import { BRANDS } from "@/constants/site";
-import { useBrands } from "@/hooks/use-brands";
 import { useCombos } from "@/hooks/use-combos";
 import { useMegaMenu } from "@/hooks/use-mega-menu";
 import { megaMenuTargetHref } from "@/lib/mega-menu";
-import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { cn, formatPrice } from "@/lib/utils";
-
-/** What the brand list renders, from the API or the bundled fallback. */
-type NavBrand = { name: string; logoUrl?: string };
-
-/** Fallback list, used only until the API answers. Removed in the cleanup slice. */
-const FALLBACK_BRANDS = [...BRANDS].sort((a, b) => a.localeCompare(b));
 
 const rowClassName =
   "flex min-h-12 items-center rounded-lg px-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-brand-50 hover:text-brand-600";
 const childClassName =
-  "block rounded-lg px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-brand-50 hover:text-brand-600";
+  "flex min-h-10 items-center rounded-lg px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-brand-50 hover:text-brand-600";
 const columnLabelClassName =
   "block px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/70";
 
@@ -40,16 +31,7 @@ export function MobileMenu() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const { data: combos = [] } = useCombos();
   const { data: megaMenu } = useMegaMenu();
-  const { brands } = useBrands();
   const menuTabs = megaMenu?.tabs ?? [];
-
-  // Alphabetical, as this drawer has always been — the desktop dropdown shows the
-  // curated `order` instead. That difference in ordering is pre-existing.
-  const brandEntries: NavBrand[] = (
-    brands.length > 0
-      ? brands.map((brand) => ({ name: brand.name, logoUrl: brand.logoUrl }))
-      : FALLBACK_BRANDS.map((name) => ({ name }))
-  ).sort((a, b) => a.name.localeCompare(b.name));
 
   const close = () => setOpen(false);
   const toggle = (id: string) =>
@@ -87,6 +69,20 @@ export function MobileMenu() {
                     <span className="flex-1 text-left">{entry.label}</span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" />
                   </NavigationItem>
+                </div>
+              );
+            }
+
+            // Brands is a destination, not a submenu — no chevron/accordion.
+            if (entry.kind === "brands") {
+              return (
+                <div key={entry.id} className="border-b border-brand-50">
+                  <NavigationItem
+                    label={entry.label}
+                    href={entry.href}
+                    onClick={close}
+                    className={cn(rowClassName, "w-full")}
+                  />
                 </div>
               );
             }
@@ -157,39 +153,6 @@ export function MobileMenu() {
                           </div>
                         ))}
                   </div>
-                )}
-
-                {isOpen && entry.kind === "brands" && (
-                  <ul className="mb-3 ml-2 space-y-0.5 border-l border-brand-100 pl-2">
-                    {brandEntries.map((brand) => {
-                      // Same reasoning as the desktop dropdown: no stored dimensions
-                      // for these vector logos, so a fixed CSS height and a plain
-                      // <img>. The guard runs before the value reaches the DOM.
-                      const logoSrc = isRenderableImageSrc(brand.logoUrl)
-                        ? brand.logoUrl.trim()
-                        : null;
-
-                      return (
-                        <li key={brand.name}>
-                          <Link
-                            href={`/shop?brand=${encodeURIComponent(brand.name)}`}
-                            onClick={close}
-                            className={cn(childClassName, "flex items-center gap-2")}
-                          >
-                            {logoSrc ? (
-                              // eslint-disable-next-line @next/next/no-img-element -- SVGs, served unoptimised by next/image anyway, and no stored dimensions
-                              <img
-                                src={logoSrc}
-                                alt=""
-                                className="h-3.5 w-auto shrink-0 object-contain"
-                              />
-                            ) : null}
-                            <span className="truncate">{brand.name}</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
                 )}
 
                 {isOpen && entry.kind === "combo" && (

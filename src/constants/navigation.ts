@@ -165,7 +165,7 @@ export const PRIMARY_NAV: PrimaryNavEntry[] = [
         href: "/shop",
         columns: MEGA_MENU_COLUMNS,
     },
-    { id: "brands", kind: "brands", label: "Brands", href: "/shop" },
+    { id: "brands", kind: "brands", label: "Brands", href: "/brands" },
     { id: "blog", kind: "link", label: "Blog", href: "/blog" },
     // { id: "sales", kind: "soon", label: "Sales" },
 ];

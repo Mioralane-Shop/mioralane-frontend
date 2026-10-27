@@ -186,7 +186,7 @@ export function ProductReviews({
 
     return (
         <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                 <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
                         Customer Reviews

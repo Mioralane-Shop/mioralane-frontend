@@ -187,7 +187,7 @@ function WishlistItemCard({ entry }: { entry: WishlistEntry }) {
         </p>
         <Link
           href={itemHref}
-          className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-ink transition-colors hover:text-accent"
+          className="mt-1 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink transition-colors hover:text-accent"
         >
           {productShortName(product)}
         </Link>
@@ -338,7 +338,7 @@ export default function WishlistPage() {
         ) : (
           <div
             className={cn(
-              "grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4",
+              "grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4",
               isLoading && "opacity-60 transition-opacity",
             )}
           >

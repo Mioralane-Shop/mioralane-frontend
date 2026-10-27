@@ -47,7 +47,7 @@ export default function CartPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="rounded-2xl border border-brand-100 bg-white">
               <div className="border-b border-brand-50 px-4 py-4 sm:px-6">

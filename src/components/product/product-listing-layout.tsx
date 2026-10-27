@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import {
   PLP_CONTENT_COLUMN_CLASSES,
@@ -73,6 +73,30 @@ export function ProductListingLayout({
   children,
 }: ProductListingLayoutProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (filtersOpen) {
+      closeButtonRef.current?.focus();
+    }
+  }, [filtersOpen]);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [filtersOpen]);
 
   return (
     <div className={PLP_FRAME_CLASSES}>
@@ -112,11 +136,12 @@ export function ProductListingLayout({
       </div>
 
       {filtersOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[95] lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-ink/30" onClick={() => setFiltersOpen(false)} />
           <div className="absolute inset-y-0 left-0 flex w-[min(92vw,360px)] flex-col bg-surface px-5 pt-5 shadow-lg">
             <button
               type="button"
+              ref={closeButtonRef}
               onClick={() => setFiltersOpen(false)}
               className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/[0.04] hover:text-ink"
               aria-label="Close filters"

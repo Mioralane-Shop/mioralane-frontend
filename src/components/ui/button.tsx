@@ -4,16 +4,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.99]",
   {
     variants: {
       variant: {
         default:
-          "bg-brand-400 text-white hover:bg-brand-500 shadow-sm",
-        destructive: "bg-red-500 text-white hover:bg-red-600",
+          "border border-white/20 bg-brand-400 text-white shadow-[0_4px_14px_-8px_rgba(251,111,146,0.7)] hover:bg-brand-500 hover:shadow-card",
+        destructive: "border border-white/20 bg-red-500 text-white shadow-sm hover:bg-red-600",
         outline:
-          "border border-brand-200 bg-white text-brand-700 hover:bg-brand-50",
-        secondary: "bg-secondary-100 text-secondary-700 hover:bg-secondary-200",
+          "border border-brand-200 bg-white text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-50",
+        secondary: "bg-secondary-100 text-secondary-700 shadow-sm hover:bg-secondary-200",
         ghost: "text-brand-600 hover:bg-brand-50",
         link: "text-brand-600 underline-offset-4 hover:underline",
       },

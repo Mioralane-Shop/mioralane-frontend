@@ -121,7 +121,7 @@ export function AddressForm({
 
     return (
         <div className="space-y-4" onKeyDown={handleKeyDown}>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                     <Label htmlFor="address-name">Recipient Name</Label>
                     <Input

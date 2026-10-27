@@ -57,7 +57,7 @@ function ProfileContent() {
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
         <Card className="border-brand-100">
           <CardContent className="p-4 sm:p-8">
             <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ function ProfileContent() {
             </div>
 
             <div className="mt-8">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Button asChild variant="outline" className="justify-start">
                   <Link href="/orders">
                     <Package className="mr-2 h-4 w-4" />

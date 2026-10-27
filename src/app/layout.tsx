@@ -111,6 +111,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [DEFAULT_OG_IMAGE.url],
   },
+  // Search Console ownership token. Rendered on every route by the root layout;
+  // Next emits `<meta name="google-site-verification" content="..." />`.
+  verification: {
+    google: "FklR9kUZAs1rXKtF3ePdgSIznZ71hKxzW9325rHHkt8",
+  },
   icons: {
     icon: [{ url: "/logo/logo_icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/logo/logo_icon.svg" }],

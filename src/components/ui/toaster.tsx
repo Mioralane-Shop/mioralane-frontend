@@ -19,7 +19,7 @@ export function Toaster() {
   const { toasts, removeToast } = useToastStore();
 
   return (
-    <div className="pointer-events-none fixed bottom-6 left-1/2 z-[100] flex w-full max-w-sm -translate-x-1/2 flex-col items-center gap-2 px-4">
+    <div className="pointer-events-none fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 z-[100] flex w-full max-w-sm -translate-x-1/2 flex-col items-center gap-2 px-4">
       {toasts.map((toast) => {
         const Icon = ICONS[toast.type];
         return (
@@ -33,7 +33,7 @@ export function Toaster() {
             </p>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-ink/40 transition-colors hover:text-ink"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink/40 transition-colors hover:text-ink"
               aria-label="Dismiss notification"
             >
               <X className="h-4 w-4" />

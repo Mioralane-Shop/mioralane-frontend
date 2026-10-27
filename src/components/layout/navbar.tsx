@@ -576,7 +576,7 @@ function HeaderIcons({
   const iconSize = compact ? "h-[18px] w-[18px]" : "h-5 w-5";
 
   return (
-    <div className={`relative z-10 flex items-center ${compact ? "gap-0" : "gap-1"}`}>
+    <div className="relative z-10 flex items-center gap-1">
       {showSearchButton ? (
         <button
           onClick={onSearchClick}
@@ -745,7 +745,7 @@ export function Navbar() {
       <header className="sticky top-0 z-[70] bg-white lg:hidden">
         <div className="border-b border-border-light">
           <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-2 px-2.5 sm:px-4">
-            <div className="relative z-10 flex items-center gap-0.5">
+            <div className="relative z-10 flex items-center gap-1">
               <MobileMenu />
               <button
                 onClick={() => setSearchModalOpen(true)}
@@ -758,8 +758,8 @@ export function Navbar() {
 
             <BrandLogo
               size="md"
-              variant={showCompactDesktopNav ? "icon" : "full"}
-              className="absolute left-1/2 top-1/2 max-w-[38%] -translate-x-1/2 -translate-y-1/2 [&>img]:max-h-7 [&>img]:w-auto max-[374px]:max-w-[32%] max-[374px]:[&>img]:h-6"
+              variant="icon"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 [&>img]:h-7 [&>img]:w-auto max-[359px]:[&>img]:h-6"
               priority
             />
 
@@ -895,29 +895,44 @@ export function Navbar() {
           : "pointer-events-none -top-3 opacity-0"
           }`}
       >
-        <div className="mx-auto grid h-[60px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-8 px-6">
-          <BrandLogo
-            size="md"
-            variant="icon"
-            className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
-              }`}
-            priority
-          />
-
-          <nav className="flex items-center justify-center gap-8">
-            <DesktopNavLinks panelTop={compactDesktopNavBottom} />
-          </nav>
-
-          <div
-            className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
-              }`}
-          >
-            <HeaderIcons
-              compact
-              showSearchButton
-              onSearchClick={() => setSearchModalOpen(true)}
+        <div className="relative mx-auto h-[60px] max-w-[1400px] px-6">
+          <div className="flex h-full items-center justify-between gap-8">
+            <BrandLogo
+              size="md"
+              variant="icon"
+              className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
+                }`}
+              priority
             />
+
+            <div
+              className={`transition-opacity ${COMPACT_NAV_FADE} ${showCompactDesktopNav ? "opacity-100" : "opacity-0"
+                }`}
+            >
+              <HeaderIcons
+                compact
+                showSearchButton
+                onSearchClick={() => setSearchModalOpen(true)}
+              />
+            </div>
           </div>
+
+          {/*
+           * Centred on the bar itself, which is centred in the viewport — not on
+           * the space left over between the logo and the action icons. The two
+           * headers have differently sized side groups, so centring inside that
+           * leftover space dragged the links sideways when the compact bar
+           * appeared. The overlay takes no pointer events, so the logo and icons
+           * underneath stay clickable; only the links do, and only while the
+           * compact bar is showing.
+           */}
+          <nav className="pointer-events-none absolute inset-x-0 top-0 flex h-full items-center justify-center">
+            <div
+              className={`${showCompactDesktopNav ? "pointer-events-auto" : "pointer-events-none"} flex items-center justify-center gap-8`}
+            >
+              <DesktopNavLinks panelTop={compactDesktopNavBottom} />
+            </div>
+          </nav>
         </div>
       </div>
 

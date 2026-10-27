@@ -480,7 +480,7 @@ function CheckoutContent() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
           <div className="space-y-8">
             <Card className="border-brand-100">
               <CardContent className="p-4 sm:p-6">
@@ -519,7 +519,7 @@ function CheckoutContent() {
                         Loading saved addresses...
                       </p>
                     ) : (
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {savedAddresses.map((address) => (
                           <AddressCard
                             key={address.id}
@@ -573,7 +573,7 @@ function CheckoutContent() {
                   </div>
                 )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <Label htmlFor="name">Recipient Name</Label>
                     <Input

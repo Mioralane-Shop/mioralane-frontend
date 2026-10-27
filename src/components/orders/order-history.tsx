@@ -150,7 +150,7 @@ export function OrderHistory({
                 ))}
               </div>
 
-              <div className="mt-5 grid gap-3 rounded-2xl bg-brand-50/50 p-4 sm:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-brand-50/50 p-4 sm:grid-cols-3">
                 {containsPreOrder ? (
                   <div className="sm:col-span-3 text-sm text-ink-muted">
                     This order contains pre-order items and will be shipped together when all items are available.

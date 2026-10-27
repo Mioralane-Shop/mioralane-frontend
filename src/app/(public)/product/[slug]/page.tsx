@@ -204,6 +204,7 @@ export default function ProductPage() {
   const [activeTab, setActiveTab] = useState<ProductTab>("overview");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(true);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
   const syncItemStock = useCartStore((s) => s.syncItemStock);
   const { data: relatedProducts = [] } = useRelatedProducts(
@@ -219,6 +220,20 @@ export default function ProductPage() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [lightboxOpen]);
+
+  // The mobile buy bar is fixed; hide it once the footer scrolls into view so it
+  // cannot cover footer links.
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+    if (!footer || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { rootMargin: "0px 0px -25% 0px" },
+    );
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
 
   const sizeOptions: SizeOption[] =
     product && product.sizeOptions && product.sizeOptions.length > 0
@@ -301,7 +316,7 @@ export default function ProductPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-[1400px] px-5 py-8 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <Skeleton className="aspect-square w-full rounded-[2rem] bg-ink/[0.04]" />
           <div className="space-y-4">
             <Skeleton className="h-5 w-24 bg-ink/[0.04]" />
@@ -434,7 +449,7 @@ export default function ProductPage() {
           </span>
         </nav>
 
-        <section className="grid gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10 xl:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)]">
+        <section className="grid grid-cols-1 gap-8 border-border pb-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)] lg:items-start lg:gap-10 lg:pb-10 xl:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)]">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="hidden md:flex md:items-start md:gap-4">
               <div className="flex w-[72px] shrink-0 flex-col items-center gap-3">
@@ -584,7 +599,7 @@ export default function ProductPage() {
                 className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3"
               >
                 {mobileGalleryItems.map((image, index) => (
-                  <button
+                  <div
                     key={(image ?? "placeholder") + index}
                     onClick={() => {
                       if (image) setSelectedImage(index);
@@ -593,7 +608,6 @@ export default function ProductPage() {
                       "relative aspect-square w-full min-w-full snap-center overflow-hidden rounded-[24px]",
                       !image && "border border-border bg-[#F8F6F2]",
                     )}
-                    aria-label={`Open image ${index + 1}`}
                   >
                     {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && index === 0 && (
                       <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/70">
@@ -617,7 +631,7 @@ export default function ProductPage() {
                             setSelectedImage(index);
                             setLightboxOpen(true);
                           }}
-                          className="absolute bottom-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white text-ink/65"
+                          className="absolute bottom-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-ink/65"
                           aria-label="Expand image"
                         >
                           <Maximize2 className="h-4 w-4" />
@@ -628,7 +642,7 @@ export default function ProductPage() {
                         <ImageIcon className="h-12 w-12" />
                       </div>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
               {images.length > 1 && (
@@ -646,7 +660,7 @@ export default function ProductPage() {
                           behavior: "smooth",
                         });
                       }}
-                      className="flex h-6 items-center px-0.5"
+                      className="flex h-11 w-8 items-center justify-center"
                       aria-label={`Select image ${index + 1}`}
                     >
                       <span
@@ -893,7 +907,7 @@ export default function ProductPage() {
           <div className="py-8 sm:py-10 lg:py-12">
             {activeTab === "overview" && (
               <div className="space-y-8 lg:space-y-10">
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
                   <section className="space-y-4 lg:pr-8">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
                       About This Product
@@ -920,7 +934,7 @@ export default function ProductPage() {
                     The Mioralane Promise
                   </p>
                   <div className="mt-6 rounded-[20px] border border-[#FBD6DE] bg-[#FFF6F8] p-7 sm:p-8">
-                    <div className="grid gap-0 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-0 md:grid-cols-3">
                       {TRUST_ITEMS.map((item) => {
                         const Icon = item.icon;
                         return (
@@ -969,7 +983,7 @@ export default function ProductPage() {
             )}
 
             {activeTab === "shipping" && (
-              <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
                 <section className="space-y-5">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Delivery</p>
@@ -1010,13 +1024,13 @@ export default function ProductPage() {
         <section className="bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-6">
             <h2 className="text-3xl font-display font-medium text-ink sm:text-4xl">You May Also Like</h2>
-            <div className="mt-10 grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-3 min-[430px]:gap-4 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex h-full flex-col">
                   <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><RelatedThumb product={p} /></Link>
                   <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
+                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 break-words text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
                     <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>
@@ -1024,7 +1038,10 @@ export default function ProductPage() {
             </div>
           </div>
         </section>
-      )}      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur min-[375px]:gap-3 min-[375px]:px-4 md:hidden">
+      )}      <div className={cn(
+        "fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-ink/10 bg-white/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur transition-[transform,opacity] duration-200 min-[375px]:gap-3 min-[375px]:px-4 md:hidden",
+        !showStickyBar && "pointer-events-none translate-y-full opacity-0",
+      )}>
         <div className="flex items-center rounded-full border border-ink/15">
           <button
             onClick={() => setQuantity((current) => clampQuantityToStock(current - 1, effectiveLimit))}

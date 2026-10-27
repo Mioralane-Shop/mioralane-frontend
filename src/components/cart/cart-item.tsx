@@ -75,12 +75,12 @@ export function CartItemRow({ item }: CartItemProps) {
         <div>
           {canNavigate ? (
             <Link href={itemHref}>
-              <h4 className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
+              <h4 className="line-clamp-2 break-words text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
                 {productShortName(product)}
               </h4>
             </Link>
           ) : (
-            <h4 className="line-clamp-2 text-sm font-medium text-neutral-800">
+            <h4 className="line-clamp-2 break-words text-sm font-medium text-neutral-800">
               {productShortName(product)}
             </h4>
           )}
@@ -117,9 +117,10 @@ export function CartItemRow({ item }: CartItemProps) {
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-lg sm:h-8 sm:w-8"
+              className="h-10 w-10 rounded-lg sm:h-9 sm:w-9"
               onClick={() => updateQuantity(catalogItemId, quantity - 1, itemType)}
               disabled={quantity === 1}
+              aria-label="Decrease quantity"
             >
               <Minus className="h-3.5 w-3.5" />
             </Button>
@@ -130,11 +131,12 @@ export function CartItemRow({ item }: CartItemProps) {
               variant="outline"
               size="icon"
               className={cn(
-                "h-9 w-9 rounded-lg sm:h-8 sm:w-8",
+                "h-10 w-10 rounded-lg sm:h-9 sm:w-9",
                 "disabled:cursor-not-allowed disabled:text-neutral-300",
               )}
               onClick={() => updateQuantity(catalogItemId, quantity + 1, itemType)}
               disabled={!canIncrease}
+              aria-label="Increase quantity"
             >
               <Plus className="h-3.5 w-3.5" />
             </Button>
@@ -143,8 +145,9 @@ export function CartItemRow({ item }: CartItemProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 text-neutral-400 hover:text-red-500 sm:h-8 sm:w-8"
+            className="h-10 w-10 text-neutral-400 hover:text-red-500 sm:h-9 sm:w-9"
             onClick={() => removeItem(catalogItemId, itemType)}
+            aria-label={`Remove ${productShortName(product)} from cart`}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
