@@ -13,7 +13,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Mioralane — Premium Korean Skincare in Bangladesh",
   description:
-    "Discover our curated collection of authentic Korean skincare — COSRX, Beauty of Joseon, ANUA, Purito, SKIN1004 and routine bundles — delivered across Bangladesh.",
+    "Your destination for authentic Korean skincare, thoughtfully sourced from Korea and delivered across Bangladesh.",
   path: "/",
   // The title already carries the brand; the root template would repeat it.
   absoluteTitle: true,

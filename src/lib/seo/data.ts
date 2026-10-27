@@ -20,6 +20,7 @@
  * The explicit `.ts` extensions are required because `scripts/verify-seo.ts`
  * imports this chain under Node's type stripping.
  */
+import { cache } from "react";
 import type { Product } from "@/types/product";
 import { CATALOG_2026_PRODUCTS } from "../../constants/catalog-2026.ts";
 import { DUMMY_PRODUCTS } from "../../constants/site.ts";
@@ -110,18 +111,81 @@ function asProduct(payload: unknown, key: "product" | "combo"): Product | null {
   return isProduct(value) ? value : null;
 }
 
+export type ProductLookup =
+  | { status: "found"; product: Product }
+  | { status: "missing" }
+  | { status: "unavailable" };
+
+type DetailedResponse =
+  | { status: "ok"; payload: unknown }
+  | { status: "missing" }
+  | { status: "unavailable" };
+
+/** Like `fetchJson`, but keeps a definitive 404 apart from every other failure. */
+async function fetchJsonDetailed(path: string): Promise<DetailedResponse> {
+  const base = apiBase();
+  if (!base) {
+    return { status: "unavailable" };
+  }
+
+  try {
+    const init: NextFetchInit = {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      next: { revalidate: REVALIDATE_SECONDS },
+    };
+    const response = await fetch(`${base}${path}`, init);
+    if (response.status === 404) {
+      return { status: "missing" };
+    }
+
+    if (!response.ok) {
+      return { status: "unavailable" };
+    }
+
+    return { status: "ok", payload: await response.json() };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/**
+ * A product, plus why it is absent when it is.
+ *
+ * `getProductBySlug` flattens "the API answered 404" and "the request failed"
+ * into `null`, which is right for metadata but wrong for an HTTP status: a
+ * deleted product must answer 404, while a transient outage must not. The
+ * product layout uses this so only a definitive answer becomes `notFound()`.
+ *
+ * Wrapped in `cache()`: `generateMetadata` and the segment layout both ask for
+ * the same slug during one render, and React's request-scoped cache collapses
+ * that into a single API call.
+ */
+export const lookupProductBySlug = cache(async (slug: string): Promise<ProductLookup> => {
+  if (!slug) {
+    return { status: "missing" };
+  }
+
+  const result = await fetchJsonDetailed(`/products/${encodeURIComponent(slug)}`);
+  if (result.status === "ok") {
+    const product = asProduct(result.payload, "product");
+    if (product && !isCombo(product)) {
+      return { status: "found", product };
+    }
+  }
+
+  const local = LOCAL_CATALOG_PRODUCTS.find((product) => product.slug === slug);
+  if (local) {
+    return { status: "found", product: local };
+  }
+
+  return result.status === "missing" ? { status: "missing" } : { status: "unavailable" };
+});
+
 /** A single product, API first, bundled constants second. */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  if (!slug) {
-    return null;
-  }
-
-  const fromApi = asProduct(await fetchJson(`/products/${encodeURIComponent(slug)}`), "product");
-  if (fromApi && !isCombo(fromApi)) {
-    return fromApi;
-  }
-
-  return LOCAL_CATALOG_PRODUCTS.find((product) => product.slug === slug) ?? null;
+  const result = await lookupProductBySlug(slug);
+  return result.status === "found" ? result.product : null;
 }
 
 /** A single combo, API first, bundled constants second. */
