@@ -11,6 +11,7 @@ import { CartDrawer } from "@/components/cart/cart-summary";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollProgress } from "@/components/common/scroll-progress";
 import { PromotionCampaign } from "@/components/common/promotion-campaign";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/constants/site";
 import { getAnnouncement } from "@/lib/announcement";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo/metadata";
@@ -150,6 +151,7 @@ export default async function RootLayout({
         <GoogleAuthProvider>
           <QueryProvider>
             <StoreHydration />
+            <GoogleAnalytics />
             <ScrollProgress />
             <AnnouncementBar initial={announcement} />
             <Navbar />

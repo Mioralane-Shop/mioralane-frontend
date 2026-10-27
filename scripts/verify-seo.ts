@@ -18,7 +18,9 @@
  *      and the `src/lib/seo/*` modules;
  *   B. `sitemap()` returns valid entries: absolute https URLs, no duplicates,
  *      valid `changeFrequency`, priority in [0,1], a real `lastModified`, and the
- *      rows that must be present (static routes, catalogue, categories, posts);
+ *      rows that must be present (static routes, catalogue, posts). Filter URLs
+ *      must NOT be present: `/shop?category=…` canonicalises to `/shop`, so
+ *      listing it would point crawlers at a non-canonical URL;
  *   C. `robots()` has the agreed rules and advertises the sitemap;
  *   D. every JSON-LD generator emits the right `@type`, and `serializeJsonLd`
  *      neutralises `</script>` while staying valid JSON;
@@ -54,7 +56,7 @@ import robots from "../src/app/robots.ts";
 import sitemap from "../src/app/sitemap.ts";
 import { BLOG_POSTS } from "../src/constants/blog.ts";
 import { FAQS } from "../src/constants/faq.ts";
-import { CATEGORIES, SITE_URL } from "../src/constants/site.ts";
+import { SITE_URL } from "../src/constants/site.ts";
 import { LOCAL_CATALOG_COMBOS, LOCAL_CATALOG_PRODUCTS } from "../src/lib/seo/data.ts";
 import {
   generateBreadcrumbJsonLd,
@@ -312,8 +314,9 @@ check(
   `${blogEntries.length} listed vs ${BLOG_POSTS.length} posts`,
 );
 check(
-  "every category filter is listed",
-  CATEGORIES.every((category) => urls.has(`${SITE_URL}/shop?category=${category.slug}`)),
+  "no sitemap entry carries a query string (filter views canonicalise to /shop)",
+  entries.every((entry) => !entry.url.includes("?")),
+  entries.find((entry) => entry.url.includes("?"))?.url,
 );
 
 check(

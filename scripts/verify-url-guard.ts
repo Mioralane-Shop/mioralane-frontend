@@ -508,13 +508,17 @@ const main = (): void => {
     { label: "product card", file: PRODUCT_CARD_FILE },
     { label: "PDP", file: PDP_FILE },
     { label: "product gallery", file: PRODUCT_GALLERY_FILE },
-    // The brand surface: four more places a server-supplied URL reaches an image.
+    // The brand surface: three more places a server-supplied URL reaches an image.
     // They render a plain <img> rather than next/image (vector logos, no stored
     // dimensions), which makes the guard no less necessary — it is what decides
     // whether the value renders at all, and the marquee and the grid both drop a
     // value it refuses rather than showing a broken mark.
+    //
+    // The mobile drawer is deliberately NOT in this list: `Brands` is a plain
+    // destination link now (no accordion, no logos), so it has no stored URL to
+    // gate. Section H asserts that directly below, which keeps the surface
+    // covered rather than silently untested.
     { label: "brand navbar dropdown", file: BRAND_NAVBAR_FILE },
-    { label: "brand mobile drawer", file: BRAND_MOBILE_MENU_FILE },
     { label: "brand card", file: BRAND_CARD_FILE },
     { label: "brand marquee", file: BRAND_MARQUEE_FILE },
   ];
@@ -535,6 +539,18 @@ const main = (): void => {
       "this is the shape that threw inside the cart drawer"
     );
   }
+
+  // The drawer used to list every brand with its logo. It now renders the shared
+  // navigation model only — `Brands` is a link to `/brands` and the Shop rows are
+  // text — so there is no stored image to gate and importing the guard would be a
+  // dead import. This assertion keeps the surface honest: if artwork is ever put
+  // back, it fails and the file must return to IMAGE_SITES above.
+  const mobileMenuSource = readSource(BRAND_MOBILE_MENU_FILE);
+  check(
+    "brand mobile drawer: renders no stored image (Brands is a plain link)",
+    !/<img\b/.test(mobileMenuSource) && !STORED_IMAGE_SRC_BINDING.test(mobileMenuSource),
+    "if this changes, the drawer belongs back in IMAGE_SITES"
+  );
 
   const productImageSource = readSource(PRODUCT_IMAGE_FILE);
   const productImageSrcs = [...productImageSource.matchAll(/src=\{([^}]+)\}/g)].map((match) =>
