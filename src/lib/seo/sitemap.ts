@@ -36,7 +36,6 @@ export interface SitemapInput {
   products: readonly SitemapSource[];
   combos: readonly SitemapSource[];
   posts: readonly SitemapSource[];
-  categories: readonly SitemapSource[];
   /** Injectable clock, so the harness can assert exact dates. */
   now?: Date;
 }
@@ -89,15 +88,6 @@ export function buildSitemapEntries(input: SitemapInput): SitemapEntry[] {
       lastModified: now,
       changeFrequency: route.changeFrequency,
       priority: route.priority,
-    });
-  }
-
-  for (const category of input.categories) {
-    entries.push({
-      url: absoluteUrl(`/shop?category=${encodeURIComponent(category.slug)}`),
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
     });
   }
 
