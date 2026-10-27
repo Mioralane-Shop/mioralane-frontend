@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Mail, MessageCircle, MapPin, Clock } from "lucide-react";
-import { SITE_WHATSAPP } from "@/constants/site";
+import { SITE_EMAIL, SITE_WHATSAPP } from "@/constants/site";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -22,7 +22,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-5 md:gap-10">
+      <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-5 md:gap-10">
         {/* Info */}
         <div className="space-y-6 md:col-span-2">
           <div className="flex items-start gap-4">
@@ -37,7 +37,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="text-sm text-ink/50 transition-colors hover:text-accent"
               >
-                +880 17XX-XXXXXXX
+                +880 1346-092869
               </a>
             </div>
           </div>
@@ -48,10 +48,10 @@ export default function ContactPage() {
             <div>
               <p className="text-sm font-medium text-ink">Email</p>
               <a
-                href="mailto:hello@mioralane.com"
+                href={`mailto:${SITE_EMAIL}`}
                 className="text-sm text-ink/50 transition-colors hover:text-accent"
               >
-                hello@mioralane.com
+                {SITE_EMAIL}
               </a>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function ContactPage() {
               }}
               className="space-y-4 rounded-2xl border border-ink/10 bg-white p-6"
             >
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label
                     htmlFor="name"
