@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Node 24 — the same major the backend workflow runs and the one local
       # development uses (v24.9.0), so CI and a developer's machine agree.
