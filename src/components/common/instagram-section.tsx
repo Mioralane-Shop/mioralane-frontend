@@ -106,23 +106,12 @@ export function InstagramSection() {
                         controls
                         playsInline
                         preload="metadata"
+                        onError={() => setPlayingId(null)}
                         className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : (
                       <>
-                        {video.thumbnailUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={video.thumbnailUrl}
-                            alt={video.caption ?? "Mioralane Instagram reel"}
-                            loading="lazy"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-ink/25">
-                            <Play className="h-8 w-8" />
-                          </div>
-                        )}
+                        <ReelPoster video={video} />
                         <span className="absolute inset-0 flex items-center justify-center">
                           <button
                             type="button"
@@ -201,5 +190,37 @@ export function InstagramSection() {
         }
       `}</style>
     </section>
+  );
+}
+
+/**
+ * The poster tile for one reel.
+ *
+ * Instagram's `thumbnail_url` is a signed CDN link that expires after a few
+ * days, so it can 403 even though the reel is still valid. A plain `<img>` then
+ * paints its `alt` text — which, when the caption was the alt, turned the whole
+ * 9:16 card into a wall of caption text. The alt is therefore short and the
+ * failure path swaps in the same placeholder used for a reel with no thumbnail.
+ */
+function ReelPoster({ video }: { video: InstagramFeedVideo }) {
+  const [failed, setFailed] = useState(false);
+
+  if (!video.thumbnailUrl || failed) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-[#F8F6F2] text-ink/25">
+        <Play className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={video.thumbnailUrl}
+      alt="Instagram reel"
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+    />
   );
 }
