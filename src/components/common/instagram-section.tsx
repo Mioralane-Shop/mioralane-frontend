@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Play, ChevronLeft, ChevronRight, ArrowRight, ExternalLink } from "lucide-react";
 import { SectionHeading } from "@/components/common/section-heading";
 import { useInstagramFeed } from "@/hooks/use-instagram-feed";
@@ -24,9 +24,18 @@ import type { InstagramFeedVideo } from "@/types/instagram";
  *    broken player.
  */
 export function InstagramSection() {
-  const { data: videos } = useInstagramFeed();
+  const { data: videos, isError, error } = useInstagramFeed();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  // A failed request must never masquerade as "no Reels configured". The
+  // section still hides (the homepage never shows a broken showcase), but the
+  // failure is logged explicitly so it is observable instead of silent.
+  useEffect(() => {
+    if (isError) {
+      console.error("[instagram-section] Unable to load the Instagram feed", error);
+    }
+  }, [isError, error]);
 
   const scrollByCards = (dir: number) => {
     const el = trackRef.current;
