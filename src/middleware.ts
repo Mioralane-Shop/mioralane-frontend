@@ -17,7 +17,7 @@
  *
  * WHY NOT ENFORCE — measured, not assumed. A nonce can only be stamped onto HTML
  * rendered per request, so Next applies it to the 6 SSR routes (`/login`,
- * `/register`, `/product/[slug]`, `/combo/[slug]`, `/blog/[slug]`,
+ * `/register`, `/product/[brand]/[slug]`, `/combo/[slug]`, `/blog/[slug]`,
  * `/order-success/[id]`) and to none of the 21 prerendered ones (`/`, `/shop`,
  * `/cart`, …); `grep 'nonce="' .next/server/app/index.html` is empty after a
  * build. With `'strict-dynamic'` a CSP3 browser ignores `'self'`, so enforcing
@@ -62,8 +62,79 @@ const readOrigin = (value: string | undefined): string[] => {
   }
 };
 
-export function middleware(request: NextRequest): NextResponse {
+/**
+ * A legacy flat product URL: exactly one segment after `/product/`.
+ *
+ * Products moved to `/product/<brandSlug>/<slug>`; these flat URLs are what search
+ * engines have indexed, so they must answer with a real permanent redirect.
+ */
+const LEGACY_PRODUCT_PATH = /^\/product\/([^/]+)\/?$/;
+
+/** Bounded, so a slow API can never hold the request open. */
+const LEGACY_LOOKUP_TIMEOUT_MS = 2500;
+
+/**
+ * Where a legacy `/product/<slug>` should go, or `null` when it cannot be resolved.
+ *
+ * This runs in middleware rather than in the `[brand]` page because a Server
+ * Component cannot emit a 3xx once the response has started streaming — the page's
+ * `permanentRedirect()` degrades to a 200 with a `<meta http-equiv="refresh">`,
+ * which is not the signal a migrated URL should send. Middleware runs before any
+ * rendering, so the status is a true **301**.
+ *
+ * Deliberately best-effort: with no API configured (CI, fresh checkout) or an
+ * unreachable API, this returns `null` and the request falls through to the page,
+ * which still redirects client-side. Nothing here can 404 a live product.
+ */
+async function legacyProductTarget(slug: string): Promise<string | null> {
+  const base = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+  if (!base) return null;
+
+  try {
+    const response = await fetch(`${base}/products/${encodeURIComponent(slug)}`, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(LEGACY_LOOKUP_TIMEOUT_MS),
+    });
+
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as {
+      product?: { slug?: unknown; brandSlug?: unknown } | null;
+    };
+    const product = payload?.product;
+
+    if (!product || typeof product.slug !== "string" || !product.slug) return null;
+
+    const brandSlug =
+      typeof product.brandSlug === "string" ? product.brandSlug.trim() : "";
+    if (!brandSlug) return null;
+
+    return `/product/${encodeURIComponent(brandSlug)}/${encodeURIComponent(product.slug)}`;
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const isDevelopment = process.env.NODE_ENV !== "production";
+
+  // Legacy flat product URLs first: this is the only branch that can answer with a
+  // status, and it must not be delayed by the CSP work below.
+  const legacyMatch = LEGACY_PRODUCT_PATH.exec(request.nextUrl.pathname);
+  if (legacyMatch) {
+    let legacySlug = legacyMatch[1];
+    try {
+      legacySlug = decodeURIComponent(legacySlug);
+    } catch {
+      // A malformed escape is left as-is; the lookup below simply will not match.
+    }
+
+    const target = await legacyProductTarget(legacySlug);
+    if (target) {
+      return NextResponse.redirect(new URL(target, request.url), 301);
+    }
+  }
+
   const nonce = createNonce();
 
   const policy = buildCsp(nonce, {
