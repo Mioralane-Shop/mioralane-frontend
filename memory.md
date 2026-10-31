@@ -43,6 +43,24 @@ src/
 - Theme tokens (`@theme` in `src/app/globals.css`): `brand`/`accent` pink `#FB6F92`, `surface`/`ink` neutrals, `success #006400`, `gold #8B7355`, `peach #FCA1B8`. Custom radii (`sm` 8 / `base` 12 / `lg` 20 / `xl` 28) and custom shadows (`sm`, `card`, `lg`). `twinkle` animation for the combo hero sparkle. The bare radius/shadow utilities are NOT usable at these values in v4 — a variable or class named exactly `rounded`/`shadow` behaves differently, see the note in `globals.css`.
 - Currency: `formatPrice` → `৳` using `en-IN` locale. Use `formatPrice` from `src/lib/utils.ts`.
 
+## Product detail page (`app/(public)/product/[brand]/[slug]/page.tsx`)
+- **Canonical URL is nested: `/product/<brandSlug>/<productSlug>`.** Build every product link with `productPath(product)` from `src/lib/product-path.ts` — never hand-write `/product/${slug}`. `brandSlug` comes from the API (backend `slugify(brand)`); `productPath` falls back to slugifying `brand` for bundled/legacy data, and to the flat path when either segment is missing.
+- **Legacy flat URLs redirect with a real 301 from `src/middleware.ts`** (`/^\/product\/([^/]+)\/?$/` → API lookup → `NextResponse.redirect(..., 301)`). It must live in middleware: a Server Component cannot emit a 3xx once streaming has started, so the `[brand]` page's `permanentRedirect()` degrades to a 200 + `<meta http-equiv="refresh">`. That page remains as the fallback when the API is unreachable.
+- `[brand]` is the segment name at BOTH levels (`product/[brand]/page.tsx` = legacy redirect, `product/[brand]/[slug]/` = PDP). Next.js rejects two different dynamic names at the same level, so the legacy page's param is a legacy *product slug* despite the name.
+- The page is `"use client"`; SEO lives in `[brand]/[slug]/layout.tsx` (metadata, canonical, JSON-LD, breadcrumbs). That layout also permanently redirects a brand segment that does not match the product's own brand slug (200 + client redirect in practice, because of streaming).
+- Sitemap, JSON-LD defaults and the SEO harness all go through `productPath`; `src/lib/product-path.ts` must stay import-free (it is loaded by `scripts/verify-seo.ts` under Node type stripping).
+- **Typography is centralised in `src/lib/product-typography.ts`** — `SECTION_EYEBROW`, `BODY_COPY`, `SPEC_CHIP`. The page and `components/product/product-reviews.tsx` both import it, so the eight section labels ("About This Product", "Best For", "How To Use", "The Mioralane Promise", "Key Ingredients", "Delivery", "Returns", "Authenticity Guarantee", "Customer Reviews") cannot drift.
+- Section eyebrows are **`<p>` elements, not `<h3>`**: the unlayered `h1–h6` rule in `globals.css` forces Lora + weight 500 and beats `font-sans`/`font-semibold` utilities, so a heading element always renders in the display face regardless of class.
+- Palette used there: eyebrow `#3A3531`, body `#453F3B`, card title `#262120`, secondary/muted `#6B655F`, inactive tab `#5B5550`. Do not reintroduce the older `#6E6966`/`#5F5A57`/`#6A6561` (they read washed out at 11px).
+- Overview tab: About This Product, How To Use (separate section, only when present), Best For (skin types + concerns), The Mioralane Promise.
+- Ingredients tab: **Key Ingredients only** — a compact `flex-wrap` row of name pills (max 5, name only; the old per-ingredient description and the tall card grid were removed). The full `ingredients` INCI text is still accepted from legacy records but deliberately not rendered; an empty `keyIngredients` array shows a short fallback line, never an empty list.
+
+## Hero slider (homepage)
+- `src/services/hero-slide.service.ts` + `src/hooks/use-hero-slides.ts` fetch `GET /hero-slides` with `staleTime: 10 min`, `retry: 1`.
+- `components/common/hero-section.tsx` renders whatever the API returns when there is at least one slide; otherwise (loading, error, empty) it falls back to the bundled `/slider/slider1.png` / `slider2.png`. The top of the homepage is never blank.
+- Each slide is **finished artwork** — no headline/badge/CTA is rendered by code, so the whole banner is the link. `https://` targets open in a new tab with `rel="noopener noreferrer"`; site paths use `next/link`.
+- Posters are rendered with a plain `<img>` (host-agnostic) and ImageKit URLs get `?tr=w-1600,q-85,f-auto` appended, unless they already carry a `tr=`. **CSP caveat:** the storefront's `img-src` is deliberately pinned to `ik.imagekit.io` (+ Google/GA hosts), so a non-ImageKit poster host must be added to `src/lib/csp.ts` or its image will be blocked in production.
+
 ## API / Services
 - Base URL: `process.env.NEXT_PUBLIC_API_URL`; axios `withCredentials: true`, 10s timeout.
 - `src/lib/axios.ts` auto-handles 401 by clearing auth state (`handleUnauthorizedSession` in `auth-session.ts`).

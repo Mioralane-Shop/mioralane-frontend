@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart.store";
 import { cn, formatPrice } from "@/lib/utils";
 import { formatPreOrderDate, getPurchasableQuantityLimit, isPreOrderProduct, isPurchasableProduct } from "@/lib/pre-order";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import type { CartItem as CartItemType } from "@/types/product";
 
 interface CartItemProps {
@@ -19,7 +20,7 @@ export function CartItemRow({ item }: CartItemProps) {
   const { product, quantity, catalogStatus, itemId, itemType: storedItemType } = item;
   const itemType = storedItemType ?? product.itemType ?? (product.category === "combo" ? "combo" : "product");
   const catalogItemId = itemId || product.id;
-  const itemHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
+  const itemHref = itemType === "combo" ? `/combo/${product.slug}` : productPath(product);
   const isVerified = catalogStatus === "verified";
   const isUnavailable = catalogStatus === "missing" || catalogStatus === "error";
   const isPreOrder = isPreOrderProduct(product);

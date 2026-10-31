@@ -433,17 +433,17 @@
   --discount-border-angle: 0deg;
   border: 1px solid transparent;
   background:
-    linear-gradient(#fb6f92, #fb6f92) padding-box,
+    linear-gradient(#006400, #006400) padding-box,
     conic-gradient(from var(--discount-border-angle),
-      rgba(251, 111, 146, 0.3) 0deg 258deg,
-      #e45377 272deg,
-      #fee4ea 286deg,
-      #fff1f4 292deg,
-      #fee4ea 298deg,
-      #e45377 312deg,
-      rgba(251, 111, 146, 0.3) 326deg 360deg) border-box;
+      rgba(0, 100, 0, 0.3) 0deg 258deg,
+      #005400 272deg,
+      #cfe2cf 286deg,
+      #e6f0e6 292deg,
+      #cfe2cf 298deg,
+      #005400 312deg,
+      rgba(0, 100, 0, 0.3) 326deg 360deg) border-box;
   color: #fff;
-  box-shadow: 0 10px 24px rgba(251, 111, 146, 0.24);
+  box-shadow: 0 10px 24px rgba(0, 100, 0, 0.24);
   animation: discount-running-border 4.8s linear infinite;
 }
 
@@ -456,9 +456,9 @@
   pointer-events: none;
   background: conic-gradient(from var(--discount-border-angle),
       rgba(0, 0, 0, 0) 0deg 270deg,
-      rgba(254, 228, 234, 0.18) 282deg,
-      rgba(255, 241, 244, 0.5) 292deg,
-      rgba(254, 228, 234, 0.18) 302deg,
+      rgba(207, 226, 207, 0.18) 282deg,
+      rgba(230, 240, 230, 0.5) 292deg,
+      rgba(207, 226, 207, 0.18) 302deg,
       rgba(0, 0, 0, 0) 316deg 360deg);
   filter: blur(4px);
   opacity: 0.55;
@@ -593,9 +593,9 @@ textarea:focus-visible {
   }
 
   .hero-cta-glow {
-    border-color: #fee4ea;
-    background: #fb6f92;
-    box-shadow: 0 8px 18px rgba(251, 111, 146, 0.18);
+    border-color: #cfe2cf;
+    background: #006400;
+    box-shadow: 0 8px 18px rgba(0, 100, 0, 0.18);
     animation: none !important;
   }
 

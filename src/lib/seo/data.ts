@@ -96,7 +96,7 @@ function dedupeBySlug(products: readonly Product[]): Product[] {
   return Array.from(seen.values());
 }
 
-/** Bundled non-combo products — the offline fallback for `/product/[slug]`. */
+/** Bundled non-combo products — the offline fallback for `/product/[brand]/[slug]`. */
 export const LOCAL_CATALOG_PRODUCTS: readonly Product[] = dedupeBySlug(
   LOCAL_PRODUCTS.filter((product) => !isCombo(product)),
 );

@@ -14,6 +14,7 @@ import { createImageKitLoader, isImageKitUrl } from "@/lib/imagekit-delivery";
 import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { getProductAvailability } from "@/lib/pre-order";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import type { Product } from "@/types/product";
 
 /** Extra metadata for bundle / combo cards (rendered only for combos). */
@@ -111,7 +112,7 @@ export function ProductCard({ product, onNavigate, combo, compactImage }: Produc
       : undefined;
   const volumeLabel = formatVolumeLabel(product);
   const availability = getProductAvailability(product);
-  const cardHref = itemType === "combo" ? `/combo/${product.slug}` : `/product/${product.slug}`;
+  const cardHref = itemType === "combo" ? `/combo/${product.slug}` : productPath(product);
   const productCardImageLoader = isImageKitUrl(mainImgSrc) ? PRODUCT_CARD_IMAGEKIT_LOADER : undefined;
 
   const handleCardNavigate = (event: React.MouseEvent<HTMLAnchorElement>) => {

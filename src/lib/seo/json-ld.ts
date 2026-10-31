@@ -20,6 +20,7 @@
 import type { Product, ProductMedia } from "@/types/product";
 import { SITE_DESCRIPTION, SITE_NAME } from "../../constants/site.ts";
 import { SOCIAL_LINKS } from "../../constants/social-links.ts";
+import { productPath } from "../product-path.ts";
 import { absoluteUrl, SITE_ORIGIN } from "./urls.ts";
 
 export const SCHEMA = "https://schema.org";
@@ -112,14 +113,14 @@ function schemaAvailability(product: Product): string {
 /**
  * `Product` node for a product or combo detail page.
  *
- * `path` defaults to the product route; the combo page passes `/combo/<slug>`
- * so the offer URL points at the page that actually renders it.
+ * `path` defaults to the product route (`/product/<brandSlug>/<slug>`); the combo
+ * page passes `/combo/<slug>` so the offer URL points at the page that renders it.
  */
 export function generateProductJsonLd(
   product: Product,
   options: { path?: string } = {},
 ): JsonLdNode {
-  const path = options.path ?? `/product/${product.slug}`;
+  const path = options.path ?? productPath(product);
   const url = absoluteUrl(path);
   const images = productImageUrls(product);
   const description = plainText(product.longDescription) ?? plainText(product.description);

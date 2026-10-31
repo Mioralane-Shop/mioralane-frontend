@@ -8,6 +8,7 @@
  * The explicit `.ts` extensions are required by Node's type stripping (see
  * `tsconfig.json` → `allowImportingTsExtensions`).
  */
+import { productPath } from "../product-path.ts";
 import { absoluteUrl } from "./urls.ts";
 
 export type ChangeFrequency =
@@ -93,7 +94,7 @@ export function buildSitemapEntries(input: SitemapInput): SitemapEntry[] {
 
   for (const product of input.products) {
     entries.push({
-      url: absoluteUrl(`/product/${product.slug}`),
+      url: absoluteUrl(productPath(product)),
       lastModified: parseDate(product.createdAt, now),
       changeFrequency: "weekly",
       priority: 0.7,

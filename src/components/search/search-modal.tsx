@@ -14,6 +14,7 @@ import {
 import { ProductImage } from "@/components/common/product-image";
 import { useProductSearch } from "@/hooks/use-product-search";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 
 const TRENDING = [
   "Snail Mucin",
@@ -153,7 +154,7 @@ export function SearchModal({
               {results.map((p) => (
                 <Link
                   key={p.id}
-                  href={`/product/${p.slug}`}
+                  href={productPath(p)}
                   onClick={onClose}
                   className="flex items-center gap-4 rounded-xl px-3 py-3 transition-colors hover:bg-ink/[0.04]"
                 >
