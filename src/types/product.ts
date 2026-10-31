@@ -18,6 +18,12 @@ export interface Product {
   hoverImage?: string;
   category: string;
   brand: string;
+  /**
+   * Slug of `brand`, supplied by the API and used to build the canonical
+   * `/product/<brandSlug>/<slug>` URL. Optional so an older payload (or a bundled
+   * catalogue entry) still type-checks — `productPath()` slugifies `brand` then.
+   */
+  brandSlug?: string;
   tags: string[];
   concerns?: string[];
   skinConcern?: string[];
@@ -54,7 +60,6 @@ export interface Product {
 
 export interface ProductKeyIngredient {
   name: string;
-  benefit?: string;
 }
 
 export interface ProductMedia {

@@ -32,12 +32,18 @@ import { ProductReviews } from "@/components/product/product-reviews";
 import { SITE_NAME } from "@/constants/site";
 import { cn, formatPrice } from "@/lib/utils";
 import {
+  BODY_COPY,
+  SECTION_EYEBROW,
+  SPEC_CHIP,
+} from "@/lib/product-typography";
+import {
   formatPreOrderDate,
   getProductAvailability,
   isPreOrderProduct,
 } from "@/lib/pre-order";
 import { firstRenderableImageSrc, isRenderableImageSrc } from "@/lib/safe-image-src";
 import { productFullName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import type { Product, SizeOption } from "@/types/product";
 
 type ProductTab = "overview" | "ingredients" | "shipping" | "reviews";
@@ -334,7 +340,7 @@ export default function ProductPage() {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-20 text-center">
         <h1 className="text-2xl font-display text-ink">Product Not Found</h1>
-        <p className="mt-2 text-ink/50">
+        <p className="mt-2 text-[#4A4441]">
           The product you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link
@@ -391,10 +397,12 @@ export default function ProductPage() {
   const benefitChips = getBenefitChips(product);
   const descriptionText = getBenefitStatement(product);
   const isDescriptionLong = descriptionText.length > DESCRIPTION_PREVIEW_CHARS;
-  const ingredients = (product.ingredients ?? "")
-    .split(",")
-    .map((ingredient) => ingredient.trim())
-    .filter(Boolean);
+  // The full INCI list is no longer shown; the product page presents Key
+  // Ingredients instead. Legacy records may still carry `ingredients`, which is
+  // intentionally ignored here.
+  const keyIngredients = (product.keyIngredients ?? []).filter(
+    (ingredient) => ingredient?.name?.trim(),
+  );
   const discountPercent =
     compareAtPrice && compareAtPrice > displayPrice
       ? Math.round(((compareAtPrice - displayPrice) / compareAtPrice) * 100)
@@ -435,7 +443,7 @@ export default function ProductPage() {
   return (
     <div className="bg-white pb-28 md:pb-0">
       <div className="mx-auto max-w-[1400px] px-5 py-6 sm:px-6 lg:py-8">
-        <nav className="mb-6 flex items-center gap-2 text-[11px] text-ink/45">
+        <nav className="mb-6 flex items-center gap-2 text-[11px] text-[#6B655F]">
           <Link href="/" className="transition-colors hover:text-ink">
             Home
           </Link>
@@ -457,7 +465,7 @@ export default function ProductPage() {
               <ChevronRight className="h-3 w-3" />
             </>
           ) : null}
-          <span className="line-clamp-1 normal-case tracking-normal text-ink/60">
+          <span className="line-clamp-1 normal-case tracking-normal text-[#4A4441]">
             {productFullName(product)}
           </span>
         </nav>
@@ -531,7 +539,7 @@ export default function ProductPage() {
                 aria-label="Zoom product image"
               >
                 {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && (
-                  <span className="absolute left-5 top-5 z-10 rounded-full border border-border bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/70">
+                  <span className="absolute left-5 top-5 z-10 rounded-full border border-border bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3A3531]">
                     {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
                   </span>
                 )}
@@ -623,7 +631,7 @@ export default function ProductPage() {
                     )}
                   >
                     {(product.isBestSeller || product.tag === "best" || product.isNew || product.tag === "new") && index === 0 && (
-                      <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/70">
+                      <span className="absolute left-4 top-4 z-10 rounded-full border border-border bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3A3531]">
                         {product.isNew || product.tag === "new" ? "New Arrival" : "Best Seller"}
                       </span>
                     )}
@@ -691,7 +699,7 @@ export default function ProductPage() {
 
           <div className="flex flex-col gap-5 lg:pt-1">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-ink/55">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#4A4441]">
                 {SITE_NAME}
               </p>
               {/*
@@ -721,7 +729,7 @@ export default function ProductPage() {
                   24/30/36, so it stays the most prominent text at every width.
                 */}
                 {compareAtPrice && compareAtPrice > displayPrice && (
-                  <span className="text-base text-ink/35 line-through sm:text-lg">
+                  <span className="text-base text-[#7A736D] line-through sm:text-lg">
                     {formatPrice(compareAtPrice)}
                   </span>
                 )}
@@ -749,7 +757,7 @@ export default function ProductPage() {
                 <span>{availability?.label ?? (effectiveStock > 0 ? "IN STOCK" : "OUT OF STOCK")}</span>
               </div>
               {isPreOrder ? (
-                <div className="rounded-2xl border border-border bg-white px-4 py-3 text-sm text-ink/70">
+                <div className="rounded-2xl border border-border bg-white px-4 py-3 text-sm text-[#453F3B]">
                   <p className="font-semibold uppercase tracking-[0.12em] text-accent">PRE-ORDER</p>
                   <p className="mt-2">Expected arrival: {formatPreOrderDate(product.preOrder?.expectedArrivalDate)}</p>
                   {product.preOrder?.customerMessage ? <p className="mt-1">{product.preOrder.customerMessage}</p> : null}
@@ -775,7 +783,7 @@ export default function ProductPage() {
                 <p
                   id="product-description"
                   className={cn(
-                    "text-sm leading-relaxed text-ink/75",
+                    BODY_COPY,
                     isDescriptionLong && !isDescriptionExpanded && "line-clamp-4",
                   )}
                 >
@@ -798,7 +806,7 @@ export default function ProductPage() {
                   {benefitChips.map((chip) => (
                     <span
                       key={chip}
-                      className="rounded-full border border-border bg-white px-3.5 py-2 text-xs font-medium text-ink/65"
+                      className="rounded-full border border-border bg-white px-3.5 py-2 text-xs font-medium text-[#453F3B]"
                     >
                       {chip}
                     </span>
@@ -824,7 +832,7 @@ export default function ProductPage() {
                             "min-h-10 rounded-full border px-4 text-center text-sm font-medium transition-all",
                             selectedSize === i
                               ? "border-accent bg-accent-pale text-ink"
-                              : "border-border bg-white text-ink/65 hover:border-ink/25",
+                              : "border-border bg-white text-[#453F3B] hover:border-ink/25",
                           )}
                         >
                           {opt.volume || opt.label}
@@ -902,7 +910,7 @@ export default function ProductPage() {
                     onClick={() => setActiveTab(tab.key)}
                     className={cn(
                       "relative py-4 text-sm font-medium transition-colors",
-                      activeTab === tab.key ? "text-[#1F1F1F]" : "text-[#7A746F] hover:text-[#1F1F1F]",
+                      activeTab === tab.key ? "text-ink" : "text-[#5B5550] hover:text-ink",
                     )}
                   >
                     {tab.label}
@@ -920,32 +928,41 @@ export default function ProductPage() {
           <div className="py-8 sm:py-10 lg:py-12">
             {activeTab === "overview" && (
               <div className="space-y-8 lg:space-y-10">
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10">
-                  <section className="space-y-4 lg:pr-8">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      About This Product
-                    </p>
-                    <p className="max-w-[64ch] text-sm leading-7 text-[#5F5A57]">
+                {/*
+                  Even halves, and no `max-w` on the copy: the paragraph fills its column
+                  so the only space before the divider is the deliberate `pr-8`. The
+                  previous 1.15fr/0.85fr split plus a 64ch cap left ~250px of dead space
+                  on the left of the rule.
+                */}
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
+                  <section className="space-y-4">
+                    <p className={SECTION_EYEBROW}>About This Product</p>
+                    <p className={BODY_COPY}>
                       {product.longDescription || product.description}
                     </p>
                   </section>
 
                   <section className="space-y-4 lg:border-l lg:border-[#E6E0DA] lg:pl-8">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                      Best For
-                    </p>
+                    <p className={SECTION_EYEBROW}>Best For</p>
                     <div className="flex flex-wrap gap-2">
                       {bestForChips.length > 0 ? bestForChips.map((chip) => (
-                        <span key={chip} className="rounded-full border border-[#E4DDD6] bg-[#FCFAF8] px-3.5 py-1.5 text-xs font-medium text-[#6A6561]">{chip}</span>
-                      )) : <span className="text-sm text-[#8A8581]">All skin types</span>}
+                        <span key={chip} className={SPEC_CHIP}>{chip}</span>
+                      )) : <span className="text-sm text-[#6B655F]">All skin types</span>}
                     </div>
                   </section>
                 </div>
 
+                {product.howToUse ? (
+                  <section className="border-t border-[#E6E0DA] pt-8">
+                    <p className={SECTION_EYEBROW}>How To Use</p>
+                    <p className={cn("mt-4 whitespace-pre-line", BODY_COPY)}>
+                      {product.howToUse}
+                    </p>
+                  </section>
+                ) : null}
+
                 <section className="border-t border-[#E6E0DA] pt-8">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                    The Mioralane Promise
-                  </p>
+                  <p className={SECTION_EYEBROW}>The Mioralane Promise</p>
                   <div className="mt-6 rounded-[20px] border border-[#FBD6DE] bg-[#FFF6F8] p-7 sm:p-8">
                     <div className="grid grid-cols-1 gap-0 md:grid-cols-3">
                       {TRUST_ITEMS.map((item) => {
@@ -959,8 +976,8 @@ export default function ProductPage() {
                               <Icon className="h-5 w-5" />
                             </span>
                             <div>
-                              <h3 className="text-[15px] font-semibold leading-6 text-[#1F1F1F] sm:text-base">{item.title}</h3>
-                              <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#5F5A57]">{item.text}</p>
+                              <p className="text-[15px] font-semibold leading-6 text-[#262120] sm:text-base">{item.title}</p>
+                              <p className="mt-1 max-w-[28ch] text-sm leading-6 text-[#453F3B]">{item.text}</p>
                             </div>
                           </div>
                         );
@@ -972,39 +989,39 @@ export default function ProductPage() {
             )}
 
             {activeTab === "ingredients" && (
-              <div className="space-y-4">
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
-                  Full Ingredient List
-                </h3>
-                {ingredients.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2" aria-label="Product ingredients">
-                    {ingredients.map((ingredient, index) => (
+              keyIngredients.length > 0 ? (
+                <div className="space-y-4">
+                  {/* A `<p>`, like every other section label: an `<h3>` picks up the
+                      unlayered display-face rule and cannot be overridden by utilities. */}
+                  <p className={SECTION_EYEBROW}>Key Ingredients</p>
+                  <ul className="flex flex-wrap gap-2" aria-label="Key ingredients">
+                    {keyIngredients.map((ingredient, index) => (
                       <li
-                        key={`${ingredient}-${index}`}
-                        className="rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-700"
+                        key={`${ingredient.name}-${index}`}
+                        className={SPEC_CHIP}
                       >
-                        {ingredient}
+                        {ingredient.name}
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-sm leading-7 text-[#5F5A57]">
-                    Full INCI ingredient list is not available in the current product data.
-                  </p>
-                )}
-              </div>
+                </div>
+              ) : (
+                <p className={BODY_COPY}>
+                  Key ingredient details are not available for this product.
+                </p>
+              )
             )}
 
             {activeTab === "shipping" && (
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
                 <section className="space-y-5">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Delivery</p>
+                    <p className={SECTION_EYEBROW}>Delivery</p>
                     <div className="mt-4 rounded-[20px] border border-[#ECE5DE] bg-[#FCFAF8] px-5">
                       {shippingNotes.delivery.map((item) => (
                         <div key={item.label} className="flex items-center justify-between gap-6 border-t border-[#EEE7E0] py-4 first:border-t-0">
-                          <span className="text-sm text-[#5F5A57]">{item.label}</span>
-                          <span className="text-right text-sm font-medium text-[#1F1F1F]">{item.value}</span>
+                          <span className="text-sm text-[#453F3B]">{item.label}</span>
+                          <span className="text-right text-sm font-medium text-[#262120]">{item.value}</span>
                         </div>
                       ))}
                     </div>
@@ -1013,13 +1030,13 @@ export default function ProductPage() {
 
                 <section className="space-y-6">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Returns</p>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.returns}</p>
+                    <p className={SECTION_EYEBROW}>Returns</p>
+                    <p className={cn("mt-4 max-w-xl", BODY_COPY)}>{shippingNotes.returns}</p>
                   </div>
                   {product.source ? (
                     <div className="border-t border-[#E6E0DA] pt-6">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">Authenticity Guarantee</p>
-                      <p className="mt-4 max-w-xl text-sm leading-7 text-[#5F5A57]">{shippingNotes.authenticity}</p>
+                      <p className={SECTION_EYEBROW}>Authenticity Guarantee</p>
+                      <p className={cn("mt-4 max-w-xl", BODY_COPY)}>{shippingNotes.authenticity}</p>
                     </div>
                   ) : null}
                 </section>
@@ -1040,10 +1057,10 @@ export default function ProductPage() {
             <div className="mt-10 grid grid-cols-2 gap-3 min-[430px]:gap-4 sm:gap-5 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="flex h-full flex-col">
-                  <Link href={`/product/${p.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><RelatedThumb product={p} /></Link>
+                  <Link href={productPath(p)} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#FAF9F7]"><RelatedThumb product={p} /></Link>
                   <div className="mt-3 flex flex-1 flex-col">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/35">{p.brand}</p>
-                    <Link href={`/product/${p.slug}`} className="mt-1 line-clamp-2 block min-h-10 break-words text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
+                    <Link href={productPath(p)} className="mt-1 line-clamp-2 block min-h-10 break-words text-sm font-semibold leading-5 text-ink transition-colors hover:text-accent">{p.name}</Link>
                     <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3"><span className="text-sm font-semibold text-ink">{formatPrice(p.price)}</span><button onClick={() => { addItem({ ...p, itemType: p.itemType ?? (p.category === "combo" ? "combo" : "product") }, 1); addToast(`${p.name} added to cart`); }} className="rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white">Add to Cart</button></div>
                   </div>
                 </div>

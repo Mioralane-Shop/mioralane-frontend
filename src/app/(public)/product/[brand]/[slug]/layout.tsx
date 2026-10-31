@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Product } from "@/types/product";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_NAME } from "@/constants/site";
 import { productShortName } from "@/lib/product-name";
+import { productBrandSlug, productPath } from "@/lib/product-path";
 import { lookupProductBySlug } from "@/lib/seo/data";
 import {
   generateBreadcrumbJsonLd,
@@ -15,7 +16,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { decodePathSegment, formatPrice } from "@/lib/utils";
 
 /**
- * SEO for `/product/[slug]`.
+ * SEO for `/product/[brand]/[slug]`.
  *
  * ## Why this is a `layout.tsx` and not the page
  *
@@ -29,6 +30,13 @@ import { decodePathSegment, formatPrice } from "@/lib/utils";
  * crawler-facing layer is server-rendered. `lookupProductBySlug` falls back to
  * the bundled catalogue and separates a definitive 404 from an outage, so only a
  * genuinely absent product reaches `notFound()`.
+ *
+ * ## The brand segment is cosmetic
+ *
+ * The product is still resolved by its slug alone; the brand is then compared
+ * against the product's own brand slug. A URL whose brand does not match (an old
+ * shared link, a hand-edited path) is redirected permanently to the canonical
+ * one instead of 404-ing or silently rendering under the wrong brand.
  *
  * `force-dynamic` keeps `next build` from attempting to prerender a route that
  * has no `generateStaticParams`, and guarantees the metadata is resolved at
@@ -141,24 +149,25 @@ function breadcrumbsForProduct(product: Product): BreadcrumbItem[] {
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     ...(brand ? [{ name: brand, path: `/shop?brand=${encodeURIComponent(brand)}` }] : []),
-    { name: product.name, path: `/product/${product.slug}` },
+    { name: product.name, path: productPath(product) },
   ];
 }
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ brand: string; slug: string }>;
   children: React.ReactNode;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = decodePathSegment((await params).slug);
-  const lookup = await lookupProductBySlug(slug);
+  const { brand, slug } = await params;
+  const decodedSlug = decodePathSegment(slug);
+  const lookup = await lookupProductBySlug(decodedSlug);
 
   if (lookup.status !== "found") {
     return buildPageMetadata({
       title: "Product not found",
       description: "We could not find that product on Mioralane.",
-      path: `/product/${encodeURIComponent(slug)}`,
+      path: `/product/${encodeURIComponent(brand)}/${encodeURIComponent(decodedSlug)}`,
       noIndex: true,
     });
   }
@@ -166,18 +175,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product } = lookup;
   const title = productTitle(product);
 
+  // `productPath` rather than the request URL: it resolves the canonical brand
+  // slug, so a link built with a stale brand still points its canonical at the
+  // real one.
   return buildPageMetadata({
     title: title.value,
     absoluteTitle: title.absolute,
     description: productDescription(product),
-    path: `/product/${product.slug}`,
+    path: productPath(product),
     images: productImageUrls(product),
   });
 }
 
 export default async function ProductLayout({ params, children }: Props) {
-  const slug = decodePathSegment((await params).slug);
-  const lookup = await lookupProductBySlug(slug);
+  const { brand, slug } = await params;
+  const lookup = await lookupProductBySlug(decodePathSegment(slug));
 
   // A deleted product must answer 404, not 200 with "not found" copy. Only the
   // API's own 404 (or a slug the offline catalogue does not know) counts;
@@ -187,6 +199,26 @@ export default async function ProductLayout({ params, children }: Props) {
   }
 
   const product = lookup.status === "found" ? lookup.product : null;
+
+  /*
+   * Canonical brand enforcement. A URL carrying the wrong brand (or an unencoded
+   * one, or a legacy path that reached here) is sent permanently to the product's
+   * own URL — never 404'd, because the product does exist and the slug is the
+   * only thing that identifies it.
+   *
+   * `permanentRedirect` is 308: React Server Components cannot set a raw status,
+   * and 308 is the permanent, method-preserving equivalent of 301 for indexing.
+   * The lookup is memoised by `cache()` in `lookupProductBySlug`, so `layout`,
+   * `generateMetadata` and this check share one API call.
+   */
+  if (product) {
+    const requestedBrand = decodePathSegment(brand).toLowerCase();
+    const canonicalBrand = productBrandSlug(product).toLowerCase();
+
+    if (canonicalBrand && requestedBrand !== canonicalBrand) {
+      permanentRedirect(productPath(product));
+    }
+  }
 
   return (
     <>

@@ -68,6 +68,7 @@ import {
 } from "../src/lib/seo/json-ld.ts";
 import { buildPageMetadata, DEFAULT_OG_IMAGE } from "../src/lib/seo/metadata.ts";
 import { STATIC_ROUTES } from "../src/lib/seo/sitemap.ts";
+import { productPath } from "../src/lib/product-path.ts";
 
 // Never let a developer's live API leak into these assertions.
 delete process.env.NEXT_PUBLIC_API_URL;
@@ -138,8 +139,9 @@ const ROUTES = {
   dataLib: "src/lib/seo/data.ts",
   sitemapLib: "src/lib/seo/sitemap.ts",
   urlsLib: "src/lib/seo/urls.ts",
-  productPage: "src/app/(public)/product/[slug]/page.tsx",
-  productLayout: "src/app/(public)/product/[slug]/layout.tsx",
+  productPage: "src/app/(public)/product/[brand]/[slug]/page.tsx",
+  productLayout: "src/app/(public)/product/[brand]/[slug]/layout.tsx",
+  legacyProductRedirect: "src/app/(public)/product/[brand]/page.tsx",
   comboPage: "src/app/(public)/combo/[slug]/page.tsx",
   comboLayout: "src/app/(public)/combo/[slug]/layout.tsx",
   comboIndex: "src/app/(public)/combo/page.tsx",
@@ -324,7 +326,9 @@ check(
   (() => {
     const sample = LOCAL_CATALOG_PRODUCTS.find((product) => !!product.createdAt);
     if (!sample?.createdAt) return false;
-    const entry = entries.find((candidate) => candidate.url === `${SITE_URL}/product/${sample.slug}`);
+    const entry = entries.find(
+      (candidate) => candidate.url === `${SITE_URL}${productPath(sample)}`,
+    );
     if (!entry?.lastModified) return false;
     return new Date(entry.lastModified).toISOString().startsWith(sample.createdAt.slice(0, 10));
   })(),
@@ -521,23 +525,23 @@ const faqPageSource = read(ROUTES.faqPage);
 // the route-segment layout. Asserting the reason keeps the next person from
 // "simplifying" it back into the page.
 check(
-  "product/[slug] page is a client component (why the layout carries the metadata)",
+  "product/[brand]/[slug] page is a client component (why the layout carries the metadata)",
   /^\s*"use client";/.test(productPageSource),
 );
 check(
-  "product/[slug] segment exports generateMetadata",
+  "product/[brand]/[slug] segment exports generateMetadata",
   hasMetadataExport(productLayoutSource) && hasGenerateMetadata(productLayoutSource),
 );
 check(
-  "product/[slug] segment renders Product JSON-LD",
+  "product/[brand]/[slug] segment renders Product JSON-LD",
   hasJsonLdElement(productLayoutSource) && /generateProductJsonLd\(/.test(productLayoutSource),
 );
 check(
-  "product/[slug] segment renders a BreadcrumbList",
+  "product/[brand]/[slug] segment renders a BreadcrumbList",
   /generateBreadcrumbJsonLd\(/.test(productLayoutSource),
 );
 check(
-  "product/[slug] layout renders the graph at request time (force-dynamic)",
+  "product/[brand]/[slug] layout renders the graph at request time (force-dynamic)",
   /export\s+const\s+dynamic\s*=\s*"force-dynamic"/.test(productLayoutSource),
 );
 check(
@@ -625,7 +629,7 @@ for (const [label, path, canonical] of CANONICAL_SEGMENTS) {
 // Canonical tags: `buildPageMetadata` is the only thing that may set them, so
 // each route must go through it rather than hand-rolling metadata.
 for (const [label, source] of [
-  ["product/[slug] layout", productLayoutSource],
+  ["product/[brand]/[slug] layout", productLayoutSource],
   ["combo/[slug] layout", comboLayoutSource],
   ["shop layout", shopLayoutSource],
   ["blog/[slug] page", blogPageSource],

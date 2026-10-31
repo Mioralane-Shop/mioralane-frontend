@@ -16,6 +16,7 @@ import { PRIMARY_NAV, type MegaMenuColumn } from "@/constants/navigation";
 import { useBrands } from "@/hooks/use-brands";
 import { isActiveNavPath, navLinkClass } from "@/lib/nav-active";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import { firstRenderableImageSrc } from "@/lib/safe-image-src";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
@@ -832,7 +833,7 @@ export function Navbar() {
                         {searchResults.map((product) => (
                           <Link
                             key={product.id}
-                            href={`/product/${product.slug}`}
+                            href={productPath(product)}
                             onClick={() => {
                               setSearchQuery("");
                               setSearchFocused(false);
