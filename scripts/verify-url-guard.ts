@@ -43,7 +43,10 @@ const NEXT_CONFIG_FILE = join(HERE, "..", "next.config.mjs");
 const PRODUCT_IMAGE_FILE = join(SRC, "components", "common", "product-image.tsx");
 const PRODUCT_CARD_FILE = join(SRC, "components", "product", "product-card.tsx");
 const PRODUCT_GALLERY_FILE = join(SRC, "components", "product", "product-gallery.tsx");
-const PDP_FILE = join(SRC, "app", "(public)", "product", "[slug]", "page.tsx");
+const HERO_SECTION_FILE = join(SRC, "components", "common", "hero-section.tsx");
+// Products moved to `/product/[brand]/[slug]`; this is the same client component
+// (and the same `RelatedThumb`), only at its nested address.
+const PDP_FILE = join(SRC, "app", "(public)", "product", "[brand]", "[slug]", "page.tsx");
 const CAMPAIGN_FILE = join(SRC, "components", "common", "promotion-campaign.tsx");
 const ANNOUNCEMENT_FILE = join(SRC, "components", "layout", "announcement-bar.tsx");
 const BRAND_NAVBAR_FILE = join(SRC, "components", "layout", "navbar.tsx");
@@ -508,6 +511,9 @@ const main = (): void => {
     { label: "product card", file: PRODUCT_CARD_FILE },
     { label: "PDP", file: PDP_FILE },
     { label: "product gallery", file: PRODUCT_GALLERY_FILE },
+    // The homepage banner: slide artwork is pasted by an admin and can name any
+    // host, so it is gated exactly like a stored product URL.
+    { label: "hero slider", file: HERO_SECTION_FILE },
     // The brand surface: three more places a server-supplied URL reaches an image.
     // They render a plain <img> rather than next/image (vector logos, no stored
     // dimensions), which makes the guard no less necessary — it is what decides

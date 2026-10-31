@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { BrandsMarquee } from "@/components/common/brands-marquee";
+import { safeHref } from "@/lib/safe-href";
+import { isRenderableImageSrc } from "@/lib/safe-image-src";
 import { useHeroSlides } from "@/hooks/use-hero-slides";
 
 type HeroSlideView = {
@@ -67,6 +69,13 @@ function isExternalHref(targetUrl: string): boolean {
  * the fixed-ratio frame at every width.
  */
 function SlidePoster({ slide, priority }: { slide: HeroSlideView; priority: boolean }) {
+  // `imageUrl` is stored data, so it is rendered only if the shared guard accepts
+  // it — the same rule every other stored image follows (`lib/safe-image-src.ts`).
+  // An unusable value leaves the frame as a plain panel instead of a broken image.
+  if (!isRenderableImageSrc(slide.imageUrl)) {
+    return <div className="h-full w-full bg-[#FAF9F7]" aria-hidden="true" />;
+  }
+
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -138,6 +147,10 @@ export function HeroSection() {
         <div className="relative aspect-[2103/748] overflow-hidden rounded-3xl max-md:rounded-2xl">
           {slides.map((slide, i) => {
             const label = `${slide.altText?.trim() || "Promotion"} — shop now`;
+            // Stored destination, so it goes through the href guard: an unsafe or
+            // missing value sends the visitor to the shop instead of becoming an
+            // anchor that a `javascript:` string could occupy.
+            const targetHref = safeHref(slide.targetUrl) ?? "/shop";
             const linkClass =
               "absolute inset-0 block focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent";
 
@@ -154,9 +167,9 @@ export function HeroSection() {
                   headline and button, so the whole banner is the link. Absolute
                   targets open in a new tab; site paths stay client-side.
                 */}
-                {isExternalHref(slide.targetUrl) ? (
+                {isExternalHref(targetHref) ? (
                   <a
-                    href={slide.targetUrl}
+                    href={targetHref}
                     className={linkClass}
                     aria-label={label}
                     target="_blank"
@@ -165,7 +178,7 @@ export function HeroSection() {
                     <SlidePoster slide={slide} priority={i === 0} />
                   </a>
                 ) : (
-                  <Link href={slide.targetUrl || "/shop"} className={linkClass} aria-label={label}>
+                  <Link href={targetHref} className={linkClass} aria-label={label}>
                     <SlidePoster slide={slide} priority={i === 0} />
                   </Link>
                 )}
