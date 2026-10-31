@@ -21,6 +21,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useToastStore } from "@/store/toast.store";
 import { cn, formatPrice } from "@/lib/utils";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import type { WishlistEntry, WishlistSort } from "@/types/wishlist";
 
 const WISHLIST_SORT_OPTIONS: Array<{ label: string; value: WishlistSort }> = [
@@ -33,7 +34,7 @@ const WISHLIST_SORT_OPTIONS: Array<{ label: string; value: WishlistSort }> = [
 function getWishlistItemHref(entry: WishlistEntry) {
   return entry.itemType === "combo"
     ? `/combo/${entry.product.slug}`
-    : `/product/${entry.product.slug}`;
+    : productPath(entry.product);
 }
 
 function StockBadge({ entry }: { entry: WishlistEntry }) {

@@ -9,6 +9,7 @@ import { useCartRecommendations } from "@/hooks/use-products";
 import { getProductAvailability } from "@/lib/pre-order";
 import { formatPrice } from "@/lib/utils";
 import { productShortName } from "@/lib/product-name";
+import { productPath } from "@/lib/product-path";
 import { useCartStore } from "@/store/cart.store";
 import { useToastStore } from "@/store/toast.store";
 import type { CartItem, Product } from "@/types/product";
@@ -44,7 +45,7 @@ function RecommendationRow({ product }: { product: Product }) {
   return (
     <div className="flex min-w-0 items-center gap-3 py-3">
       <Link
-        href={`/product/${product.slug}`}
+        href={productPath(product)}
         className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-brand-50"
       >
         <ProductImage
@@ -59,7 +60,7 @@ function RecommendationRow({ product }: { product: Product }) {
       </Link>
 
       <div className="min-w-0 flex-1">
-        <Link href={`/product/${product.slug}`}>
+        <Link href={productPath(product)}>
           <h4 className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500">
             {productShortName(product)}
           </h4>

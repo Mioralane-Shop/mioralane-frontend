@@ -65,6 +65,8 @@ export type CustomerReview = {
         id: string;
         title: string;
         slug: string;
+        /** Product brand — `productPath()` turns it into the URL's brand segment. */
+        brand?: string;
         image: string;
     } | null;
 };

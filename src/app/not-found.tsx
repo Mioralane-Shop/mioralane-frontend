@@ -3,7 +3,7 @@ import Link from "next/link";
 /**
  * The 404 page for the whole app.
  *
- * It exists because `/product/[slug]` calls `notFound()` for a deleted product:
+ * It exists because `/product/[brand]/[slug]` calls `notFound()` for a deleted product:
  * Next answers with the nearest `not-found` boundary, and without this file that
  * would be the framework's bare default. The status is what search engines read;
  * the copy is what a shopper sees, so it offers the two routes that recover them.

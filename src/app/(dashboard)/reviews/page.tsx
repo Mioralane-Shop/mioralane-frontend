@@ -9,6 +9,7 @@ import { RequireAuth } from "@/components/common/require-auth";
 import { ProductImage } from "@/components/common/product-image";
 import { useMyReviews } from "@/hooks/use-reviews";
 import { cn } from "@/lib/utils";
+import { productPath } from "@/lib/product-path";
 import type { CustomerReview, ReviewStatus } from "@/types/review";
 
 const STATUS_STYLES: Record<ReviewStatus, string> = {
@@ -107,7 +108,7 @@ function MyReviewsContent() {
                                         <div className="min-w-0">
                                             {review.product ? (
                                                 <Link
-                                                    href={`/product/${review.product.slug}`}
+                                                    href={productPath(review.product)}
                                                     className="line-clamp-2 text-sm font-medium text-neutral-800 transition-colors hover:text-brand-500"
                                                 >
                                                     {review.product.title}

@@ -9,6 +9,7 @@ import { ReviewForm } from "@/components/reviews/review-form";
 import { useProductReviews, useReviewEligibility } from "@/hooks/use-reviews";
 import { useAuthStore } from "@/store/auth.store";
 import { cn } from "@/lib/utils";
+import { SECTION_EYEBROW } from "@/lib/product-typography";
 import type { ProductReview, ReviewSort } from "@/types/review";
 
 const SORT_OPTIONS: Array<{ value: ReviewSort; label: string }> = [
@@ -61,10 +62,10 @@ function ReviewCard({ review }: { review: ProductReview }) {
                         Verified purchase
                     </Badge>
                 ) : null}
-                <span className="text-xs text-ink-muted">{formatReviewDate(review.createdAt)}</span>
+                <span className="text-xs text-[#6B655F]">{formatReviewDate(review.createdAt)}</span>
             </div>
 
-            <p className="mt-3 whitespace-pre-line text-sm leading-7 text-ink/70">{review.comment}</p>
+            <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#453F3B]">{review.comment}</p>
 
             {/* Review images are temporarily disabled — restore this block to re-enable review images. */}
             {/*
@@ -128,7 +129,7 @@ export function ProductReviews({
 
         if (eligibility?.hasReviewed) {
             return (
-                <span className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-medium capitalize text-ink-muted">
+                <span className="rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs font-medium capitalize text-[#6B655F]">
                     Your review is {eligibility.review?.status ?? "pending"}
                 </span>
             );
@@ -143,7 +144,7 @@ export function ProductReviews({
         }
 
         return (
-            <span className="text-xs text-ink-muted">
+            <span className="text-xs text-[#6B655F]">
                 Only customers who purchased this product can review it.
             </span>
         );
@@ -152,7 +153,7 @@ export function ProductReviews({
     if (isLoading) {
         return (
             <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
-                <div className="flex items-center gap-2 text-sm text-ink-muted">
+                <div className="flex items-center gap-2 text-sm text-[#6B655F]">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading reviews...
                 </div>
@@ -172,7 +173,7 @@ export function ProductReviews({
                     <AlertCircle className="mt-0.5 h-5 w-5 text-brand-400" />
                     <div>
                         <p className="text-sm font-semibold text-ink">Unable to load reviews</p>
-                        <p className="mt-1 text-sm text-ink-muted">
+                        <p className="mt-1 text-sm text-[#6B655F]">
                             {error?.message || "Please try again in a moment."}
                         </p>
                         <Button variant="outline" size="sm" className="mt-4" onClick={() => void refetch()} disabled={isFetching}>
@@ -188,7 +189,7 @@ export function ProductReviews({
         <div className="rounded-3xl border border-ink/10 bg-[#FAF9F7] p-6">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E6966]">
+                    <p className={SECTION_EYEBROW}>
                         Customer Reviews
                     </p>
                     <div className="mt-4 flex items-end gap-3">
@@ -197,7 +198,7 @@ export function ProductReviews({
                         </span>
                         <div className="pb-1">
                             <StarRow rating={summary?.averageRating ?? 0} className="[&_svg]:h-4 [&_svg]:w-4" />
-                            <p className="mt-1 text-xs text-ink-muted">
+                            <p className="mt-1 text-xs text-[#6B655F]">
                                 {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
                             </p>
                         </div>
@@ -210,11 +211,11 @@ export function ProductReviews({
 
                             return (
                                 <div key={stars} className="flex items-center gap-3">
-                                    <span className="w-10 text-xs text-ink-muted">{stars} star</span>
+                                    <span className="w-10 text-xs text-[#6B655F]">{stars} star</span>
                                     <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/[0.07]">
                                         <span className="block h-full rounded-full bg-[#E9B949]" style={{ width: `${percent}%` }} />
                                     </span>
-                                    <span className="w-6 text-right text-xs text-ink-muted">{count}</span>
+                                    <span className="w-6 text-right text-xs text-[#6B655F]">{count}</span>
                                 </div>
                             );
                         })}
@@ -224,7 +225,7 @@ export function ProductReviews({
                 <div>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                            <label className="text-xs font-medium uppercase tracking-[0.14em] text-[#6E6966]" htmlFor="review-sort">
+                            <label className="text-xs font-medium uppercase tracking-[0.14em] text-[#453F3B]" htmlFor="review-sort">
                                 Sort by
                             </label>
                             <select
@@ -234,7 +235,7 @@ export function ProductReviews({
                                     setSort(event.target.value as ReviewSort);
                                     setPage(1);
                                 }}
-                                className="h-9 rounded-full border border-ink/15 bg-white px-3 text-sm text-ink outline-hidden transition-colors focus:border-accent"
+                                className="h-9 rounded-full border border-ink/15 bg-white pl-4 pr-8 text-sm text-ink outline-hidden transition-colors focus:border-accent"
                             >
                                 {SORT_OPTIONS.map((option) => (
                                     <option key={option.value} value={option.value}>
@@ -250,7 +251,7 @@ export function ProductReviews({
                         <div className="mt-6 rounded-2xl border border-dashed border-ink/15 bg-white px-5 py-10 text-center">
                             <Star className="mx-auto h-8 w-8 text-ink/15" />
                             <p className="mt-3 text-sm font-semibold text-ink">No reviews yet</p>
-                            <p className="mt-1 text-sm text-ink-muted">
+                            <p className="mt-1 text-sm text-[#6B655F]">
                                 Be the first to share your experience once you have received your order.
                             </p>
                         </div>
@@ -273,7 +274,7 @@ export function ProductReviews({
                                     >
                                         Previous
                                     </Button>
-                                    <span className="text-xs text-ink-muted">
+                                    <span className="text-xs text-[#6B655F]">
                                         Page {page} of {totalPages}
                                     </span>
                                     <Button
